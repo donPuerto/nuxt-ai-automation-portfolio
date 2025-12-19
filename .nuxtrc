@@ -1,0 +1,9 @@
+# Disable SSR
+ssr=false
+
+# Configuration for `@nuxt/devtools`
+devtools.enabled=true
+
+# Add Nuxt modules
+modules[]=@nuxt/image
+modules[]=nuxt-security
