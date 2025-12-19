@@ -4,13 +4,13 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <!-- Image -->
         <div class="order-2 lg:order-1">
-          <img
+          <!-- <img
             src="/images/profile.jpg"
             alt="Profile"
             class="w-full max-w-md mx-auto rounded-lg shadow-lg"
             width="400"
             height="400"
-          />
+          /> -->
         </div>
 
         <!-- Content -->
