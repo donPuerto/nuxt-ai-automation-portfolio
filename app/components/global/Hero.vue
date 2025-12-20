@@ -13,8 +13,8 @@
         Showcasing cutting-edge AI projects built with Nuxt 4, Tailwind CSS 4, and modern web technologies.
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <Button size="lg" @click="scrollToSection('portfolio')" class="bg-white text-purple-600 hover:bg-gray-100">
-          View My Work
+        <Button size="lg" @click="scrollToSection('about')" class="bg-white text-purple-600 hover:bg-gray-100">
+          Learn More
         </Button>
         <Button size="lg" variant="outline" @click="scrollToSection('contact')" class="border-white text-white hover:bg-white hover:text-purple-600">
           Get In Touch

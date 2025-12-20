@@ -8,11 +8,6 @@
           Discover my expertise in AI automation, modern web development, and innovative solutions.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button as-child size="lg">
-            <NuxtLink to="/portfolio">
-              View Portfolio
-            </NuxtLink>
-          </Button>
           <Button as-child variant="outline" size="lg">
             <NuxtLink to="/about">
               Learn About Me

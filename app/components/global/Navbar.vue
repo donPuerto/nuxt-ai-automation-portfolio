@@ -7,24 +7,9 @@
 
       <!-- Desktop Menu -->
       <ul class="hidden md:flex items-center space-x-6">
-        <li>
-          <NuxtLink to="/" class="hover:text-primary transition-colors">
-            Home
-          </NuxtLink>
-        </li>
-        <li>
-          <NuxtLink to="/about" class="hover:text-primary transition-colors">
-            About
-          </NuxtLink>
-        </li>
-        <li>
-          <NuxtLink to="/portfolio" class="hover:text-primary transition-colors">
-            Portfolio
-          </NuxtLink>
-        </li>
-        <li>
-          <NuxtLink to="/contact" class="hover:text-primary transition-colors">
-            Contact
+        <li v-for="route in routes" :key="route.path">
+          <NuxtLink :to="route.path" class="hover:text-primary transition-colors">
+            {{ route.name }}
           </NuxtLink>
         </li>
       </ul>
@@ -45,24 +30,9 @@
     <!-- Mobile Menu -->
     <div v-if="isOpen" class="md:hidden bg-background border-t">
       <ul class="flex flex-col space-y-4 p-4">
-        <li>
-          <NuxtLink to="/" class="block hover:text-primary" @click="isOpen = false">
-            Home
-          </NuxtLink>
-        </li>
-        <li>
-          <NuxtLink to="/about" class="block hover:text-primary" @click="isOpen = false">
-            About
-          </NuxtLink>
-        </li>
-        <li>
-          <NuxtLink to="/portfolio" class="block hover:text-primary" @click="isOpen = false">
-            Portfolio
-          </NuxtLink>
-        </li>
-        <li>
-          <NuxtLink to="/contact" class="block hover:text-primary" @click="isOpen = false">
-            Contact
+        <li v-for="route in routes" :key="route.path">
+          <NuxtLink :to="route.path" class="block hover:text-primary" @click="isOpen = false">
+            {{ route.name }}
           </NuxtLink>
         </li>
       </ul>
