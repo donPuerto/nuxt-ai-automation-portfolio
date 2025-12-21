@@ -23,7 +23,7 @@ export default defineNuxtConfig({
     'nuxt-security'
   ],
   components: [
-    { path: '~/components', pathPrefix: false },
+    { path: '~/components', pathPrefix: false, extensions: ['.vue'] },
   ],
   fonts: {
     defaults: {

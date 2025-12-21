@@ -2,7 +2,7 @@
   <header class="sticky top-0 z-50 bg-background/80 backdrop-blur border-b">
     <nav class="container mx-auto flex items-center justify-between p-4">
       <NuxtLink to="/">
-        <Logo />
+        <Logo :logo-only="false" />
       </NuxtLink>
 
       <!-- Desktop Menu -->
