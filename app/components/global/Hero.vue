@@ -2,15 +2,8 @@
   <section id="hero" class="min-h-screen flex items-center justify-center relative overflow-hidden py-4">
     <div class="container mx-auto z-10 px-4">
       <div class="flex flex-col items-center justify-center gap-8 w-full">
-        <!-- Icon Cloud -->
-        <ClientOnly>
-          <div class="w-full flex justify-center">
-            <IconCloud :images="imageUrls" />
-          </div>
-        </ClientOnly>
-
         <!-- Introduction Text -->
-        <div class="text-center max-w-4xl w-full px-4 space-y-2">
+        <div class="text-center max-w-4xl w-full px-4 space-y-4">
           <h1 class="text-4xl md:text-6xl font-bold tracking-tight">
             AI Automation Engineer
           </h1>
@@ -35,9 +28,6 @@
 </template>
 
 <script setup lang="ts">
-import { IconCloud } from '@/components/ui/icon-cloud'
-
-const slugs = [
   "make",
   "n8n",
   "zapier",
