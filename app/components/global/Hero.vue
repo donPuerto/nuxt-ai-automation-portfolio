@@ -1,28 +1,41 @@
 <template>
   <section id="hero" class="min-h-screen flex items-center justify-center relative overflow-hidden">
-    <div class="container mx-auto z-10 px-4 py-20">
+    <!-- Spline 3D Background -->
+    <div class="absolute inset-0 w-full h-full z-0">
+      <div class="relative w-full h-full overflow-hidden bg-black/96">
+        <ClientOnly>
+          <Spline
+            :scene="sceneUrl"
+            class="size-full"
+          />
+        </ClientOnly>
+      </div>
+    </div>
+
+    <!-- Content Overlay -->
+    <div class="container mx-auto z-10 px-4 py-20 relative">
       <div class="max-w-5xl mx-auto">
         <!-- Main Content -->
         <div class="text-center space-y-8">
           <!-- Greeting -->
           <div class="inline-block">
-            <span class="px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
+            <span class="px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium backdrop-blur-sm">
               👋 Welcome to my portfolio
             </span>
           </div>
 
           <!-- Main Heading -->
           <div class="space-y-4">
-            <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight">
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white drop-shadow-lg">
               I'm <span class="text-primary">Don Puerto</span>
             </h1>
-            <h2 class="text-3xl md:text-4xl lg:text-5xl font-semibold text-muted-foreground">
+            <h2 class="text-3xl md:text-4xl lg:text-5xl font-semibold text-white/80 drop-shadow-md">
               AI Automation Engineer
             </h2>
           </div>
 
           <!-- Description -->
-          <p class="text-lg md:text-xl text-foreground/80 max-w-3xl mx-auto leading-relaxed">
+          <p class="text-lg md:text-xl text-white/90 max-w-3xl mx-auto leading-relaxed backdrop-blur-sm bg-black/20 p-4 rounded-lg">
             Specializing in intelligent workflow automation, AI-powered solutions, and enterprise integrations. 
             I help businesses <span class="font-semibold text-primary">save 10+ hours weekly</span> by building 
             seamless automation systems with Make.com, N8N, and cutting-edge AI technologies.
@@ -46,17 +59,17 @@
 
           <!-- Quick Stats -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12 max-w-3xl mx-auto">
-            <div class="p-6 rounded-lg bg-background/50 backdrop-blur-sm border border-border/50">
+            <div class="p-6 rounded-lg bg-black/40 backdrop-blur-md border border-white/20">
               <div class="text-3xl font-bold text-primary mb-2">10+</div>
-              <div class="text-sm text-muted-foreground">Hours Saved Weekly</div>
+              <div class="text-sm text-white/70">Hours Saved Weekly</div>
             </div>
-            <div class="p-6 rounded-lg bg-background/50 backdrop-blur-sm border border-border/50">
+            <div class="p-6 rounded-lg bg-black/40 backdrop-blur-md border border-white/20">
               <div class="text-3xl font-bold text-primary mb-2">100%</div>
-              <div class="text-sm text-muted-foreground">Client Satisfaction</div>
+              <div class="text-sm text-white/70">Client Satisfaction</div>
             </div>
-            <div class="p-6 rounded-lg bg-background/50 backdrop-blur-sm border border-border/50">
+            <div class="p-6 rounded-lg bg-black/40 backdrop-blur-md border border-white/20">
               <div class="text-3xl font-bold text-primary mb-2">24/7</div>
-              <div class="text-sm text-muted-foreground">Automation Support</div>
+              <div class="text-sm text-white/70">Automation Support</div>
             </div>
           </div>
         </div>
@@ -64,8 +77,8 @@
     </div>
 
     <!-- Scroll Indicator -->
-    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-      <a href="#about" @click.prevent="scrollToSection('about')" class="text-foreground/60 hover:text-foreground transition-colors">
+    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce z-20">
+      <a href="#about" @click.prevent="scrollToSection('about')" class="text-white/60 hover:text-white transition-colors">
         <Icon name="lucide:chevron-down" class="w-8 h-8" />
       </a>
     </div>
@@ -75,6 +88,8 @@
 
 
 <script setup lang="ts">
+const sceneUrl = "https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
+
 const scrollToSection = (sectionId: string) => {
   const element = document.getElementById(sectionId)
   if (element) {
