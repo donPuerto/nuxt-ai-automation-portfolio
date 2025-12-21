@@ -1,7 +1,7 @@
 <template>
-  <div data-slot="layout" class="theme-container relative min-h-screen">
+  <div data-slot="layout" class="theme-container relative min-h-screen bg-background text-foreground transition-colors duration-300">
     <!-- Gradient Background Layer -->
-    <div class="fixed inset-0 -z-20 bg-linear-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20" />
+    <div class="fixed inset-0 -z-20 bg-linear-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20 transition-opacity duration-300" />
     
     <!-- Neural Background Layer -->
     <ClientOnly>
@@ -29,4 +29,6 @@
 <script setup lang="ts">
 // Ensure layout manager is accessible in the layout
 const { isLayoutFixed } = useLayoutManager()
+// Ensure color mode is reactive
+const colorMode = useColorMode()
 </script>

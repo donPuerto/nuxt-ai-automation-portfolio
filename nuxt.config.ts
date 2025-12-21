@@ -5,6 +5,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   ssr: true,
+  experimental: {
+    buildCache: false
+  },
   nitro: {
    prerender: {
       autoSubfolderIndex: false
@@ -52,10 +55,16 @@ export default defineNuxtConfig({
       sourcemap: false,
       rollupOptions: {
         output: {
-          sourcemap: false
+          sourcemap: false,
+          assetFileNames: (assetInfo) => {
+            return 'assets/[name]-[hash][extname]'
+          }
         }
       }
     },
+    html: {
+      cspNonce: undefined
+    }
   },
   shadcn: {
     prefix: '',
@@ -68,7 +77,8 @@ export default defineNuxtConfig({
     componentName: 'ColorScheme',
     classPrefix: '',
     classSuffix: '',      // Important for Tailwind dark mode
-    storage: 'localStorage', // or 'sessionStorage' or 'cookie'
+    dataValue: '',        // Use class-based dark mode instead of data attribute
+    storage: 'sessionStorage', // Match theme manager's sessionStorage
     storageKey: 'nuxt-color-mode'
   },
   build: {

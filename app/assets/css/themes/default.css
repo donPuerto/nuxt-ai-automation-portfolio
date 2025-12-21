@@ -1,4 +1,5 @@
-.theme-default {
+.theme-default .theme-container,
+.theme-default [data-reka-popper-content-wrapper] {
   --background: oklch(1 0 0);
   --foreground: oklch(0.1450 0 0);
   --card: oklch(1 0 0);
@@ -53,7 +54,8 @@
   --spacing: 0.25rem;
 }
 
-.theme-default.dark {
+.theme-default.dark .theme-container,
+.theme-default.dark [data-reka-popper-content-wrapper] {
   --background: oklch(0.1450 0 0);
   --foreground: oklch(0.9850 0 0);
   --card: oklch(0.2050 0 0);

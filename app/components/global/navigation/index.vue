@@ -25,15 +25,11 @@
         </NavigationMenuList>
       </NavigationMenu>
 
-      <!-- Theme Toggle & Theme Selector & Layout Toggle -->
+      <!-- Theme Selector & Book a Call -->
       <div class="flex items-center gap-2">
         <ThemeSelector />
-        <ClientOnly>
-          <LayoutToggle />
-        </ClientOnly>
-        <Button @click="toggleTheme" variant="ghost" size="icon">
-          <span v-if="isDark">☀️</span>
-          <span v-else>🌙</span>
+        <Button variant="default" size="default" class="hidden md:inline-flex">
+          Book a call
         </Button>
       </div>
 
