@@ -18,6 +18,7 @@
     "@nuxt/scripts": "0.13.1",
     "@nuxt/test-utils": "3.21.0",
     "@nuxtjs/color-mode": "^4.0.0",
+    "@splinetool/runtime": "^1.12.27",
     "@unhead/vue": "^2.0.3",
     "@vueuse/core": "^14.1.0",
     "eslint": "^9.0.0",
