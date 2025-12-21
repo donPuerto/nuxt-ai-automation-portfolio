@@ -27,18 +27,14 @@
           <!-- Main Heading -->
           <div class="space-y-4">
             <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white drop-shadow-lg">
-              I'm <span class="text-primary">Don Puerto</span>
-            </h1>
-            <h2 class="text-3xl md:text-4xl lg:text-5xl font-semibold text-white/80 drop-shadow-md">
               AI Automation Engineer
-            </h2>
+            </h1>
           </div>
 
           <!-- Description -->
           <p class="text-lg md:text-xl text-white/90 max-w-3xl mx-auto leading-relaxed backdrop-blur-sm bg-black/20 p-4 rounded-lg">
             Specializing in intelligent workflow automation, AI-powered solutions, and enterprise integrations. 
-            I help businesses <span class="font-semibold text-primary">save 10+ hours weekly</span> by building 
-            seamless automation systems with Make.com, N8N, and cutting-edge AI technologies.
+            Building seamless automation systems with Make.com, N8N, and cutting-edge AI technologies.
           </p>
 
           <!-- CTA Buttons -->
@@ -55,22 +51,6 @@
                 About Me
               </NuxtLink>
             </Button>
-          </div>
-
-          <!-- Quick Stats -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12 max-w-3xl mx-auto">
-            <div class="p-6 rounded-lg bg-black/40 backdrop-blur-md border border-white/20">
-              <div class="text-3xl font-bold text-primary mb-2">10+</div>
-              <div class="text-sm text-white/70">Hours Saved Weekly</div>
-            </div>
-            <div class="p-6 rounded-lg bg-black/40 backdrop-blur-md border border-white/20">
-              <div class="text-3xl font-bold text-primary mb-2">100%</div>
-              <div class="text-sm text-white/70">Client Satisfaction</div>
-            </div>
-            <div class="p-6 rounded-lg bg-black/40 backdrop-blur-md border border-white/20">
-              <div class="text-3xl font-bold text-primary mb-2">24/7</div>
-              <div class="text-sm text-white/70">Automation Support</div>
-            </div>
           </div>
         </div>
       </div>
