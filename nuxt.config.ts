@@ -13,7 +13,10 @@ export default defineNuxtConfig({
     cloudflare: {
         deployConfig: true,
         nodeCompat: true
-      }
+      },
+    externals: {
+      inline: ['@nuxt/nitro-server']
+    }
   },
   css: ['~/assets/css/tailwind.css'],
   imports: {
