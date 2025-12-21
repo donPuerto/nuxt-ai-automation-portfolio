@@ -17,14 +17,7 @@
       <div class="max-w-5xl mx-auto">
         <!-- Main Content -->
         <div class="text-center space-y-8">
-          <!-- Greeting -->
-          <div class="inline-block">
-            <span class="px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium backdrop-blur-sm">
-              👋 Welcome to my portfolio
-            </span>
-          </div>
-
-          <!-- Main Heading -->
+                  <!-- Main Heading -->
           <div class="space-y-4">
             <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white drop-shadow-lg">
               AI Automation Engineer
@@ -40,16 +33,10 @@
           <!-- CTA Buttons -->
           <div class="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             <Button size="lg" as-child class="text-base">
-              <NuxtLink to="/contact">
-                <Icon name="lucide:mail" class="w-5 h-5 mr-2" />
-                Get In Touch
-              </NuxtLink>
-            </Button>
-            <Button size="lg" variant="outline" as-child class="text-base">
-              <NuxtLink to="/about">
-                <Icon name="lucide:user" class="w-5 h-5 mr-2" />
-                About Me
-              </NuxtLink>
+              <a href="https://cal.com" target="_blank" rel="noopener noreferrer">
+                <Icon name="lucide:calendar" class="w-5 h-5 mr-2" />
+                Book a Call
+              </a>
             </Button>
           </div>
         </div>
