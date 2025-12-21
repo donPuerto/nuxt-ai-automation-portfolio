@@ -21,7 +21,9 @@
       <!-- Theme Toggle & Theme Selector & Layout Toggle -->
       <div class="flex items-center gap-2">
         <ThemeSelector />
-        <LayoutToggle />
+        <ClientOnly>
+          <LayoutToggle />
+        </ClientOnly>
         <Button @click="toggleTheme" variant="ghost" size="icon">
           <span v-if="isDark">☀️</span>
           <span v-else>🌙</span>
