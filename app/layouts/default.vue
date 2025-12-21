@@ -4,7 +4,7 @@
       <FluidCursor />
     </ClientOnly>
 
-    <Navbar />
+    <Navigation />
 
     <main>
       <NuxtPage />

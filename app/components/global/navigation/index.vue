@@ -1,18 +1,22 @@
 <template>
   <header class="sticky top-0 z-50 bg-background/80 backdrop-blur border-b">
     <nav class="container mx-auto flex items-center justify-between p-4">
-      <NuxtLink to="/" class="text-xl font-bold hover:text-primary transition-colors">
-        AI Portfolio
+      <NuxtLink to="/">
+        <Logo />
       </NuxtLink>
 
       <!-- Desktop Menu -->
-      <ul class="hidden md:flex items-center space-x-6">
-        <li v-for="route in routes" :key="route.path">
-          <NuxtLink :to="route.path" class="hover:text-primary transition-colors">
-            {{ route.name }}
-          </NuxtLink>
-        </li>
-      </ul>
+      <NavigationMenu class="hidden md:flex">
+        <NavigationMenuList>
+          <NavigationMenuItem v-for="route in routes" :key="route.path">
+            <NavigationMenuLink as-child>
+              <NuxtLink :to="route.path" class="hover:text-primary transition-colors">
+                {{ route.name }}
+              </NuxtLink>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+        </NavigationMenuList>
+      </NavigationMenu>
 
       <!-- Theme Toggle -->
       <Button @click="toggleTheme" variant="ghost" size="icon" class="ml-4">
@@ -42,6 +46,7 @@
 
 <script setup lang="ts">
 import { routes } from '@@/shared'
+import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from '@/components/ui/navigation-menu'
 
 const isOpen = ref(false)
 const { isDark, toggleTheme } = useTheme()
