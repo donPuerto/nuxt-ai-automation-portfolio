@@ -1,63 +1,78 @@
 <template>
-  <footer class="py-12">
-    <div class="container mx-auto px-4">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <!-- Brand -->
-        <div class="md:col-span-1">
-          <h3 class="text-lg font-semibold mb-4">{{ title }}</h3>
-          <p class="text-sm text-muted-foreground">
-            {{ description }} - Building the future with AI automation and modern web technologies.
-          </p>
-        </div>
-
-        <!-- Quick Links -->
-        <div>
-          <h4 class="font-semibold mb-4">Quick Links</h4>
-          <ul class="space-y-2 text-sm">
-            <li v-for="route in routes" :key="route.path">
-              <NuxtLink :to="route.path" class="hover:text-primary transition-colors">
-                {{ route.name }}
-              </NuxtLink>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Technologies -->
-        <div>
-          <h4 class="font-semibold mb-4">Tech Stack</h4>
-          <ul class="space-y-2 text-sm text-muted-foreground">
-            <li>Nuxt 4</li>
-            <li>Tailwind CSS 4</li>
-            <li>shadcn-vue</li>
-            <li>Inspira UI</li>
-          </ul>
-        </div>
-
-        <!-- Social Links -->
-        <div>
-          <h4 class="font-semibold mb-4">Connect</h4>
-          <div class="flex flex-col space-y-2 text-sm">
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">
-              GitHub
-            </a>
-            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">
-              LinkedIn
-            </a>
-            <a href="mailto:your@email.com" class="hover:text-primary transition-colors">
-              Email
-            </a>
-          </div>
+  <footer class="border-t bg-background/50 backdrop-blur-sm">
+    <div class="container mx-auto px-4 py-12">
+      <!-- Connect with me Section -->
+      <div class="text-center mb-8">
+        <h4 class="text-lg font-medium mb-4">Connect with me</h4>
+        <div class="flex justify-center gap-4">
+          <a 
+            :href="personalInfo.social.linkedin" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
+            aria-label="LinkedIn"
+          >
+            <Icon name="lucide:linkedin" class="w-5 h-5" />
+          </a>
+          <a 
+            :href="personalInfo.social.facebook" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
+            aria-label="Facebook"
+          >
+            <Icon name="lucide:facebook" class="w-5 h-5" />
+          </a>
+          <a 
+            :href="personalInfo.social.github" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
+            aria-label="GitHub"
+          >
+            <Icon name="lucide:github" class="w-5 h-5" />
+          </a>
+          <a 
+            :href="personalInfo.social.x" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
+            aria-label="X (Twitter)"
+          >
+            <Icon name="lucide:twitter" class="w-5 h-5" />
+          </a>
         </div>
       </div>
 
-      <div class="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-        <p>&copy; {{ currentYear }} {{ title }}. All rights reserved.</p>
+      <!-- Bottom Section -->
+      <div class="border-t pt-8">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+          <!-- Logo & Copyright -->
+          <div class="flex items-center gap-4">
+            <Logo :logo-only="true" :show-title="false" :show-role="false" />
+            <p class="text-sm text-muted-foreground">
+              © {{ currentYear }} {{ personalInfo.name }}. All rights reserved.
+            </p>
+          </div>
+
+          <!-- Contact Info -->
+          <div class="flex flex-col sm:flex-row items-center gap-4 text-sm text-muted-foreground">
+            <a :href="`mailto:${personalInfo.email}`" class="flex items-center gap-2 hover:text-foreground transition-colors">
+              <Icon name="lucide:mail" class="w-4 h-4" />
+              {{ personalInfo.email }}
+            </a>
+            <a :href="`tel:${personalInfo.phone}`" class="flex items-center gap-2 hover:text-foreground transition-colors">
+              <Icon name="lucide:phone" class="w-4 h-4" />
+              {{ personalInfo.phone }}
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   </footer>
 </template>
 
 <script setup lang="ts">
-import { title, description, routes } from '@@/shared'
+import { personalInfo } from '@@/shared'
 const currentYear = new Date().getFullYear()
 </script>

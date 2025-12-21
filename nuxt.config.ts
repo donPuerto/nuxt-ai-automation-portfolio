@@ -127,6 +127,15 @@ export default defineNuxtConfig({
     storage: 'sessionStorage', // Match theme manager's sessionStorage
     storageKey: 'nuxt-color-mode'
   },
+  security: {
+    headers: {
+      contentSecurityPolicy: {
+        'img-src': ["'self'", 'data:', 'https://cdn.simpleicons.org'],
+        'script-src': ["'self'", "'unsafe-inline'"],
+        'style-src': ["'self'", "'unsafe-inline'"],
+      }
+    }
+  },
   build: {
     // transpile: ['vee-validate', 'vue-sonner'],
   },

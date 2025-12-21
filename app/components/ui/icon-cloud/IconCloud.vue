@@ -1,9 +1,10 @@
 <template>
   <canvas
     ref="canvasRef"
-    width="300"
-    height="300"
-    :class="cn('rounded-lg', $props.class)"
+    width="1400"
+    height="800"
+    style="width: 100%; max-width: min(1400px, 100vw); height: auto; aspect-ratio: 1400/800; display: block; margin-bottom: -100px;"
+    :class="cn('rounded-lg mx-auto', $props.class)"
     role="img"
     aria-label="Interactive 3D Image Cloud"
     @mousedown="handleMouseDown"
@@ -102,9 +103,9 @@ watchEffect(() => {
     const z = Math.sin(phi) * r;
 
     newPositions.push({
-      x: x * 100,
-      y: y * 100,
-      z: z * 100,
+      x: x * 180,
+      y: y * 180,
+      z: z * 180,
       scale: 1,
       opacity: 1,
       id: i,

@@ -1,37 +1,80 @@
 <template>
-  <section id="hero" class="min-h-screen flex items-center justify-center text-white relative overflow-hidden">
-    <!-- Background Animation (Placeholder for Inspira UI) -->
-    <div class="absolute inset-0 opacity-20">
-      <FluidCursor />
-    </div>
+  <section id="hero" class="min-h-screen flex items-center justify-center relative overflow-hidden py-4">
+    <div class="container mx-auto z-10 px-4">
+      <div class="flex flex-col items-center justify-center gap-8 w-full">
+        <!-- Icon Cloud -->
+        <ClientOnly>
+          <div class="w-full flex justify-center">
+            <IconCloud :images="imageUrls" />
+          </div>
+        </ClientOnly>
 
-    <div class="container mx-auto text-center z-10 px-4">
-      <h1 class="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
-        Welcome to My AI Automation Portfolio
-      </h1>
-      <p class="text-lg md:text-xl mb-8 max-w-2xl mx-auto opacity-90">
-        Showcasing cutting-edge AI projects built with Nuxt 4, Tailwind CSS 4, and modern web technologies.
-      </p>
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <Button size="lg" @click="scrollToSection('about')" class="bg-white text-purple-600 hover:bg-gray-100">
-          Learn More
-        </Button>
-        <Button size="lg" variant="outline" @click="scrollToSection('contact')" class="border-white text-white hover:bg-white hover:text-purple-600">
-          Get In Touch
-        </Button>
+        <!-- Introduction Text -->
+        <div class="text-center max-w-4xl w-full px-4 space-y-2">
+          <h1 class="text-4xl md:text-6xl font-bold tracking-tight">
+            AI Automation Engineer
+          </h1>
+          <p class="text-xl md:text-2xl text-muted-foreground font-medium">
+            Transforming Business Operations Through Intelligent Automation
+          </p>
+          <p class="text-base md:text-lg text-foreground/80 max-w-2xl mx-auto">
+            Empowering businesses to scale efficiently with cutting-edge AI solutions, 
+            seamless workflow automation, and enterprise-grade integrations
+          </p>
+        </div>
       </div>
     </div>
 
     <!-- Scroll Indicator -->
     <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-      <a href="#about" @click.prevent="scrollToSection('about')" class="text-white">
-        ↓
+      <a href="#about" @click.prevent="scrollToSection('about')" class="text-foreground/60 hover:text-foreground transition-colors">
+        <Icon name="lucide:chevron-down" class="w-6 h-6" />
       </a>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
+import { IconCloud } from '@/components/ui/icon-cloud'
+
+const slugs = [
+  "make",
+  "n8n",
+  "zapier",
+  "typescript",
+  "javascript",
+  'oddo',
+  "python",
+  "react",
+  "vuedotjs",
+  "nuxtdotjs",
+  "nodedotjs",
+  'woo',
+  "nextdotjs",
+  "tailwindcss",
+  "openai",
+  "googlecloud",
+  "amazonaws",
+  "vercel",
+  "docker",
+  'hostinger',
+  "postgresql",
+  "mongodb",
+  "redis",
+  "github",
+  "figma",
+  "notion",
+  "slack",
+  "discord",
+  "airtable",
+  'wordpress',
+  "stripe",
+  "supabase",
+  "cloudflare",
+]
+
+const imageUrls = slugs.map((slug) => `https://cdn.simpleicons.org/${slug}/ffffff`)
+
 const scrollToSection = (sectionId: string) => {
   const element = document.getElementById(sectionId)
   if (element) {
