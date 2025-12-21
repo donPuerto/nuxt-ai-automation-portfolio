@@ -1,4 +1,5 @@
-.theme-nature {
+.theme-nature .theme-container,
+.theme-nature [data-reka-popper-content-wrapper] {
   --background: oklch(0.9711 0.0074 80.7211);
   --foreground: oklch(0.3000 0.0358 30.2042);
   --card: oklch(0.9711 0.0074 80.7211);
@@ -31,8 +32,8 @@
   --sidebar-accent-foreground: oklch(0.4254 0.1159 144.3078);
   --sidebar-border: oklch(0.8805 0.0208 74.6428);
   --sidebar-ring: oklch(0.5234 0.1347 144.1672);
-  --font-sans: Montserrat, sans-serif;
-  --font-serif: Merriweather, serif;
+  --font-sans: Quicksand, sans-serif;
+  --font-serif: Crimson Text, serif;
   --font-mono: Source Code Pro, monospace;
   --radius: 0.5rem;
   --shadow-x: 0;
@@ -53,7 +54,8 @@
   --spacing: 0.25rem;
 }
 
-.theme-nature.dark {
+.theme-nature.dark .theme-container,
+.theme-nature.dark [data-reka-popper-content-wrapper] {
   --background: oklch(0.2683 0.0279 150.7681);
   --foreground: oklch(0.9423 0.0097 72.6595);
   --card: oklch(0.3327 0.0271 146.9867);
@@ -86,8 +88,8 @@
   --sidebar-accent-foreground: oklch(0.9423 0.0097 72.6595);
   --sidebar-border: oklch(0.3942 0.0265 142.9926);
   --sidebar-ring: oklch(0.6731 0.1624 144.2083);
-  --font-sans: Montserrat, sans-serif;
-  --font-serif: Merriweather, serif;
+  --font-sans: Quicksand, sans-serif;
+  --font-serif: Crimson Text, serif;
   --font-mono: Source Code Pro, monospace;
   --radius: 0.5rem;
   --shadow-x: 0;

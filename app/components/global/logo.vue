@@ -62,6 +62,7 @@ const initial = computed(() =>
   border-radius: inherit;
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
+  font-family: var(--font-sans);
   font-weight: 700;
   font-size: 1rem;
   text-transform: uppercase;
@@ -69,6 +70,7 @@ const initial = computed(() =>
 }
 
 .logo-text {
+  font-family: var(--font-sans);
   transition: opacity 0.3s ease;
 }
 </style>

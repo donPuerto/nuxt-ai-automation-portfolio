@@ -427,44 +427,38 @@
             
             <div class="space-y-2">
               <label class="text-xs text-muted-foreground">Sans-Serif Font</label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Plus Jakarta Sans" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="plus-jakarta">Plus Jakarta Sans</SelectItem>
-                  <SelectItem value="inter">Inter</SelectItem>
-                  <SelectItem value="system">System UI</SelectItem>
-                </SelectContent>
-              </Select>
+              <Combobox
+                v-model="selectedFontSans"
+                :options="fontSansOptions"
+                placeholder="Select font"
+                search-placeholder="Search fonts..."
+                empty-text="No font found."
+                @update:model-value="(value) => updateFont('font-sans', value)"
+              />
             </div>
 
             <div class="space-y-2">
               <label class="text-xs text-muted-foreground">Serif Font</label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Lora" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="lora">Lora</SelectItem>
-                  <SelectItem value="merriweather">Merriweather</SelectItem>
-                  <SelectItem value="playfair">Playfair Display</SelectItem>
-                </SelectContent>
-              </Select>
+              <Combobox
+                v-model="selectedFontSerif"
+                :options="fontSerifOptions"
+                placeholder="Select font"
+                search-placeholder="Search fonts..."
+                empty-text="No font found."
+                @update:model-value="(value) => updateFont('font-serif', value)"
+              />
             </div>
 
             <div class="space-y-2">
               <label class="text-xs text-muted-foreground">Monospace Font</label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Roboto Mono" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="roboto-mono">Roboto Mono</SelectItem>
-                  <SelectItem value="fira-code">Fira Code</SelectItem>
-                  <SelectItem value="jetbrains">JetBrains Mono</SelectItem>
-                </SelectContent>
-              </Select>
+              <Combobox
+                v-model="selectedFontMono"
+                :options="fontMonoOptions"
+                placeholder="Select font"
+                search-placeholder="Search fonts..."
+                empty-text="No font found."
+                @update:model-value="(value) => updateFont('font-mono', value)"
+              />
             </div>
           </div>
 
@@ -474,9 +468,17 @@
           <div class="space-y-3">
             <div class="flex items-center justify-between">
               <label class="text-sm font-medium">Letter Spacing</label>
-              <span class="text-xs text-muted-foreground">0 em</span>
+              <span class="text-xs text-muted-foreground">{{ letterSpacing }} em</span>
             </div>
-            <input type="range" min="-0.1" max="0.2" step="0.01" value="0" class="w-full" />
+            <input 
+              type="range" 
+              min="-0.1" 
+              max="0.2" 
+              step="0.01" 
+              v-model="letterSpacing" 
+              @input="updateLetterSpacing"
+              class="w-full" 
+            />
           </div>
         </div>
       </TabsContent>
@@ -491,16 +493,23 @@
               <Icon name="lucide:chevron-down" class="w-4 h-4 transition-transform group-open:rotate-180" />
             </summary>
             <div class="p-3 border rounded-md mt-2">
-              <div class="flex gap-2">
-                <Button
-                  v-for="radius in radiusOptions"
-                  :key="radius.value"
-                  :variant="currentRadius === radius.value ? 'default' : 'outline'"
-                  @click="loadRadius(radius.value)"
-                  class="flex-1"
-                >
-                  {{ radius.label }}
-                </Button>
+              <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <label class="text-xs text-muted-foreground">Border Radius</label>
+                  <div class="flex items-center gap-1">
+                    <span class="text-xs">{{ currentRadius }}</span>
+                    <span class="text-xs text-muted-foreground">rem</span>
+                  </div>
+                </div>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="2" 
+                  step="0.05" 
+                  :value="currentRadius" 
+                  @input="(e) => loadRadius((e.target as HTMLInputElement).value)"
+                  class="w-full" 
+                />
               </div>
             </div>
           </details>
@@ -651,7 +660,7 @@
 </template>
 
 <script setup lang="ts">
-import { styleThemes, radiusOptions } from '@@/shared'
+import { styleThemes, radiusOptions, fontSansOptions, fontSerifOptions, fontMonoOptions } from '@@/shared'
 import {
   Select,
   SelectContent,
@@ -660,6 +669,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Combobox } from '@/components/ui/combobox'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -673,8 +683,125 @@ const selectedTheme = computed(() =>
   styleThemes.find(t => t.id === currentTheme.value)
 )
 
-// Handle color changes
-const updateCSSVariable = (variable: string, value: string) => {
+// Get current theme fonts
+const currentThemeFonts = computed(() => {
+  const theme = styleThemes.find(t => t.id === currentTheme.value)
+  return theme?.fonts || {
+    sans: 'ui-sans-serif, system-ui, sans-serif',
+    serif: 'ui-serif, Georgia, serif',
+    mono: 'ui-monospace, monospace'
+  }
+})
+
+// Font selection state
+const selectedFontSans = ref('system-ui')
+const selectedFontSerif = ref('georgia')
+const selectedFontMono = ref('monospace')
+
+// Letter spacing state
+const letterSpacing = ref(0)
+
+// Computed properties for current font families
+const currentFontSansFamily = computed(() => 
+  fontSansOptions.find(f => f.value === selectedFontSans.value)?.family || ''
+)
+const currentFontSerifFamily = computed(() => 
+  fontSerifOptions.find(f => f.value === selectedFontSerif.value)?.family || ''
+)
+const currentFontMonoFamily = computed(() => 
+  fontMonoOptions.find(f => f.value === selectedFontMono.value)?.family || ''
+)
+
+// Update letter spacing function
+const updateLetterSpacing = () => {
+  if (import.meta.client) {
+    const style = document.getElementById('custom-letter-spacing') as HTMLStyleElement
+    let styleElement: HTMLStyleElement
+    
+    if (!style) {
+      styleElement = document.createElement('style')
+      styleElement.id = 'custom-letter-spacing'
+      document.head.appendChild(styleElement)
+    } else {
+      styleElement = style
+    }
+
+    const sheet = styleElement.sheet as CSSStyleSheet
+    const rules = Array.from(sheet.cssRules)
+    const targetSelector = '.theme-container, [data-reka-popper-content-wrapper]'
+    
+    let ruleIndex = rules.findIndex(rule => {
+      if (rule instanceof CSSStyleRule) {
+        return rule.selectorText === targetSelector
+      }
+      return false
+    })
+
+    if (ruleIndex === -1) {
+      sheet.insertRule(`${targetSelector} { letter-spacing: ${letterSpacing.value}em !important; }`, 0)
+    } else {
+      const rule = rules[ruleIndex] as CSSStyleRule
+      rule.style.setProperty('letter-spacing', `${letterSpacing.value}em`, 'important')
+    }
+
+    // Save to sessionStorage
+    sessionStorage.setItem('letter-spacing', letterSpacing.value.toString())
+  }
+}
+
+// Update font function
+const updateFont = (variable: string, value: string) => {
+  if (import.meta.client) {
+    // Find the font family from the options
+    let fontFamily = ''
+    if (variable === 'font-sans') {
+      fontFamily = fontSansOptions.find(f => f.value === value)?.family || value
+    } else if (variable === 'font-serif') {
+      fontFamily = fontSerifOptions.find(f => f.value === value)?.family || value
+    } else if (variable === 'font-mono') {
+      fontFamily = fontMonoOptions.find(f => f.value === value)?.family || value
+    }
+
+    const style = document.getElementById('custom-font-overrides') as HTMLStyleElement
+    let styleElement: HTMLStyleElement
+    
+    if (!style) {
+      styleElement = document.createElement('style')
+      styleElement.id = 'custom-font-overrides'
+      document.head.appendChild(styleElement)
+    } else {
+      styleElement = style
+    }
+
+    const sheet = styleElement.sheet as CSSStyleSheet
+    const rules = Array.from(sheet.cssRules)
+    const targetSelector = ':root, .theme-container, [data-reka-popper-content-wrapper]'
+    
+    let ruleIndex = rules.findIndex(rule => {
+      if (rule instanceof CSSStyleRule) {
+        return rule.selectorText === targetSelector
+      }
+      return false
+    })
+
+    if (ruleIndex === -1) {
+      sheet.insertRule(`${targetSelector} { --${variable}: ${fontFamily} !important; }`, 0)
+    } else {
+      const rule = rules[ruleIndex] as CSSStyleRule
+      rule.style.setProperty(`--${variable}`, fontFamily, 'important')
+    }
+
+    // Save to sessionStorage
+    const customFonts = JSON.parse(sessionStorage.getItem('custom-fonts') || '{}')
+    customFonts[variable] = value
+    sessionStorage.setItem('custom-fonts', JSON.stringify(customFonts))
+  }
+}
+
+const handleColorChange = (variable: string, event: Event) => {
+  const target = event.target as HTMLInputElement
+  const value = target.value
+  
   if (import.meta.client) {
     const style = document.getElementById('custom-color-overrides') as HTMLStyleElement
     let styleElement: HTMLStyleElement
@@ -705,18 +832,8 @@ const updateCSSVariable = (variable: string, value: string) => {
       const rule = rules[ruleIndex] as CSSStyleRule
       rule.style.setProperty(`--${variable}`, value, 'important')
     }
-  }
-}
 
-const handleColorChange = (variable: string, event: Event) => {
-  const target = event.target as HTMLInputElement
-  const value = target.value
-  
-  // Update CSS
-  updateCSSVariable(variable, value)
-  
-  // Save to sessionStorage
-  if (import.meta.client) {
+    // Save to sessionStorage
     const customColors = JSON.parse(sessionStorage.getItem('custom-colors') || '{}')
     customColors[variable] = value
     sessionStorage.setItem('custom-colors', JSON.stringify(customColors))
@@ -728,8 +845,26 @@ if (import.meta.client) {
   onMounted(() => {
     const customColors = JSON.parse(sessionStorage.getItem('custom-colors') || '{}')
     Object.entries(customColors).forEach(([variable, value]) => {
-      updateCSSVariable(variable, value as string)
+      const fakeEvent = { target: { value } } as Event
+      handleColorChange(variable, fakeEvent)
     })
+
+    // Load custom fonts
+    const customFonts = JSON.parse(sessionStorage.getItem('custom-fonts') || '{}')
+    Object.entries(customFonts).forEach(([variable, value]) => {
+      updateFont(variable, value as string)
+      // Update reactive state
+      if (variable === 'font-sans') selectedFontSans.value = value as string
+      if (variable === 'font-serif') selectedFontSerif.value = value as string
+      if (variable === 'font-mono') selectedFontMono.value = value as string
+    })
+
+    // Load letter spacing
+    const savedLetterSpacing = sessionStorage.getItem('letter-spacing')
+    if (savedLetterSpacing) {
+      letterSpacing.value = parseFloat(savedLetterSpacing)
+      updateLetterSpacing()
+    }
   })
 }
 </script>

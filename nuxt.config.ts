@@ -45,6 +45,52 @@ export default defineNuxtConfig({
     defaults: {
       weights: [400, 500, 600, 700],
     },
+    families: [
+      // Sans-serif fonts
+      { name: 'Inter', provider: 'google' },
+      { name: 'Plus Jakarta Sans', provider: 'google' },
+      { name: 'Nunito', provider: 'google' },
+      { name: 'Quicksand', provider: 'google' },
+      { name: 'Orbitron', provider: 'google' },
+      { name: 'Geist', provider: 'bunny' },
+      { name: 'Poppins', provider: 'google' },
+      { name: 'Roboto', provider: 'google' },
+      { name: 'DM Sans', provider: 'google' },
+      { name: 'Work Sans', provider: 'google' },
+      { name: 'Open Sans', provider: 'google' },
+      { name: 'Montserrat', provider: 'google' },
+      { name: 'Lato', provider: 'google' },
+      { name: 'Raleway', provider: 'google' },
+      { name: 'Outfit', provider: 'google' },
+      { name: 'Manrope', provider: 'google' },
+      { name: 'Space Grotesk', provider: 'google' },
+      { name: 'Sora', provider: 'google' },
+      { name: 'Lexend', provider: 'google' },
+      // Serif fonts
+      { name: 'Lora', provider: 'google' },
+      { name: 'Merriweather', provider: 'google' },
+      { name: 'Playfair Display', provider: 'google' },
+      { name: 'Crimson Text', provider: 'google' },
+      { name: 'Courier Prime', provider: 'google' },
+      { name: 'EB Garamond', provider: 'google' },
+      { name: 'Libre Baskerville', provider: 'google' },
+      { name: 'Cormorant', provider: 'google' },
+      { name: 'Spectral', provider: 'google' },
+      { name: 'Bitter', provider: 'google' },
+      { name: 'Noto Serif', provider: 'google' },
+      // Monospace fonts
+      { name: 'Roboto Mono', provider: 'google' },
+      { name: 'Fira Code', provider: 'google' },
+      { name: 'JetBrains Mono', provider: 'google' },
+      { name: 'Source Code Pro', provider: 'google' },
+      { name: 'VT323', provider: 'google' },
+      { name: 'Geist Mono', provider: 'bunny' },
+      { name: 'IBM Plex Mono', provider: 'google' },
+      { name: 'Space Mono', provider: 'google' },
+      { name: 'Inconsolata', provider: 'google' },
+      { name: 'Anonymous Pro', provider: 'google' },
+      { name: 'Overpass Mono', provider: 'google' }
+    ]
   },
   vite: {
     plugins: [
