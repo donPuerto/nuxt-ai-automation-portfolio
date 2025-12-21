@@ -18,11 +18,14 @@
         </NavigationMenuList>
       </NavigationMenu>
 
-      <!-- Theme Toggle -->
-      <Button @click="toggleTheme" variant="ghost" size="icon" class="ml-4">
-        <span v-if="isDark">☀️</span>
-        <span v-else>🌙</span>
-      </Button>
+      <!-- Theme Toggle & Theme Selector -->
+      <div class="flex items-center gap-2">
+        <ThemeSelector />
+        <Button @click="toggleTheme" variant="ghost" size="icon">
+          <span v-if="isDark">☀️</span>
+          <span v-else>🌙</span>
+        </Button>
+      </div>
 
       <!-- Mobile Menu Button -->
       <Button @click="isOpen = !isOpen" variant="ghost" size="icon" class="md:hidden">

@@ -3,6 +3,13 @@
 
 @import "./themes.css";
 @import "./fonts.css";
+@import "./themes/default.css";
+@import "./themes/claymorphism.css";
+@import "./themes/doom64.css";
+@import "./themes/graphite.css";
+@import "./themes/mochamouse.css";
+@import "./themes/nature.css";
+@import "./themes/vercel.css";
 
 @custom-variant dark (&:is(.dark *));
 @custom-variant fixed (&:is(.layout-fixed *));
