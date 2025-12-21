@@ -1,6 +1,6 @@
 <template>
   <header class="sticky top-0 z-50 bg-background/80 backdrop-blur border-b">
-    <nav class="mx-auto w-full flex items-center justify-between p-4 fixed:max-w-[1400px] fixed:3xl:max-w-screen-2xl">
+    <nav class="mx-auto w-full flex items-center justify-between p-4 fixed:max-w-350 fixed:3xl:max-w-screen-2xl">
       <NuxtLink to="/">
         <Logo :logo-only="false" />
       </NuxtLink>
@@ -38,7 +38,7 @@
     </nav>
 
     <!-- Mobile Menu -->
-    <div v-if="isOpen" class="md:hidden bg-background border-t mx-auto w-full fixed:max-w-[1400px] fixed:3xl:max-w-screen-2xl">
+    <div v-if="isOpen" class="md:hidden bg-background border-t mx-auto w-full fixed:max-w-350 fixed:3xl:max-w-screen-2xl">
       <ul class="flex flex-col space-y-4 p-4">
         <li v-for="route in routes" :key="route.path">
           <NuxtLink :to="route.path" class="block hover:text-primary" @click="isOpen = false">
