@@ -14,7 +14,6 @@ export default defineNuxtConfig({
         deployConfig: true,
         nodeCompat: true
       }
-
   },
   css: ['~/assets/css/tailwind.css'],
   imports: {
@@ -43,9 +42,17 @@ export default defineNuxtConfig({
   },
   vite: {
     plugins: [
-
       tailwindcss(),
     ],
+    build: {
+      cssCodeSplit: true,
+      sourcemap: false,
+      rollupOptions: {
+        output: {
+          sourcemap: false
+        }
+      }
+    },
   },
   shadcn: {
     prefix: '',
