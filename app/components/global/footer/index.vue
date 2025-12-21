@@ -58,8 +58,6 @@
 </template>
 
 <script setup lang="ts">
-import { title, description } from '@/shared/navigation/navTitle'
-import { routes } from '@/shared/navigation/route'
-
+import { title, description, routes } from '@@/shared'
 const currentYear = new Date().getFullYear()
 </script>

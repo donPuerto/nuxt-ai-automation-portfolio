@@ -22,15 +22,13 @@
     "baseUrl": ".",
      "types": [
       "@nuxt/image", 
-      "@nuxt/types",
       "@types/node"
-      ],
+    ],
      "paths": {
       "~/*": ["./app/*"],
       "@/*": ["./app/*"],
-      "~~/*": ["./*" ],
+      "~~/*": ["./*"],
       "@@/*": ["./*"]
-     
     }
   },
   "exclude": ["node_modules"]

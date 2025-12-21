@@ -1,5 +1,4 @@
 import tailwindcss from '@tailwindcss/vite'
-import tsconfigPaths from 'vite-tsconfig-paths'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -44,7 +43,7 @@ export default defineNuxtConfig({
   },
   vite: {
     plugins: [
-      tsconfigPaths(),
+
       tailwindcss(),
     ],
   },
