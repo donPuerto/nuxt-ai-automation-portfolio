@@ -17,7 +17,7 @@
             </p>
             <p class="font-semibold">- John Doe, CEO of TechCorp</p>
           </div>
-          <div class="bg-background p-6 rounded-lg shadow-sm">
+          <div class="bg-background/30 backdrop-blur-sm p-6 rounded-lg shadow-sm">
             <p class="text-muted-foreground mb-4">
               "Incredible results with workflow automation. Our team productivity has never been higher."
             </p>

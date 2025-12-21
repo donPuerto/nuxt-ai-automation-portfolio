@@ -1,7 +1,7 @@
 <template>
   <div>
     <Hero />
-    <section class="py-16 bg-muted/50">
+    <section class="py-16">
       <div class="container mx-auto px-4 text-center">
         <h2 class="text-3xl md:text-4xl font-bold mb-8">Explore My Work</h2>
         <p class="text-muted-foreground mb-12 max-w-2xl mx-auto">

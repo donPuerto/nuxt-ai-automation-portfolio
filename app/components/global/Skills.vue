@@ -1,5 +1,5 @@
 <template>
-  <section class="py-16 bg-muted/50">
+  <section class="py-16">
     <div class="container mx-auto px-4">
       <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Skills & Technologies</h2>
 

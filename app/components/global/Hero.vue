@@ -1,5 +1,5 @@
 <template>
-  <section id="hero" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 text-white relative overflow-hidden">
+  <section id="hero" class="min-h-screen flex items-center justify-center text-white relative overflow-hidden">
     <!-- Background Animation (Placeholder for Inspira UI) -->
     <div class="absolute inset-0 opacity-20">
       <FluidCursor />
