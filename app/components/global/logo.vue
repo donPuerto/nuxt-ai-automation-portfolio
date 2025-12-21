@@ -49,6 +49,7 @@ const initial = computed(() =>
   align-items: center;
   justify-content: center;
   isolation: isolate;
+  overflow: hidden;
 }
 
 .logo-inner {
@@ -64,7 +65,7 @@ const initial = computed(() =>
   font-weight: 700;
   font-size: 1rem;
   text-transform: uppercase;
-  z-index: 1;
+  z-index: 10;
 }
 
 .logo-text {
