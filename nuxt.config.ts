@@ -7,7 +7,11 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: true,
   nitro: {
-    preset: "static"
+    preset: "static",
+    prerender: {
+      autoSubfolderIndex: false
+    }
+
   },
   css: ['~/assets/css/tailwind.css'],
   imports: {
