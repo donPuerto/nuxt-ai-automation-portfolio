@@ -1,7 +1,7 @@
 <template>
   <canvas
     ref="canvasRef"
-    :class="cn('absolute inset-0 size-full pointer-events-none opacity-95', props.class)"
+    :class="cn('absolute inset-0 size-full pointer-events-none', props.class)"
   />
 </template>
 

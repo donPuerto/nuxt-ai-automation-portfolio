@@ -6,7 +6,7 @@
       <Button
         variant="ghost"
         size="icon"
-        @click="(e) => toggleTheme(e)"
+        @click="toggleTheme"
         class="h-9 w-9 rounded-md"
       >
         <Icon name="lucide:sun" class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -749,53 +749,83 @@ const updateLetterSpacing = () => {
   }
 }
 
-// Update font function
+// Update font function - direct and forceful implementation
 const updateFont = (variable: string, value: string) => {
-  if (import.meta.client) {
-    // Find the font family from the options
-    let fontFamily = ''
-    if (variable === 'font-sans') {
-      fontFamily = fontSansOptions.find(f => f.value === value)?.family || value
-    } else if (variable === 'font-serif') {
-      fontFamily = fontSerifOptions.find(f => f.value === value)?.family || value
-    } else if (variable === 'font-mono') {
-      fontFamily = fontMonoOptions.find(f => f.value === value)?.family || value
-    }
+  if (!import.meta.client) return
 
-    const style = document.getElementById('custom-font-overrides') as HTMLStyleElement
-    let styleElement: HTMLStyleElement
-    
-    if (!style) {
-      styleElement = document.createElement('style')
-      styleElement.id = 'custom-font-overrides'
-      document.head.appendChild(styleElement)
-    } else {
-      styleElement = style
-    }
-
-    const sheet = styleElement.sheet as CSSStyleSheet
-    const rules = Array.from(sheet.cssRules)
-    const targetSelector = ':root, .theme-container, [data-reka-popper-content-wrapper]'
-    
-    let ruleIndex = rules.findIndex(rule => {
-      if (rule instanceof CSSStyleRule) {
-        return rule.selectorText === targetSelector
-      }
-      return false
-    })
-
-    if (ruleIndex === -1) {
-      sheet.insertRule(`${targetSelector} { --${variable}: ${fontFamily} !important; }`, 0)
-    } else {
-      const rule = rules[ruleIndex] as CSSStyleRule
-      rule.style.setProperty(`--${variable}`, fontFamily, 'important')
-    }
-
-    // Save to sessionStorage
-    const customFonts = JSON.parse(sessionStorage.getItem('custom-fonts') || '{}')
-    customFonts[variable] = value
-    sessionStorage.setItem('custom-fonts', JSON.stringify(customFonts))
+  // Find the font family from the options
+  let fontFamily = ''
+  if (variable === 'font-sans') {
+    fontFamily = fontSansOptions.find(f => f.value === value)?.family || value
+    selectedFontSans.value = value
+  } else if (variable === 'font-serif') {
+    fontFamily = fontSerifOptions.find(f => f.value === value)?.family || value
+    selectedFontSerif.value = value
+  } else if (variable === 'font-mono') {
+    fontFamily = fontMonoOptions.find(f => f.value === value)?.family || value
+    selectedFontMono.value = value
   }
+
+  if (!fontFamily) return
+
+  // Save to sessionStorage first
+  const customFonts = JSON.parse(sessionStorage.getItem('custom-fonts') || '{}')
+  customFonts[variable] = value
+  sessionStorage.setItem('custom-fonts', JSON.stringify(customFonts))
+
+  // Get all current font values
+  const currentSans = fontSansOptions.find(f => f.value === (customFonts['font-sans'] || 'system-ui'))?.family || 'ui-sans-serif, system-ui, sans-serif'
+  const currentSerif = fontSerifOptions.find(f => f.value === (customFonts['font-serif'] || 'georgia'))?.family || 'Georgia, serif'
+  const currentMono = fontMonoOptions.find(f => f.value === (customFonts['font-mono'] || 'monospace'))?.family || 'ui-monospace, monospace'
+
+  // Get or create style element
+  let styleElement = document.getElementById('custom-font-overrides') as HTMLStyleElement
+  if (!styleElement) {
+    styleElement = document.createElement('style')
+    styleElement.id = 'custom-font-overrides'
+    document.head.appendChild(styleElement)
+  }
+
+  // Apply comprehensive font override
+  styleElement.textContent = `
+    :root {
+      --font-sans: ${currentSans} !important;
+      --font-serif: ${currentSerif} !important;
+      --font-mono: ${currentMono} !important;
+      --font-family-sans: ${currentSans} !important;
+      --font-family-serif: ${currentSerif} !important;
+      --font-family-mono: ${currentMono} !important;
+    }
+    
+    .theme-container,
+    [data-reka-popper-content-wrapper],
+    body,
+    #__nuxt {
+      --font-sans: ${currentSans} !important;
+      --font-serif: ${currentSerif} !important;
+      --font-mono: ${currentMono} !important;
+    }
+    
+    body,
+    #__nuxt,
+    .theme-container,
+    .font-sans {
+      font-family: ${currentSans} !important;
+    }
+    
+    .font-serif {
+      font-family: ${currentSerif} !important;
+    }
+    
+    .font-mono,
+    code,
+    pre {
+      font-family: ${currentMono} !important;
+    }
+  `
+
+  // Force browser to recalculate styles
+  void document.body.offsetHeight
 }
 
 const handleColorChange = (variable: string, event: Event) => {
@@ -840,23 +870,26 @@ const handleColorChange = (variable: string, event: Event) => {
   }
 }
 
-// Load custom colors on mount
+// Load custom colors and fonts on mount
 if (import.meta.client) {
   onMounted(() => {
+    // Load custom fonts first and set reactive state
+    const customFonts = JSON.parse(sessionStorage.getItem('custom-fonts') || '{}')
+    if (customFonts['font-sans']) selectedFontSans.value = customFonts['font-sans']
+    if (customFonts['font-serif']) selectedFontSerif.value = customFonts['font-serif']
+    if (customFonts['font-mono']) selectedFontMono.value = customFonts['font-mono']
+
+    // Apply fonts if any custom fonts exist
+    if (Object.keys(customFonts).length > 0) {
+      // Trigger updateFont for sans to rebuild all fonts
+      updateFont('font-sans', selectedFontSans.value)
+    }
+
+    // Load custom colors
     const customColors = JSON.parse(sessionStorage.getItem('custom-colors') || '{}')
     Object.entries(customColors).forEach(([variable, value]) => {
-      const fakeEvent = { target: { value } } as Event
+      const fakeEvent = { target: { value } } as unknown as Event
       handleColorChange(variable, fakeEvent)
-    })
-
-    // Load custom fonts
-    const customFonts = JSON.parse(sessionStorage.getItem('custom-fonts') || '{}')
-    Object.entries(customFonts).forEach(([variable, value]) => {
-      updateFont(variable, value as string)
-      // Update reactive state
-      if (variable === 'font-sans') selectedFontSans.value = value as string
-      if (variable === 'font-serif') selectedFontSerif.value = value as string
-      if (variable === 'font-mono') selectedFontMono.value = value as string
     })
 
     // Load letter spacing
@@ -865,6 +898,47 @@ if (import.meta.client) {
       letterSpacing.value = parseFloat(savedLetterSpacing)
       updateLetterSpacing()
     }
+  })
+
+  // Watch for theme changes and reset fonts to theme defaults
+  watch(currentTheme, (newTheme) => {
+    nextTick(() => {
+      // Clear custom font overrides to show theme fonts
+      const styleElement = document.getElementById('custom-font-overrides') as HTMLStyleElement
+      if (styleElement) {
+        styleElement.remove()
+      }
+      
+      // Clear sessionStorage custom fonts
+      sessionStorage.removeItem('custom-fonts')
+      
+      // Reset font selectors to theme defaults
+      const theme = styleThemes.find(t => t.id === newTheme)
+      if (theme?.fonts) {
+        // Find matching font options for theme fonts
+        const sansFontOption = fontSansOptions.find(f => 
+          theme.fonts?.sans.toLowerCase().includes(f.label.toLowerCase())
+        )
+        const serifFontOption = fontSerifOptions.find(f => 
+          theme.fonts?.serif.toLowerCase().includes(f.label.toLowerCase())
+        )
+        const monoFontOption = fontMonoOptions.find(f => 
+          theme.fonts?.mono.toLowerCase().includes(f.label.toLowerCase())
+        )
+        
+        selectedFontSans.value = sansFontOption?.value || 'system-ui'
+        selectedFontSerif.value = serifFontOption?.value || 'georgia'
+        selectedFontMono.value = monoFontOption?.value || 'monospace'
+      } else {
+        // Default fallback
+        selectedFontSans.value = 'system-ui'
+        selectedFontSerif.value = 'georgia'
+        selectedFontMono.value = 'monospace'
+      }
+      
+      // Force browser to recalculate styles
+      void document.body.offsetHeight
+    })
   })
 }
 </script>
