@@ -8,14 +8,14 @@
     <!-- Subtle Gradient Overlay -->
     <div class="fixed inset-0 -z-5 bg-linear-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 pointer-events-none" />
 
-    <div data-wrapper class="relative mx-auto w-full">
+    <div data-wrapper class="relative mx-auto w-full overflow-x-hidden">
       <ClientOnly>
         <FluidCursor />
       </ClientOnly>
 
       <Navigation />
 
-      <main class="w-full">
+      <main class="w-full overflow-x-hidden">
         <NuxtPage />
       </main>
 

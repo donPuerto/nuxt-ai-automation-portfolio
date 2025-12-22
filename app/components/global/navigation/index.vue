@@ -17,7 +17,7 @@
         <NavigationMenuList>
           <NavigationMenuItem v-for="route in routes" :key="route.path">
             <NavigationMenuLink as-child>
-              <NuxtLink :to="route.path" class="hover:text-primary transition-colors">
+              <NuxtLink :to="route.path" class="hover:text-primary transition-colors text-base lg:text-lg font-medium">
                 {{ route.name }}
               </NuxtLink>
             </NavigationMenuLink>
@@ -41,7 +41,7 @@
     <div v-if="isOpen" class="md:hidden bg-background/20 backdrop-blur-md border-t mx-auto w-full fixed:max-w-350 fixed:3xl:max-w-screen-2xl">
       <ul class="flex flex-col space-y-4 p-4">
         <li v-for="route in routes" :key="route.path">
-          <NuxtLink :to="route.path" class="block hover:text-primary" @click="isOpen = false">
+          <NuxtLink :to="route.path" class="block hover:text-primary text-lg font-medium" @click="isOpen = false">
             {{ route.name }}
           </NuxtLink>
         </li>

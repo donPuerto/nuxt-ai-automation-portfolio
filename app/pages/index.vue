@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="!m-0 !p-0">
     <Hero />
     <section class="py-16">
       <div class="mx-auto w-full px-4 text-center fixed:max-w-350 fixed:3xl:max-w-screen-2xl">

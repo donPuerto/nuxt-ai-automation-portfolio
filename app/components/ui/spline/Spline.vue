@@ -57,7 +57,9 @@ const isVisible = ref(true);
 let cleanup: () => void = () => {};
 
 const parentSizeStyles = computed(() => ({
-  overflow: "hidden",
+  overflow: "visible",
+  margin: 0,
+  padding: 0,
   ...props.style,
 }));
 
@@ -65,6 +67,10 @@ const canvasStyle = computed(() => ({
   display: "block",
   width: "100%",
   height: "100%",
+  margin: 0,
+  padding: 0,
+  touchAction: "none",
+  userSelect: "none",
 }));
 
 // Use IntersectionObserver to detect when component is visible
@@ -77,12 +83,14 @@ const { stop: stopIntersectionObserver } = useIntersectionObserver(
       nextTick(() => {
         if (canvasRef.value && splineApp.value) {
           splineApp.value.requestRender();
-          splineApp.value.setSize(canvasRef.value.clientWidth, canvasRef.value.clientHeight);
+          const width = canvasRef.value.clientWidth;
+          const height = canvasRef.value.clientHeight;
+          splineApp.value.setSize(width, height);
         }
       });
     }
   },
-  { threshold: 0.1 },
+  { threshold: 0.01 }, // Lower threshold for better mobile detection
 );
 
 function eventHandler(name: SplineEventName, handler?: (e: any) => void) {
