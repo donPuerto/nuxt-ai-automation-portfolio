@@ -14,7 +14,7 @@
     </div>
 
     <!-- Content Overlay -->
-    <div class="mx-auto w-full z-10 px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 relative fixed:max-w-[1400px] fixed:3xl:max-w-screen-2xl">
+    <div class="mx-auto w-full z-10 px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 relative fixed:max-w-350 fixed:3xl:max-w-screen-2xl">
       <div class="max-w-5xl mx-auto">
         <!-- Main Content -->
         <div class="text-center space-y-4 sm:space-y-6 md:space-y-8">

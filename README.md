@@ -19,7 +19,7 @@ A cutting-edge portfolio website showcasing AI automation projects, built with t
 - **UI Components**: [shadcn/ui](https://ui.shadcn.com/) - Re-usable components built on Radix UI
 - **Design System**: [Inspira UI](https://inspira-ui.com/) - Modern UI components and animations
 - **Language**: TypeScript - For type-safe development
-- **Build Tool**: Vite - Fast build tool integrated with Nuxt
+- **Build Tool**: Vite - Fast build tool integrated with Nuxt ..
 
 ## 🚀 Quick Start
 

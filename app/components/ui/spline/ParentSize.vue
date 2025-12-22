@@ -3,7 +3,7 @@
   <div
     ref="target"
     :style="mergedStyles"
-    :class="cn('!w-screen !h-full !max-w-none !m-0 !p-0', props.class)"
+    :class="cn('w-screen! h-full! max-w-none! m-0! p-0!', props.class)"
     v-bind="attrsWithoutClassAndStyle"
   >
     <slot />
