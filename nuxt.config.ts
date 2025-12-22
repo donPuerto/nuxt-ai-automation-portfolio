@@ -6,7 +6,11 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: true,
   experimental: {
-    buildCache: false
+    buildCache: false,
+    inlineSSRStyles: true
+  },
+  features: {
+    inlineStyles: true
   },
   nitro: {
    prerender: {
@@ -44,6 +48,13 @@ export default defineNuxtConfig({
   fonts: {
     defaults: {
       weights: [400, 500, 600, 700],
+      fallbacks: {
+        'sans-serif': ['system-ui', 'Arial'],
+        'monospace': ['Courier New'],
+      },
+    },
+    experimental: {
+      processCSSVariables: true,
     },
     families: [
       // Sans-serif fonts
@@ -52,7 +63,7 @@ export default defineNuxtConfig({
       { name: 'Nunito', provider: 'google' },
       { name: 'Quicksand', provider: 'google' },
       { name: 'Orbitron', provider: 'google' },
-      { name: 'Geist', provider: 'bunny' },
+      { name: 'Inter', provider: 'google' },
       { name: 'Poppins', provider: 'google' },
       { name: 'Roboto', provider: 'google' },
       { name: 'DM Sans', provider: 'google' },
@@ -84,7 +95,7 @@ export default defineNuxtConfig({
       { name: 'JetBrains Mono', provider: 'google' },
       { name: 'Source Code Pro', provider: 'google' },
       { name: 'VT323', provider: 'google' },
-      { name: 'Geist Mono', provider: 'bunny' },
+      { name: 'JetBrains Mono', provider: 'google' },
       { name: 'IBM Plex Mono', provider: 'google' },
       { name: 'Space Mono', provider: 'google' },
       { name: 'Inconsolata', provider: 'google' },
@@ -97,7 +108,7 @@ export default defineNuxtConfig({
       tailwindcss(),
     ],
     build: {
-      cssCodeSplit: true,
+      cssCodeSplit: false,
       sourcemap: false,
       rollupOptions: {
         output: {

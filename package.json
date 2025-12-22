@@ -34,6 +34,7 @@
     "wrangler": "^4.56.0"
   },
   "devDependencies": {
+    "@iconify-json/lucide": "^1.2.82",
     "@tailwindcss/postcss": "^4.1.18",
     "@tailwindcss/vite": "^4.1.18",
     "class-variance-authority": "^0.7.1",

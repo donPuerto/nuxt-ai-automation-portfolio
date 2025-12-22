@@ -1,12 +1,18 @@
 @theme {
-  --font-sans: "Geist", Arial, ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: "Inter", Arial, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 @layer base {
+  html {
+    font-family: var(--font-sans);
+  }
+  
   body {
     @apply font-sans antialiased;
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
+    /* Prevent FOUC by ensuring visibility */
+    visibility: visible !important;
   }
 }
