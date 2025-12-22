@@ -1,6 +1,6 @@
 <template>
   <footer class="border-t bg-background/50 backdrop-blur-sm">
-    <div class="container mx-auto px-4 py-12">
+    <div class="mx-auto w-full px-4 py-12 fixed:max-w-350 fixed:3xl:max-w-screen-2xl">
       <!-- Connect with me Section -->
       <div class="text-center mb-8">
         <h4 class="text-lg font-medium mb-4">Connect with me</h4>

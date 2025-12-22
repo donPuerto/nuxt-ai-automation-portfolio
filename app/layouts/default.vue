@@ -19,10 +19,10 @@
         <NuxtPage />
       </main>
 
-      <Footer />
-
       <BackToTop />
     </div>
+
+    <Footer />
   </div>
 </template>
 

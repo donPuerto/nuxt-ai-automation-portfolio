@@ -1,6 +1,6 @@
 <template>
   <section id="contact" class="py-16">
-    <div class="container mx-auto px-4">
+    <div class="mx-auto w-full px-4 fixed:max-w-350 fixed:3xl:max-w-screen-2xl">
       <div class="max-w-2xl mx-auto">
         <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Get In Touch</h2>
         <p class="text-center text-muted-foreground mb-12">

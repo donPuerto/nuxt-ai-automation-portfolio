@@ -1,7 +1,7 @@
 <template>
   <div class="pt-16">
     <section class="py-16">
-      <div class="container mx-auto px-4 text-center">
+      <div class="mx-auto w-full px-4 text-center fixed:max-w-350 fixed:3xl:max-w-screen-2xl">
         <h1 class="text-4xl md:text-5xl font-bold mb-8">Testimonials</h1>
         <p class="text-muted-foreground mb-12 max-w-2xl mx-auto">
           Hear what our clients say about our AI automation solutions and the impact on their businesses.
@@ -9,7 +9,7 @@
       </div>
     </section>
     <section class="py-16">
-      <div class="container mx-auto px-4">
+      <div class="mx-auto w-full px-4 fixed:max-w-350 fixed:3xl:max-w-screen-2xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div class="bg-background/20 backdrop-blur-md p-6 rounded-lg shadow-sm border border-border/50">
             <p class="text-muted-foreground mb-4">

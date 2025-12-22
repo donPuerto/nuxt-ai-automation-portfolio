@@ -6,8 +6,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: true,
   experimental: {
-    buildCache: false,
-    inlineSSRStyles: true
+    buildCache: false
   },
   features: {
     inlineStyles: true

@@ -13,7 +13,7 @@
     </div>
 
     <!-- Content Overlay -->
-    <div class="container mx-auto z-10 px-4 py-20 relative">
+    <div class="mx-auto w-full z-10 px-4 py-20 relative fixed:max-w-350 fixed:3xl:max-w-screen-2xl">
       <div class="max-w-5xl mx-auto">
         <!-- Main Content -->
         <div class="text-center space-y-8">

@@ -1,6 +1,6 @@
 <template>
   <section id="about" class="py-16">
-    <div class="container mx-auto px-4">
+    <div class="mx-auto w-full px-4 fixed:max-w-350 fixed:3xl:max-w-screen-2xl">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <!-- Image -->
         <div class="order-2 lg:order-1">
