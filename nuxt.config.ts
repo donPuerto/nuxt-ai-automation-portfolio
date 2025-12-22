@@ -25,6 +25,9 @@ export default defineNuxtConfig({
     }
   },
   css: ['~/assets/css/tailwind.css'],
+  plugins: [
+      '~/plugins/ssr-width.ts'
+  ],
   imports: {
     dirs: ['shared']
   },
