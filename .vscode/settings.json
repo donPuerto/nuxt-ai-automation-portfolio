@@ -4,4 +4,8 @@
   "explorer.compactFolders": false,
   "workbench.tree.indent": 8,
   "explorer.fileNesting.enabled": true,
+  "github.copilot.advanced": {
+     "authProvider": "github-enterprise"
+  },
+
 }
