@@ -1,0 +1,25 @@
+{
+  "slug": "social-repurposing-factory",
+  "title": "Social Repurposing Factory",
+  "primaryPlatform": "zapier",
+  "category": "content-social-media",
+  "summary": "Breaks long-form content into channel-ready posts, hooks, carousels, and caption variants.",
+  "businessOutcome": "Stretch one source asset into a full week of platform-specific content.",
+  "platforms": ["Claude worker", "Make", "Zapier"],
+  "thumbnail": "One source video becomes multiple publish-ready assets.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$119 template",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Most teams get stuck repackaging one good idea across every platform.",
+  "solution": "The workflow analyzes a source asset, extracts hooks, and formats content packages for each target channel.",
+  "workflowOverview": [
+    "Ingests source content from a drive folder or upload trigger",
+    "Generates platform-specific copy packs and content angles",
+    "Pushes final assets to approval-ready destinations"
+  ],
+  "deliverables": ["automation workflow", "caption templates", "approval board mapping"],
+  "resultsOrExpectedOutcome": ["More output from existing content", "Less context switching", "Consistent messaging across platforms"],
+  "visibility": "public",
+  "anonymized": false,
+  "audience": "Personal brands, agencies, and social teams"
+}

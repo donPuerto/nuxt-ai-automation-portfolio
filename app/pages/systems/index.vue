@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { allPlatforms, catalogCategories, catalogProjects, getProjectsByCategory } from '@@/shared'
+import { allPlatforms, catalogCategories, catalogProjects, getPlatformLabel, getProjectsByCategory } from '@@/shared'
+
+definePageMeta({
+  path: '/projects',
+  alias: ['/systems'],
+})
 
 const selectedPlatform = ref('All')
 
@@ -8,7 +13,7 @@ const filteredProjects = computed(() => {
     return catalogProjects
   }
 
-  return catalogProjects.filter(project => project.platforms.includes(selectedPlatform.value))
+  return catalogProjects.filter(project => getPlatformLabel(project.primaryPlatform) === selectedPlatform.value)
 })
 
 const categorySections = computed(() =>
@@ -22,8 +27,8 @@ const categorySections = computed(() =>
 )
 
 useSeoMeta({
-  title: 'Systems Catalog | Don Puerto',
-  description: 'Browse automation systems by category and platform.',
+  title: 'Projects Catalog | Don Puerto',
+  description: 'Browse automation projects by category and platform.',
 })
 </script>
 
@@ -31,13 +36,13 @@ useSeoMeta({
   <div class="container py-14 md:py-18">
     <div class="max-w-3xl">
       <p class="text-sm font-semibold uppercase tracking-[0.22em] text-primary">
-        Systems catalog
+        Projects catalog
       </p>
       <h1 class="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">
-        Browse the full catalog of automation systems
+        Browse the full catalog of automation projects
       </h1>
       <p class="mt-4 text-base leading-7 text-muted-foreground md:text-lg">
-        Explore the full catalog by business outcome, then narrow by platform when you want to see the stack behind each system.
+        Explore the full catalog by business outcome, then narrow by platform when you want to see the stack behind each project.
       </p>
     </div>
 
@@ -50,7 +55,7 @@ useSeoMeta({
         <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <p class="text-sm font-semibold uppercase tracking-[0.22em] text-primary">
-              {{ section.count }} systems
+              {{ section.count }} projects
             </p>
             <h2 class="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">
               {{ section.category.title }}
@@ -61,13 +66,13 @@ useSeoMeta({
           </div>
 
           <Button as-child variant="outline" class="rounded-full self-start md:self-auto">
-            <NuxtLink :to="`/systems/${section.category.slug}`">
+            <NuxtLink :to="`/projects/${section.category.slug}`">
               Open category
             </NuxtLink>
           </Button>
         </div>
 
-        <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           <CatalogProjectCard
             v-for="project in section.projects.slice(0, 3)"
             :key="project.slug"

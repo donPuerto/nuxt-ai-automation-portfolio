@@ -1,0 +1,25 @@
+{
+  "slug": "upcoming-appointment-by-preference",
+  "title": "Upcoming Appointment by Preferred Method",
+  "primaryPlatform": "ghl",
+  "category": "appointments-customer-support",
+  "summary": "Sends reminder emails tailored to meeting format and language preference.",
+  "businessOutcome": "Improve attendance by matching reminder content to how and where the consultation will happen.",
+  "platforms": ["GHL", "Email", "Conditions", "Contact tags"],
+  "thumbnail": "Reminder emails match channel, method, and language.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$109 workflow",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Generic appointment reminders cause confusion when clients have different meeting formats or language preferences.",
+  "solution": "The workflow branches by consultation type and preferred language, then sends the appropriate reminder copy automatically.",
+  "workflowOverview": [
+    "Triggers from appointment-ready contact tags",
+    "Checks consultation method and language",
+    "Sends the matching reminder path"
+  ],
+  "deliverables": ["workflow template", "reminder variants", "branching rules"],
+  "resultsOrExpectedOutcome": ["Higher show rates", "Fewer clarification calls", "Better bilingual client communication"],
+  "visibility": "anonymized",
+  "anonymized": true,
+  "audience": "Clinics, intake teams, consultation-based businesses"
+}

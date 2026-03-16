@@ -1,0 +1,41 @@
+{
+  "slug": "new-mobile-project",
+  "title": "New Mobile Project",
+  "primaryPlatform": "mobile",
+  "category": "productivity-admin",
+  "summary": "",
+  "businessOutcome": "",
+  "platforms": ["React Native", "Flutter"],
+  "thumbnail": "",
+  "youtubeUrl": "",
+  "priceLabel": "",
+  "paymentLink": "",
+  "problem": "",
+  "solution": "",
+  "workflowOverview": [],
+  "deliverables": [],
+  "resultsOrExpectedOutcome": [],
+  "visibility": "public",
+  "anonymized": false,
+  "audience": "",
+  "featured": false,
+  "access": {
+    "enabled": true,
+    "eyebrow": "",
+    "headline": "",
+    "subheadline": "",
+    "checkoutLabel": "Continue to secure checkout",
+    "checkoutUrl": "",
+    "includes": [],
+    "guarantee": "",
+    "supportNote": "",
+    "upsells": [],
+    "bundleOffer": {
+      "title": "",
+      "summary": "",
+      "priceLabel": "",
+      "ctaLabel": "",
+      "paymentLink": ""
+    }
+  }
+}

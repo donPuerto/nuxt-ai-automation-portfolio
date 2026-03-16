@@ -1,0 +1,25 @@
+{
+  "slug": "invoice-follow-up-copilot",
+  "title": "Invoice Follow-up Copilot",
+  "primaryPlatform": "make",
+  "category": "productivity-admin",
+  "summary": "Tracks unpaid invoices, drafts chase sequences, and updates internal status boards automatically.",
+  "businessOutcome": "Reduce payment delays without turning follow-up into a full-time admin task.",
+  "platforms": ["Make", "Zapier", "Claude worker"],
+  "thumbnail": "Invoice status changes trigger the right follow-up motion.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$89 template",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Invoice chasing is repetitive, awkward, and often inconsistent across clients.",
+  "solution": "The system watches invoice state changes, sends the right reminder sequence, and logs each touchpoint for the team.",
+  "workflowOverview": [
+    "Monitors invoice due dates and payment status",
+    "Drafts reminders based on aging and account context",
+    "Updates finance or project tracking boards automatically"
+  ],
+  "deliverables": ["workflow template", "reminder sequence copy", "reporting view setup"],
+  "resultsOrExpectedOutcome": ["Fewer overdue invoices", "Clearer finance status", "Less manual admin time"],
+  "visibility": "public",
+  "anonymized": false,
+  "audience": "Agencies, freelancers, service businesses"
+}

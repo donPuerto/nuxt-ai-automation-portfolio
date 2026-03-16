@@ -1,0 +1,25 @@
+{
+  "slug": "pipeline-sync-ghl-to-mycase",
+  "title": "Pipeline Sync — GHL to MyCase",
+  "primaryPlatform": "ghl",
+  "category": "crm-follow-up-automation",
+  "summary": "Pushes GoHighLevel stage updates back into MyCase so both systems stay aligned in both directions.",
+  "businessOutcome": "Let teams work in either platform without losing process accuracy or needing duplicate updates.",
+  "platforms": ["GHL", "Webhook", "n8n", "MyCase"],
+  "thumbnail": "GoHighLevel stage changes flow back to case records.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$149 workflow",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "If only one side of a sync is automated, teams still end up reconciling statuses by hand.",
+  "solution": "This workflow detects GoHighLevel stage changes, updates contact fields, and fires downstream automation to keep MyCase in step.",
+  "workflowOverview": [
+    "Listens for opportunity stage changes in GHL",
+    "Updates mirrored contact status fields",
+    "Triggers downstream sync into MyCase"
+  ],
+  "deliverables": ["workflow template", "webhook handoff logic", "field sync map"],
+  "resultsOrExpectedOutcome": ["True two-way sync", "Less duplicate admin work", "Fewer missed status transitions"],
+  "visibility": "anonymized",
+  "anonymized": true,
+  "audience": "Cross-platform operations teams, CRM owners"
+}

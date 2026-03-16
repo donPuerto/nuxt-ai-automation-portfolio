@@ -1,0 +1,26 @@
+{
+  "slug": "linkedin-outreach-orchestrator",
+  "title": "LinkedIn Outreach Orchestrator",
+  "primaryPlatform": "n8n",
+  "category": "sales-lead-generation",
+  "summary": "Finds prospects, enriches context, drafts personalized outreach, and routes replies into the sales pipeline.",
+  "businessOutcome": "Generate qualified conversations without spending hours on manual prospecting.",
+  "platforms": ["n8n", "Zapier", "Claude worker"],
+  "thumbnail": "Prospects in, context enriched, outreach queued.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$199 system",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Outbound usually breaks when sourcing, personalization, and reply tracking all live in different tools.",
+  "solution": "This orchestration flow enriches profiles, scores them, drafts personalized messaging, and keeps your follow-up list clean.",
+  "workflowOverview": [
+    "Collects target profiles from forms, sheets, or scraping sources",
+    "Enriches role, company, and offer relevance before drafting outreach",
+    "Routes positive replies into CRM and follow-up sequences"
+  ],
+  "deliverables": ["workflow system", "outreach prompt logic", "CRM mapping sheet"],
+  "resultsOrExpectedOutcome": ["Higher personalization quality", "Faster campaign launch", "Cleaner lead handoff"],
+  "visibility": "public",
+  "anonymized": false,
+  "audience": "Lead gen teams, appointment setters, founders",
+  "featured": true
+}

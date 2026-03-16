@@ -1,0 +1,58 @@
+import type { CatalogCategory } from './types'
+
+export const catalogCategories: CatalogCategory[] = [
+  {
+    slug: 'content-social-media',
+    title: 'Content Creation & Social Media',
+    shortTitle: 'Content',
+    description: 'Automations that turn rough ideas, recordings, and source material into publish-ready assets.',
+    icon: 'lucide:clapperboard',
+    accentFrom: 'from-cyan-500/20',
+    accentTo: 'to-sky-500/10',
+  },
+  {
+    slug: 'sales-lead-generation',
+    title: 'Sales & Lead Generation',
+    shortTitle: 'Sales',
+    description: 'Outbound, lead capture, enrichment, and follow-up projects that keep pipeline moving.',
+    icon: 'lucide:badge-dollar-sign',
+    accentFrom: 'from-emerald-500/20',
+    accentTo: 'to-lime-500/10',
+  },
+  {
+    slug: 'appointments-customer-support',
+    title: 'Appointments & Customer Support',
+    shortTitle: 'Support',
+    description: 'Booking, routing, reminders, and support handoff workflows built for response speed.',
+    icon: 'lucide:phone-call',
+    accentFrom: 'from-orange-500/20',
+    accentTo: 'to-amber-500/10',
+  },
+  {
+    slug: 'productivity-admin',
+    title: 'Productivity & Admin',
+    shortTitle: 'Ops',
+    description: 'Internal automations for back-office operations, approvals, handoffs, and reporting.',
+    icon: 'lucide:bolt',
+    accentFrom: 'from-violet-500/20',
+    accentTo: 'to-fuchsia-500/10',
+  },
+  {
+    slug: 'ai-agents-internal-tools',
+    title: 'AI Agents & Internal Tools',
+    shortTitle: 'AI Agents',
+    description: 'Claude-powered projects and internal copilots that make teams faster without adding headcount.',
+    icon: 'lucide:bot',
+    accentFrom: 'from-indigo-500/20',
+    accentTo: 'to-blue-500/10',
+  },
+  {
+    slug: 'crm-follow-up-automation',
+    title: 'CRM & Follow-up Automation',
+    shortTitle: 'CRM',
+    description: 'GoHighLevel and CRM-centered workflows that keep leads warm and delivery organized.',
+    icon: 'lucide:workflow',
+    accentFrom: 'from-rose-500/20',
+    accentTo: 'to-pink-500/10',
+  },
+]

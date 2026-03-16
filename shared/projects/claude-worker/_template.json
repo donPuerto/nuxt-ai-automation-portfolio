@@ -1,0 +1,41 @@
+{
+  "slug": "new-claude-worker-project",
+  "title": "New Claude Worker Project",
+  "primaryPlatform": "claude-worker",
+  "category": "ai-agents-internal-tools",
+  "summary": "",
+  "businessOutcome": "",
+  "platforms": ["Claude worker"],
+  "thumbnail": "",
+  "youtubeUrl": "",
+  "priceLabel": "",
+  "paymentLink": "",
+  "problem": "",
+  "solution": "",
+  "workflowOverview": [],
+  "deliverables": [],
+  "resultsOrExpectedOutcome": [],
+  "visibility": "public",
+  "anonymized": false,
+  "audience": "",
+  "featured": false,
+  "access": {
+    "enabled": true,
+    "eyebrow": "",
+    "headline": "",
+    "subheadline": "",
+    "checkoutLabel": "Continue to secure checkout",
+    "checkoutUrl": "",
+    "includes": [],
+    "guarantee": "",
+    "supportNote": "",
+    "upsells": [],
+    "bundleOffer": {
+      "title": "",
+      "summary": "",
+      "priceLabel": "",
+      "ctaLabel": "",
+      "paymentLink": ""
+    }
+  }
+}

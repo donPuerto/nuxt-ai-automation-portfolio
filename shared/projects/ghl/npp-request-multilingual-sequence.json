@@ -1,0 +1,25 @@
+{
+  "slug": "npp-request-multilingual-sequence",
+  "title": "NPP Request Email/SMS Sequence",
+  "primaryPlatform": "ghl",
+  "category": "crm-follow-up-automation",
+  "summary": "Sends paperwork requests by email and SMS once approval is received, with language-aware branching.",
+  "businessOutcome": "Move clients from approval to completed intake faster without staff manually chasing documents.",
+  "platforms": ["GHL", "SMS", "Email", "Conditions"],
+  "thumbnail": "Approved leads get the right paperwork request instantly.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$129 workflow",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Paperwork collection slows down when approved leads wait for manual outreach or receive the wrong message.",
+  "solution": "The workflow reacts to approval events, applies the right tag, removes conflicts, and sends the correct English or Spanish request sequence automatically.",
+  "workflowOverview": [
+    "Detects LOP-approved status changes",
+    "Normalizes the contact into the correct workflow state",
+    "Sends the right multilingual SMS and email request"
+  ],
+  "deliverables": ["workflow template", "message set", "language routing logic"],
+  "resultsOrExpectedOutcome": ["Faster paperwork completion", "Less coordinator follow-up", "Better multilingual client experience"],
+  "visibility": "anonymized",
+  "anonymized": true,
+  "audience": "Client intake teams, healthcare and legal operations"
+}

@@ -1,0 +1,56 @@
+{
+  "slug": "podcast-publisher-engine",
+  "title": "Podcast Publisher Engine",
+  "primaryPlatform": "n8n",
+  "category": "content-social-media",
+  "summary": "Turns a topic prompt or voice note into a recorded, packaged, and distributed podcast episode.",
+  "businessOutcome": "Launch episodes faster without touching editing, upload, or distribution by hand.",
+  "platforms": ["n8n", "Claude worker", "Make"],
+  "thumbnail": "Prompt in. Episode out. Published everywhere.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$149 template",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Publishing a single episode usually means bouncing between scripting, voice, graphics, metadata, and podcast hosts.",
+  "solution": "This system coordinates ideation, script creation, voice production, artwork packaging, and publishing so one input becomes a release-ready episode.",
+  "workflowOverview": [
+    "Captures a topic or voice prompt and generates the episode brief",
+    "Creates narration script and asset checklist through Claude",
+    "Packages distribution assets and posts to the publishing stack"
+  ],
+  "deliverables": ["n8n workflow", "prompt pack", "setup guide", "handoff checklist"],
+  "resultsOrExpectedOutcome": ["Cuts production time per episode", "Standardizes output quality", "Removes repetitive publishing steps"],
+  "visibility": "public",
+  "anonymized": false,
+  "audience": "Coaches, creators, and service brands",
+  "featured": true,
+  "access": {
+    "enabled": true,
+    "eyebrow": "Project access",
+    "headline": "Get instant access to the Podcast Publisher Engine",
+    "subheadline": "Start from a working podcast automation project instead of building your publishing flow from zero. This package is designed for creators and teams that want speed without losing structure.",
+    "checkoutLabel": "Get Instant Access",
+    "includes": [
+      "n8n workflow template",
+      "Publishing handoff map",
+      "Prompt starter set",
+      "Setup notes for adapting assets and destinations"
+    ],
+    "guarantee": "One-time access to the project package, guided setup assets, and a structure you can adapt for your own publishing pipeline.",
+    "supportNote": "If your publishing flow needs custom channels, brand logic, or a connected content stack, this project can be adapted into a custom build.",
+    "upsells": [
+      {
+        "title": "Add the Content Ops Kickstart Pack",
+        "summary": "Get extra prompt scaffolds, content naming rules, and rollout notes so your team can operate the workflow more consistently.",
+        "priceLabel": "$57 add-on",
+        "originalPriceLabel": "$127 value",
+        "ctaLabel": "Add kickstart pack",
+        "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+        "bullets": [
+          "Prompt and naming starter set",
+          "Content operations checklist",
+          "Publishing QA notes for handoff"
+        ]
+      }
+    ]
+  }
+}

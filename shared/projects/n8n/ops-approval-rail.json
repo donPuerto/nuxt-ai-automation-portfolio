@@ -1,0 +1,25 @@
+{
+  "slug": "ops-approval-rail",
+  "title": "Ops Approval Rail",
+  "primaryPlatform": "n8n",
+  "category": "productivity-admin",
+  "summary": "Moves requests through intake, approval, revision, and final handoff without Slack chaos.",
+  "businessOutcome": "Give operations requests one reliable path from idea to approved execution.",
+  "platforms": ["n8n", "Make"],
+  "thumbnail": "Requests enter once and move through approvals automatically.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$109 template",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Operational requests often get lost between DMs, documents, and manual reminders.",
+  "solution": "This rail centralizes request intake, approvals, revision tracking, and final notifications into one process.",
+  "workflowOverview": [
+    "Captures a structured request and assigns ownership",
+    "Routes approval decisions with status tracking",
+    "Notifies stakeholders when a request changes stage"
+  ],
+  "deliverables": ["workflow template", "request form schema", "status automation map"],
+  "resultsOrExpectedOutcome": ["Clearer accountability", "Fewer missed requests", "Faster turnaround"],
+  "visibility": "anonymized",
+  "anonymized": true,
+  "audience": "Operations and admin teams"
+}

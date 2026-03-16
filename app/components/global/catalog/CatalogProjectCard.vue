@@ -10,16 +10,20 @@ const props = withDefaults(defineProps<{
 })
 
 const category = computed(() => getCategoryBySlug(props.project.category))
+const projectUrl = computed(() => `/projects/${props.project.category}/${props.project.slug}`)
 </script>
 
 <template>
-  <Card class="group flex h-full flex-col overflow-hidden rounded-3xl border-border/60 bg-card/80 shadow-sm transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl">
+  <Card
+    class="group flex h-full flex-col overflow-hidden rounded-3xl border border-slate-300/85 bg-white shadow-[0_18px_50px_-24px_rgba(15,23,42,0.24)] transition-all hover:-translate-y-1 hover:border-primary/35 hover:shadow-[0_24px_60px_-24px_rgba(15,23,42,0.28)] dark:border-border/60 dark:bg-card/82 dark:shadow-sm"
+  >
     <CardHeader class="space-y-4">
       <div
-        class="relative overflow-hidden rounded-2xl border border-border/50 bg-linear-to-br p-5 text-white"
+        class="relative overflow-hidden rounded-2xl border border-slate-300/70 bg-linear-to-br p-5 text-white dark:border-border/50"
         :class="[category?.accentFrom ?? 'from-primary/40', category?.accentTo ?? 'to-primary/10']"
       >
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25),transparent_40%)]" />
+        <div class="absolute inset-0 bg-slate-950/36 dark:bg-slate-950/12" />
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent_38%)] dark:bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25),transparent_40%)]" />
         <div class="relative space-y-4">
           <div class="flex flex-wrap gap-2">
             <span
@@ -63,7 +67,7 @@ const category = computed(() => getCategoryBySlug(props.project.category))
     </CardHeader>
 
     <CardContent class="flex flex-1 flex-col justify-end space-y-4">
-      <div class="rounded-2xl bg-muted/40 p-4">
+      <div class="rounded-2xl border border-slate-200/80 bg-slate-50/92 p-4 dark:border-transparent dark:bg-muted/40">
         <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Business outcome
         </p>
@@ -82,9 +86,9 @@ const category = computed(() => getCategoryBySlug(props.project.category))
           </p>
         </div>
 
-        <Button as-child variant="outline" class="rounded-full">
-          <NuxtLink :to="`/systems/${project.category}/${project.slug}`">
-            View system
+        <Button as-child variant="outline" class="rounded-full border-slate-300 bg-white hover:bg-slate-50 dark:border-border dark:bg-transparent">
+          <NuxtLink :to="projectUrl">
+            View project
           </NuxtLink>
         </Button>
       </div>

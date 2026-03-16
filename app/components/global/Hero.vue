@@ -1,12 +1,12 @@
 <template>
-  <section id="hero" class="min-h-screen flex items-center justify-center relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-hidden">
+  <section id="hero" class="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] flex min-h-screen w-screen items-center justify-center overflow-hidden">
     <!-- Spline 3D Background -->
-    <div class="absolute inset-0 w-screen h-full z-0 max-w-none">
-      <div class="relative w-screen h-full bg-black/40 max-w-none">
+    <div class="absolute inset-0 z-0 h-full w-screen max-w-none">
+      <div class="relative h-full w-screen max-w-none bg-black/40">
         <ClientOnly>
           <AsyncSpline
             :scene="sceneUrl"
-            class="w-screen! h-full! max-w-none! spline-responsive"
+            class="spline-responsive h-full! w-screen! max-w-none!"
             :style="{ width: '100vw', height: '100vh', maxWidth: 'none' }"
           />
         </ClientOnly>
@@ -14,38 +14,35 @@
     </div>
 
     <!-- Content Overlay -->
-    <div class="mx-auto w-full z-10 px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 relative fixed:max-w-350 fixed:3xl:max-w-screen-2xl">
-      <div class="max-w-5xl mx-auto">
+    <div class="fixed:3xl:max-w-screen-2xl fixed:max-w-350 relative z-10 mx-auto w-full px-4 py-12 sm:px-6 sm:py-16 md:py-20 lg:px-8 lg:py-24 xl:py-28">
+      <div class="mx-auto max-w-5xl">
         <!-- Main Content -->
-        <div class="text-center space-y-4 sm:space-y-6 md:space-y-8">
+        <div class="space-y-4 text-center sm:space-y-6 md:space-y-8">
           <!-- Main Heading -->
           <div class="space-y-2 md:space-y-3">
-            <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight text-white drop-shadow-lg leading-tight">
+            <h1 class="text-4xl font-bold leading-tight tracking-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
               <span class="block whitespace-nowrap">Automate Your Business</span>
-              <span class="block text-secondary text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl mt-2 sm:mt-3 whitespace-nowrap font-semibold drop-shadow-md">Scale Faster, Work Smarter</span>
+              <span class="mt-2 block whitespace-nowrap text-2xl font-semibold text-secondary drop-shadow-md sm:mt-3 sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">Scale Faster, Work Smarter</span>
             </h1>
           </div>
 
           <!-- Description -->
-          <p class="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed backdrop-blur-sm bg-black/30 p-3 sm:p-4 md:p-6 rounded-lg">
-            I build intelligent automation solutions that streamline your workflows and boost productivity. 
-            Expert in Make.com, N8N, Zapier, and GoHighLevel (GHL) — delivering custom integrations and AI-powered systems tailored to your business needs.
+          <p class="mx-auto max-w-3xl rounded-lg bg-black/30 p-3 text-base leading-relaxed text-white/90 backdrop-blur-sm sm:p-4 sm:text-lg md:p-6 md:text-xl lg:text-2xl">
+            I build intelligent automation solutions that streamline your workflows and boost productivity.
+            Expert in Make.com, N8N, Zapier, and GoHighLevel (GHL) — delivering custom integrations and AI-powered automation projects tailored to your business needs.
           </p>
-          
         </div>
       </div>
     </div>
   </section>
 </template>
 
-
-
 <script setup lang="ts">
 import { defineAsyncComponent } from 'vue'
 
 const AsyncSpline = defineAsyncComponent(() => import('~/components/ui/spline/Spline.vue'))
 
-const sceneUrl = "https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
+const sceneUrl = 'https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode'
 </script>
 
 <style scoped>

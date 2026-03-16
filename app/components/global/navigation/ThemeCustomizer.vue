@@ -22,7 +22,7 @@ const currentMode = computed(() => (colorMode.value === 'dark' ? 'dark' : 'light
           Appearance
         </h2>
         <p class="mt-1 text-xs leading-5 text-muted-foreground">
-          Keep the site simple: choose light or dark mode, then pick a predefined accent color.
+          Keep the site focused: choose light or dark mode, then pick from a small set of curated accent colors.
         </p>
       </div>
 
@@ -55,7 +55,7 @@ const currentMode = computed(() => (colorMode.value === 'dark' ? 'dark' : 'light
               Accent color
             </p>
             <p class="mt-1 text-xs leading-5 text-muted-foreground">
-              Predefined shadcn-style presets only. No manual color editing.
+              A small studio palette only. No manual color editing, no visual overload.
             </p>
           </div>
 

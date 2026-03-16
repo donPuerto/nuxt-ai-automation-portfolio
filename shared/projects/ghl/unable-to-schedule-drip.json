@@ -1,0 +1,25 @@
+{
+  "slug": "unable-to-schedule-drip",
+  "title": "Unable to Schedule Drip + Admin Alert",
+  "primaryPlatform": "ghl",
+  "category": "appointments-customer-support",
+  "summary": "Runs a three-touch email sequence for unscheduled contacts while notifying the internal team.",
+  "businessOutcome": "Keep unscheduled leads warm and visible instead of letting them disappear after one failed attempt.",
+  "platforms": ["GHL", "Email", "Wait timers", "Internal notifications"],
+  "thumbnail": "Unscheduled contacts stay in motion until they book or reply.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$99 workflow",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Contacts that fail to book once often get ignored unless someone manually restarts outreach.",
+  "solution": "This workflow removes conflicts, alerts the team, and sends a timed three-email sequence designed to recover scheduling momentum.",
+  "workflowOverview": [
+    "Triggers when scheduling stalls",
+    "Notifies the internal owner immediately",
+    "Delivers a spaced re-engagement drip automatically"
+  ],
+  "deliverables": ["workflow template", "re-engagement sequence", "admin alert logic"],
+  "resultsOrExpectedOutcome": ["More recovered bookings", "Stronger admin visibility", "Less lead drop-off"],
+  "visibility": "public",
+  "anonymized": false,
+  "audience": "Appointment setters, intake teams, service businesses"
+}

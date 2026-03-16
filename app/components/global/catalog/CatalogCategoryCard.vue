@@ -9,8 +9,8 @@ defineProps<{
 
 <template>
   <NuxtLink
-    :to="`/systems/${category.slug}`"
-    class="group block rounded-3xl border border-border/60 bg-card/70 p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-card"
+    :to="`/projects/${category.slug}`"
+    class="group block rounded-3xl border border-border/70 bg-card/95 p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-card dark:border-border/60 dark:bg-card/75"
   >
     <div class="flex items-start gap-4">
       <div
@@ -31,8 +31,8 @@ defineProps<{
             </p>
           </div>
 
-          <div class="flex items-center gap-2 rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground">
-            <span>{{ count }} systems</span>
+          <div class="flex items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-medium text-muted-foreground dark:border-border/60 dark:bg-background/80">
+            <span>{{ count }} projects</span>
             <Icon name="lucide:arrow-up-right" class="size-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
           </div>
         </div>

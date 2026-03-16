@@ -1,0 +1,25 @@
+{
+  "slug": "lead-intake-qualification-router",
+  "title": "Lead Intake & Qualification Router",
+  "primaryPlatform": "ghl",
+  "category": "sales-lead-generation",
+  "summary": "Scores inbound leads, tags buyer intent, and routes each contact to the right next step automatically.",
+  "businessOutcome": "Stop treating every inbound inquiry the same and respond with the right motion immediately.",
+  "platforms": ["Make", "GHL", "Claude worker"],
+  "thumbnail": "Inbound forms become prioritized sales actions.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$129 template",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Inbound leads slow down when qualification happens manually or only after human review.",
+  "solution": "This workflow evaluates inquiry data, applies tags, and sends each lead to the right CRM pipeline stage or nurture path.",
+  "workflowOverview": [
+    "Captures form data and normalizes lead records",
+    "Applies qualification scoring and urgency rules",
+    "Routes the lead into booking, nurture, or human-review paths"
+  ],
+  "deliverables": ["workflow template", "qualification logic map", "handoff checklist"],
+  "resultsOrExpectedOutcome": ["Faster first response", "Better sales prioritization", "Less manual triage"],
+  "visibility": "public",
+  "anonymized": false,
+  "audience": "Agencies, service businesses, closers"
+}

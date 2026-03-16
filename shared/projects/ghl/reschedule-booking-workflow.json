@@ -1,0 +1,25 @@
+{
+  "slug": "reschedule-booking-workflow",
+  "title": "Reschedule Booking Workflow",
+  "primaryPlatform": "ghl",
+  "category": "appointments-customer-support",
+  "summary": "Handles reschedule intent by updating status, notifying the client, and reassigning the record when needed.",
+  "businessOutcome": "Reduce booking friction and keep ownership clear when appointments need to move.",
+  "platforms": ["GHL", "Email", "Appointment status", "User assignment"],
+  "thumbnail": "Reschedule requests turn into a managed workflow instead of inbox chaos.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$99 workflow",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Rescheduling can create confusion when status updates, contact communication, and ownership changes happen separately.",
+  "solution": "This workflow coordinates the client message, record update, and reassignment steps so reschedules stay controlled end to end.",
+  "workflowOverview": [
+    "Triggers on reschedule-worthy appointment status changes",
+    "Sends the correct client communication",
+    "Updates ownership and tracking fields"
+  ],
+  "deliverables": ["workflow template", "status update logic", "reschedule communication flow"],
+  "resultsOrExpectedOutcome": ["Smoother reschedules", "Clearer ownership", "Fewer manual corrections"],
+  "visibility": "public",
+  "anonymized": false,
+  "audience": "Scheduling teams, intake coordinators, service businesses"
+}

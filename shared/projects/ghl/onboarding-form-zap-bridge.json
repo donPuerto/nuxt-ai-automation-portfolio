@@ -1,0 +1,25 @@
+{
+  "slug": "onboarding-form-zap-bridge",
+  "title": "Onboarding Form to Zapier Bridge",
+  "primaryPlatform": "ghl",
+  "category": "crm-follow-up-automation",
+  "summary": "Captures a new client submission in GHL, tags it, sends a welcome message, and forwards the payload into Zapier.",
+  "businessOutcome": "Use GHL as the intake front door while still activating downstream automations in other tools.",
+  "platforms": ["GHL", "Zapier", "Webhook", "Email", "Tags"],
+  "thumbnail": "Form submissions trigger welcome steps and cross-tool handoff.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$109 workflow",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Client onboarding breaks down when CRM capture and external automations are disconnected.",
+  "solution": "This workflow standardizes intake inside GHL, applies the right initial actions, and then sends the data into Zapier for downstream processing.",
+  "workflowOverview": [
+    "Receives the onboarding form submission",
+    "Applies tags and sends the welcome email",
+    "Triggers the Zapier webhook for connected tools"
+  ],
+  "deliverables": ["workflow template", "Zap webhook bridge", "welcome sequence"],
+  "resultsOrExpectedOutcome": ["Faster onboarding handoff", "Better CRM consistency", "Less duplicate setup work"],
+  "visibility": "public",
+  "anonymized": false,
+  "audience": "Agencies, onboarding teams, service businesses"
+}

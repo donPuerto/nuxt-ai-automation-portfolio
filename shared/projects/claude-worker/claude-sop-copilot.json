@@ -1,0 +1,26 @@
+{
+  "slug": "claude-sop-copilot",
+  "title": "Claude SOP Copilot",
+  "primaryPlatform": "claude-worker",
+  "category": "ai-agents-internal-tools",
+  "summary": "Turns internal documentation into a practical assistant that answers workflow questions with context.",
+  "businessOutcome": "Reduce tribal knowledge dependency and speed up delivery decisions.",
+  "platforms": ["Claude worker", "n8n"],
+  "thumbnail": "Internal docs become a usable day-to-day copilot.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$189 system",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Teams lose time hunting for process answers buried across docs and chat threads.",
+  "solution": "This copilot indexes SOPs, generates grounded answers, and keeps response context tied to internal process sources.",
+  "workflowOverview": [
+    "Indexes documentation sources into a retrieval-ready workflow",
+    "Answers team questions with grounded SOP context",
+    "Escalates low-confidence requests for human review"
+  ],
+  "deliverables": ["agent workflow", "prompt chain", "source-ingestion checklist"],
+  "resultsOrExpectedOutcome": ["Less repeated explanation", "Faster onboarding", "Better process consistency"],
+  "visibility": "public",
+  "anonymized": false,
+  "audience": "Internal teams, agencies, operators",
+  "featured": true
+}

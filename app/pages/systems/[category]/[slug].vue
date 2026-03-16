@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { getCategoryBySlug, getProjectBySlugs } from '@@/shared'
 
+definePageMeta({
+  path: '/projects/:category()/:slug()',
+  alias: ['/systems/:category()/:slug()'],
+})
+
 const route = useRoute()
 
 const project = computed(() =>
@@ -10,15 +15,15 @@ const project = computed(() =>
 if (!project.value) {
   throw createError({
     statusCode: 404,
-    statusMessage: 'System not found',
+    statusMessage: 'Project not found',
   })
 }
 
 const category = computed(() => getCategoryBySlug(project.value!.category))
 
 useSeoMeta({
-  title: () => `${project.value?.title ?? 'System'} | Don Puerto`,
-  description: () => project.value?.summary ?? 'Automation system detail page',
+  title: () => `${project.value?.title ?? 'Project'} | Don Puerto`,
+  description: () => project.value?.summary ?? 'Automation project detail page',
 })
 </script>
 
@@ -26,11 +31,11 @@ useSeoMeta({
   <div class="container py-14 md:py-18">
     <div class="max-w-5xl">
       <NuxtLink
-        :to="`/systems/${project!.category}`"
+        :to="`/projects/${project!.category}`"
         class="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <Icon name="lucide:arrow-left" class="size-4" />
-        <span>Back to {{ category?.shortTitle ?? 'systems' }}</span>
+        <span>Back to {{ category?.shortTitle ?? 'projects' }}</span>
       </NuxtLink>
 
       <div class="mt-6 grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
@@ -109,7 +114,7 @@ useSeoMeta({
 
           <div class="rounded-3xl border border-border/60 bg-card/70 p-6 shadow-sm">
             <p class="text-sm font-semibold uppercase tracking-[0.22em] text-primary">
-              Included with the system
+              Included with the project
             </p>
             <ul class="mt-4 space-y-3">
               <li
@@ -152,9 +157,9 @@ useSeoMeta({
 
             <div class="mt-6 flex flex-col gap-3">
               <Button as-child size="lg" class="rounded-full">
-                <a :href="project!.paymentLink" target="_blank" rel="noopener noreferrer">
-                  Buy with Stripe link
-                </a>
+                <NuxtLink :to="`/projects/${project!.category}/${project!.slug}/access`">
+                  Get Instant Access
+                </NuxtLink>
               </Button>
               <Button as-child variant="outline" size="lg" class="rounded-full">
                 <NuxtLink to="/contact">

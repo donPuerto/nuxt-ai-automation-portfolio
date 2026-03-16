@@ -1,0 +1,25 @@
+{
+  "slug": "pre-approval-form-intake",
+  "title": "Pre-Approval Form Intake",
+  "primaryPlatform": "ghl",
+  "category": "crm-follow-up-automation",
+  "summary": "Turns a submitted pre-approval form into a tagged contact, new opportunity, team alert, and documented CRM record.",
+  "businessOutcome": "Convert intake submissions into organized CRM work instantly instead of relying on manual data entry.",
+  "platforms": ["GHL", "Tags", "Pipeline", "Notes", "Email"],
+  "thumbnail": "Forms create tagged opportunities and alert the team instantly.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$119 workflow",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "New intake forms create delays when assignment, notes, and pipeline setup happen separately.",
+  "solution": "The workflow tags the contact, creates the opportunity, adds notes, assigns ownership, and notifies the team in one pass.",
+  "workflowOverview": [
+    "Starts when the pre-approval form is submitted",
+    "Builds the CRM opportunity and ownership record",
+    "Adds internal notes and alerts the team"
+  ],
+  "deliverables": ["workflow template", "intake mapping", "alert configuration"],
+  "resultsOrExpectedOutcome": ["Faster lead ownership", "Cleaner CRM hygiene", "Less intake admin work"],
+  "visibility": "public",
+  "anonymized": false,
+  "audience": "Sales teams, intake coordinators, service businesses"
+}

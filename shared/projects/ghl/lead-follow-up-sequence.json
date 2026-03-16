@@ -1,0 +1,56 @@
+{
+  "slug": "lead-follow-up-sequence",
+  "title": "Lead Follow-Up Sequence",
+  "primaryPlatform": "ghl",
+  "category": "sales-lead-generation",
+  "summary": "Runs a timed follow-up sequence with email and call actions until a lead replies or the sequence completes.",
+  "businessOutcome": "Increase contact rates on new leads without relying on manual follow-up discipline.",
+  "platforms": ["GHL", "Email", "Call", "Wait timers"],
+  "thumbnail": "New leads enter a timed nurture and callback sequence.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$129 workflow",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Fresh leads go cold when teams fail to follow up consistently after form submissions.",
+  "solution": "This workflow sends staged outreach, checks for replies, notifies the team, and loops into additional follow-up when needed.",
+  "workflowOverview": [
+    "Starts on lead form submission",
+    "Sends timed outreach in sequence",
+    "Escalates with internal notification and call steps when engagement happens"
+  ],
+  "deliverables": ["workflow template", "follow-up timeline", "handoff logic"],
+  "resultsOrExpectedOutcome": ["Better first-response consistency", "Higher reply rates", "Less lead leakage"],
+  "visibility": "public",
+  "anonymized": false,
+  "audience": "Agencies, sales teams, service businesses",
+  "featured": true,
+  "access": {
+    "enabled": true,
+    "eyebrow": "Project access",
+    "headline": "Get instant access to the Lead Follow-Up Sequence",
+    "subheadline": "Grab the workflow, the timing logic, and the handoff structure so you can launch a cleaner follow-up system without rebuilding the sequence from scratch.",
+    "checkoutLabel": "Get Instant Access",
+    "includes": [
+      "Workflow template export",
+      "Follow-up timing map",
+      "Reply and escalation logic",
+      "Setup notes for adapting tags, owners, and notifications"
+    ],
+    "guarantee": "One-time access to the project package with implementation-ready assets and practical setup guidance.",
+    "supportNote": "If you need custom sequences, brand voice changes, or extra CRM logic, we can adapt this into a tailored rollout for your pipeline.",
+    "upsells": [
+      {
+        "title": "Add the Follow-Up Optimization Pack",
+        "summary": "Pair the workflow with call scripts, message-angle variants, and a lead-stage response guide so the automation performs better once it is live.",
+        "priceLabel": "$47 add-on",
+        "originalPriceLabel": "$97 value",
+        "ctaLabel": "Add optimization pack",
+        "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+        "bullets": [
+          "Call and SMS angle library",
+          "Reply-handling guide for warm leads",
+          "Follow-up timing optimization notes"
+        ]
+      }
+    ]
+  }
+}

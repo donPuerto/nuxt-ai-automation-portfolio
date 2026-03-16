@@ -1,0 +1,26 @@
+{
+  "slug": "appointment-confirmation-reminder",
+  "title": "Appointment Confirmation + Reminder",
+  "primaryPlatform": "ghl",
+  "category": "appointments-customer-support",
+  "summary": "Automates appointment confirmations and reacts differently to confirm, reschedule, or unclear replies.",
+  "businessOutcome": "Reduce no-shows and remove manual confirmation work while keeping clients engaged.",
+  "platforms": ["GHL", "Email", "Wait/Reply", "Appointment status"],
+  "thumbnail": "Scheduled appointments trigger smart reply handling.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$119 workflow",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Appointment teams lose time confirming bookings manually and can miss reschedule intent hidden in email replies.",
+  "solution": "This workflow sends confirmation emails, waits for a response, then branches into confirm, reschedule, or follow-up actions based on the client's reply.",
+  "workflowOverview": [
+    "Sends a confirmation request after appointment creation",
+    "Waits for the contact response",
+    "Updates status or routes into a reschedule path automatically"
+  ],
+  "deliverables": ["workflow template", "email copy", "reply-branch logic"],
+  "resultsOrExpectedOutcome": ["Fewer missed appointments", "Lower admin overhead", "Cleaner appointment status tracking"],
+  "visibility": "public",
+  "anonymized": false,
+  "audience": "Service businesses, clinics, appointment-based teams",
+  "featured": true
+}

@@ -1,0 +1,25 @@
+{
+  "slug": "proposal-builder-agent",
+  "title": "Proposal Builder Agent",
+  "primaryPlatform": "claude-worker",
+  "category": "ai-agents-internal-tools",
+  "summary": "Builds proposal drafts from discovery data, offer templates, and pricing rules.",
+  "businessOutcome": "Turn discovery calls into client-ready proposals without starting from a blank doc.",
+  "platforms": ["Claude worker", "Zapier", "Google Workspace"],
+  "thumbnail": "Discovery notes become polished proposals faster.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$159 template",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Proposal writing gets slow and inconsistent when every deal is built from scratch.",
+  "solution": "The agent converts structured intake data into reusable proposal drafts aligned to service tiers and context.",
+  "workflowOverview": [
+    "Pulls discovery notes and offer scope into a proposal brief",
+    "Builds draft structure with pricing and delivery framing",
+    "Exports into docs for review and send-off"
+  ],
+  "deliverables": ["agent workflow", "proposal prompt kit", "document output template"],
+  "resultsOrExpectedOutcome": ["Faster proposal turnaround", "More consistent sales documents", "Less blank-page work"],
+  "visibility": "anonymized",
+  "anonymized": true,
+  "audience": "Consultants, agencies, automation service providers"
+}

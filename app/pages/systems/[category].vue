@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { allPlatforms, getCategoryBySlug, getProjectsByCategory } from '@@/shared'
+import { allPlatforms, getCategoryBySlug, getPlatformLabel, getProjectsByCategory } from '@@/shared'
+
+definePageMeta({
+  path: '/projects/:category()',
+  alias: ['/systems/:category()'],
+})
 
 const route = useRoute()
 const selectedPlatform = ref('All')
@@ -17,7 +22,7 @@ const categoryProjects = computed(() => getProjectsByCategory(category.value!.sl
 
 const availablePlatforms = computed(() =>
   allPlatforms.filter(platform =>
-    categoryProjects.value.some(project => project.platforms.includes(platform)),
+    categoryProjects.value.some(project => getPlatformLabel(project.primaryPlatform) === platform),
   ),
 )
 
@@ -26,19 +31,19 @@ const filteredProjects = computed(() => {
     return categoryProjects.value
   }
 
-  return categoryProjects.value.filter(project => project.platforms.includes(selectedPlatform.value))
+  return categoryProjects.value.filter(project => getPlatformLabel(project.primaryPlatform) === selectedPlatform.value)
 })
 
 useSeoMeta({
   title: () => `${category.value?.title ?? 'Category'} | Don Puerto`,
-  description: () => category.value?.description ?? 'Automation systems category',
+  description: () => category.value?.description ?? 'Automation projects category',
 })
 </script>
 
 <template>
   <div class="container py-14 md:py-18">
     <div class="max-w-4xl">
-      <NuxtLink to="/systems" class="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
+      <NuxtLink to="/projects" class="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
         <Icon name="lucide:arrow-left" class="size-4" />
         <span>Back to catalog</span>
       </NuxtLink>
@@ -53,7 +58,7 @@ useSeoMeta({
 
         <div>
           <p class="text-sm font-semibold uppercase tracking-[0.22em] text-primary">
-            {{ filteredProjects.length }} systems
+            {{ filteredProjects.length }} projects
           </p>
           <h1 class="mt-2 text-4xl font-semibold tracking-tight md:text-5xl">
             {{ category!.title }}
@@ -72,7 +77,7 @@ useSeoMeta({
       />
     </div>
 
-    <div class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+    <div class="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
       <CatalogProjectCard
         v-for="project in filteredProjects"
         :key="project.slug"

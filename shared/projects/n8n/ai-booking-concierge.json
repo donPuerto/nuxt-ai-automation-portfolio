@@ -1,0 +1,26 @@
+{
+  "slug": "ai-booking-concierge",
+  "title": "AI Booking Concierge",
+  "primaryPlatform": "n8n",
+  "category": "appointments-customer-support",
+  "summary": "Handles booking requests, FAQ replies, reminders, and appointment routing from one automation layer.",
+  "businessOutcome": "Convert more inbound interest into booked calls without manual calendar babysitting.",
+  "platforms": ["GHL", "n8n", "Claude worker"],
+  "thumbnail": "Inquiry, qualification, reminder, and booking in one flow.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$169 system",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Scheduling falls apart when inquiry handling, reminders, and reschedules sit in separate projects.",
+  "solution": "This booking concierge unifies inbound qualification, booking links, reminders, and reschedule handling into one automated service layer.",
+  "workflowOverview": [
+    "Receives inquiries from forms or chat entry points",
+    "Answers simple questions and qualifies intent before booking",
+    "Sends reminders and routes no-show or reschedule scenarios"
+  ],
+  "deliverables": ["workflow system", "message templates", "calendar routing setup"],
+  "resultsOrExpectedOutcome": ["Higher booking completion", "Fewer manual follow-ups", "Cleaner appointment operations"],
+  "visibility": "public",
+  "anonymized": false,
+  "audience": "Clinics, agencies, local service teams",
+  "featured": true
+}

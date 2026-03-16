@@ -1,0 +1,25 @@
+{
+  "slug": "whatsapp-support-triage",
+  "title": "WhatsApp Support Triage",
+  "primaryPlatform": "make",
+  "category": "appointments-customer-support",
+  "summary": "Classifies support conversations and routes them to the right SOP, teammate, or escalation lane.",
+  "businessOutcome": "Respond faster while keeping repetitive support work off your team's plate.",
+  "platforms": ["Make", "Claude worker", "GHL"],
+  "thumbnail": "Chat support sorted by urgency, intent, and next action.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$99 template",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Support channels become noisy when every message arrives unstructured.",
+  "solution": "The triage layer tags message types, suggests answers, and sends higher-risk cases to a human queue with context.",
+  "workflowOverview": [
+    "Receives WhatsApp events and classifies the message type",
+    "Matches the request to SOPs, FAQs, or escalation rules",
+    "Creates human-readable handoff summaries where needed"
+  ],
+  "deliverables": ["support workflow", "triage prompt logic", "handoff templates"],
+  "resultsOrExpectedOutcome": ["Faster triage", "Better escalation context", "Reduced repetitive replies"],
+  "visibility": "anonymized",
+  "anonymized": true,
+  "audience": "Support teams and operations managers"
+}

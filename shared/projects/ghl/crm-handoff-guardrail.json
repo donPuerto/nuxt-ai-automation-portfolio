@@ -1,0 +1,25 @@
+{
+  "slug": "crm-handoff-guardrail",
+  "title": "CRM Handoff Guardrail",
+  "primaryPlatform": "ghl",
+  "category": "crm-follow-up-automation",
+  "summary": "Prevents dropped leads by validating stage changes, missing data, and handoff readiness before records move forward.",
+  "businessOutcome": "Keep your CRM clean and your client-facing follow-up reliable.",
+  "platforms": ["GHL", "Make", "n8n"],
+  "thumbnail": "No record moves forward without the right context.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$129 template",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Leads get lost when stage changes happen without the required notes, tasks, or context.",
+  "solution": "The guardrail validates records before handoff and creates the missing tasks or alerts automatically.",
+  "workflowOverview": [
+    "Checks CRM stage changes against handoff requirements",
+    "Creates missing tasks, notes, or reminders automatically",
+    "Alerts the right teammate when a handoff is incomplete"
+  ],
+  "deliverables": ["CRM workflow", "validation rules", "handoff checklist"],
+  "resultsOrExpectedOutcome": ["Fewer dropped leads", "Better internal handoff quality", "Cleaner CRM hygiene"],
+  "visibility": "anonymized",
+  "anonymized": true,
+  "audience": "RevOps teams, setters, closers"
+}

@@ -1,0 +1,26 @@
+{
+  "slug": "ghl-reactivation-engine",
+  "title": "GHL Reactivation Engine",
+  "primaryPlatform": "ghl",
+  "category": "crm-follow-up-automation",
+  "summary": "Reactivates dormant leads with segmented follow-up logic, personalized messaging, and booking prompts.",
+  "businessOutcome": "Recover pipeline value already sitting inside your CRM.",
+  "platforms": ["GHL", "Claude worker", "Zapier"],
+  "thumbnail": "Dormant leads return to active pipeline with the right sequence.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$179 system",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Most CRMs are full of leads that never get a thoughtful second chance.",
+  "solution": "This reactivation engine segments stale leads, personalizes the comeback angle, and routes engagement back into the active pipeline.",
+  "workflowOverview": [
+    "Segments dormant records by context and buyer intent",
+    "Launches the right follow-up sequence for each segment",
+    "Pushes re-engaged leads back into live pipeline stages"
+  ],
+  "deliverables": ["GHL automation map", "sequence prompts", "reactivation dashboard setup"],
+  "resultsOrExpectedOutcome": ["Recovered lead value", "Cleaner CRM motion", "Better sales follow-up consistency"],
+  "visibility": "public",
+  "anonymized": false,
+  "audience": "Sales teams, agencies, GHL-heavy businesses",
+  "featured": true
+}

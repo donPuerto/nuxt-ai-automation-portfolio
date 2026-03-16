@@ -30,11 +30,9 @@
           <div class="mb-8">
             <h3 class="text-xl font-semibold mb-4">Key Skills</h3>
             <div class="flex flex-wrap gap-2">
-              <Badge variant="secondary">Nuxt 4</Badge>
-              <Badge variant="secondary">Tailwind CSS 4</Badge>
-              <Badge variant="secondary">TypeScript</Badge>
-              <Badge variant="secondary">AI/ML</Badge>
-              <Badge variant="secondary">Automation</Badge>
+              <Badge v-for="item in expertiseHighlights" :key="item" variant="secondary">
+                {{ item }}
+              </Badge>
             </div>
           </div>
 
@@ -48,6 +46,8 @@
 </template>
 
 <script setup lang="ts">
+import { expertiseHighlights } from '@@/shared'
+
 const scrollToSection = (sectionId: string) => {
   const element = document.getElementById(sectionId)
   if (element) {

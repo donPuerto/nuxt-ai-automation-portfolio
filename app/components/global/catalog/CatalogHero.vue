@@ -4,7 +4,8 @@ import { homeCatalogContent } from '@@/shared'
 
 <template>
   <section class="relative overflow-hidden border-b border-border/50">
-    <div class="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.14),transparent_30%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.12),transparent_22%),linear-gradient(to_bottom,transparent,rgba(15,23,42,0.03))]" />
+    <div class="absolute inset-0 -z-10 dark:hidden bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.10),transparent_28%),radial-gradient(circle_at_75%_18%,rgba(59,130,246,0.10),transparent_20%),linear-gradient(to_bottom,rgba(255,255,255,0.55),rgba(248,250,252,0.18))]" />
+    <div class="absolute inset-0 -z-10 hidden dark:block bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.14),transparent_30%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.12),transparent_22%),linear-gradient(to_bottom,transparent,rgba(15,23,42,0.03))]" />
     <div class="container py-20 md:py-28">
       <div class="mx-auto max-w-5xl text-center">
         <div class="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-primary">
@@ -23,8 +24,8 @@ import { homeCatalogContent } from '@@/shared'
 
         <div class="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
           <Button as-child size="lg" class="rounded-full px-7">
-            <NuxtLink to="/systems">
-              Browse all systems
+            <NuxtLink to="/projects">
+              Browse all projects
             </NuxtLink>
           </Button>
           <Button as-child variant="outline" size="lg" class="rounded-full px-7">

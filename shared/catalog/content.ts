@@ -1,0 +1,118 @@
+export const homeCatalogContent = {
+  eyebrow: 'Automation projects, packaged like products',
+  headline: 'A catalog of workflow projects built to sell, scale, and support service businesses.',
+  subheadline: 'Explore curated automation projects across content, lead generation, appointments, admin ops, AI agents, and CRM follow-up. Every project is structured like a deliverable, not a vague portfolio entry.',
+  featuredCategoriesLabel: 'Browse by business outcome',
+  featuredProjectsLabel: 'Featured projects',
+  processLabel: 'How these projects are delivered',
+  processSteps: [
+    'Each project is framed around a business outcome first, not just a tool stack.',
+    'Private client work is anonymized while preserving the workflow logic and deliverables.',
+    'Every detail page is built to show what the project does, how it works, and what a buyer gets.',
+  ],
+  finalCtaTitle: 'Need one of these adapted to your workflow?',
+  finalCtaBody: 'Use the catalog to find the closest-fit project, then we can adapt the stack, channels, and handoff logic to your process.',
+  finalCtaPrimary: 'Browse all projects',
+  finalCtaSecondary: 'Book a discovery call',
+}
+
+export const accessPageDefaults = {
+  eyebrow: 'Instant access',
+  guarantee: 'Digital delivery with guided setup notes and direct next steps so you can move from checkout to implementation quickly.',
+  supportNote: 'Prefer a tailored rollout, custom fields, or channel changes? Start with the project and we can adapt it around your team and pipeline.',
+  checkoutLabel: 'Continue to secure checkout',
+}
+
+export const platformBundleOffers = {
+  'n8n': {
+    title: 'Get the full n8n workflow library',
+    summary: 'Unlock the full n8n project set instead of purchasing single workflows one at a time.',
+    priceLabel: '$497 bundle',
+    originalPriceLabel: '$697 value',
+    ctaLabel: 'Unlock all n8n projects',
+    paymentLink: 'https://buy.stripe.com/test_00g000000000000000',
+    bullets: [
+      'All published n8n projects in the catalog',
+      'Future n8n additions added to your library',
+      'Better value than buying single workflows separately',
+    ],
+  },
+  'claude-worker': {
+    title: 'Get the full Claude worker library',
+    summary: 'Bundle your agent workflows, prompt systems, and automation workers into one access path.',
+    priceLabel: '$397 bundle',
+    originalPriceLabel: '$557 value',
+    ctaLabel: 'Unlock all Claude worker projects',
+    paymentLink: 'https://buy.stripe.com/test_00g000000000000000',
+    bullets: [
+      'All Claude worker projects in one purchase',
+      'Shared prompt and handoff patterns included',
+      'Useful when you want a reusable AI operations stack',
+    ],
+  },
+  'ghl': {
+    title: 'Get the full GoHighLevel project pack',
+    summary: 'Access the GHL projects together so your intake, follow-up, reminders, and handoff logic stay consistent.',
+    priceLabel: '$447 bundle',
+    originalPriceLabel: '$636 value',
+    ctaLabel: 'Unlock all GHL projects',
+    paymentLink: 'https://buy.stripe.com/test_00g000000000000000',
+    bullets: [
+      'All current GHL projects in the catalog',
+      'A faster path to a full CRM operating layer',
+      'Ideal for agencies and service businesses standardizing GHL',
+    ],
+  },
+  'zapier': {
+    title: 'Get the full Zapier project pack',
+    summary: 'Combine lightweight app automations into one library for fast deployment across teams.',
+    priceLabel: '$347 bundle',
+    originalPriceLabel: '$497 value',
+    ctaLabel: 'Unlock all Zapier projects',
+    paymentLink: 'https://buy.stripe.com/test_00g000000000000000',
+    bullets: [
+      'All current Zapier-based catalog projects',
+      'Quick-win automations for marketing and operations',
+      'A simple way to standardize smaller integrations',
+    ],
+  },
+  'make': {
+    title: 'Get the full Make scenario pack',
+    summary: 'Buy the complete Make catalog when you need more complex orchestration across tools and customer ops.',
+    priceLabel: '$397 bundle',
+    originalPriceLabel: '$557 value',
+    ctaLabel: 'Unlock all Make projects',
+    paymentLink: 'https://buy.stripe.com/test_00g000000000000000',
+    bullets: [
+      'All Make-powered projects in one place',
+      'A stronger fit for multi-step orchestration work',
+      'Useful if you want a library of reusable scenarios',
+    ],
+  },
+  'full-stack': {
+    title: 'Get the full product build pack',
+    summary: 'Bundle web app and automation-backed product builds together for a more complete delivery stack.',
+    priceLabel: '$697 bundle',
+    originalPriceLabel: '$997 value',
+    ctaLabel: 'Unlock all full-stack projects',
+    paymentLink: 'https://buy.stripe.com/test_00g000000000000000',
+    bullets: [
+      'All full-stack product projects in the catalog',
+      'Best when you need UI, logic, and delivery together',
+      'A stronger path than piecing together isolated builds',
+    ],
+  },
+  'mobile': {
+    title: 'Get the full mobile project pack',
+    summary: 'Bundle mobile delivery patterns and related automation-backed mobile projects into one access path.',
+    priceLabel: '$547 bundle',
+    originalPriceLabel: '$747 value',
+    ctaLabel: 'Unlock all mobile projects',
+    paymentLink: 'https://buy.stripe.com/test_00g000000000000000',
+    bullets: [
+      'All mobile projects in one bundle',
+      'Useful for teams building cross-platform client experiences',
+      'Pairs well with full-stack and CRM workflows',
+    ],
+  },
+} as const

@@ -32,10 +32,10 @@ useSeoMeta({
           {{ homeCatalogContent.featuredCategoriesLabel }}
         </p>
         <h2 class="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
-          Explore systems by business outcome
+          Explore projects by business outcome
         </h2>
         <p class="mt-4 text-base leading-7 text-muted-foreground md:text-lg">
-          Start with the outcome you want to improve. Platform choices stay visible, but the catalog is organized around the business problem each system solves.
+          Start with the outcome you want to improve. Platform choices stay visible, but the catalog is organized around the business problem each project solves.
         </p>
       </div>
 
@@ -56,18 +56,18 @@ useSeoMeta({
             {{ homeCatalogContent.featuredProjectsLabel }}
           </p>
           <h2 class="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">
-            Featured systems with clear buyer outcomes
+            Featured projects with clear buyer outcomes
           </h2>
         </div>
 
         <Button as-child variant="outline" class="rounded-full self-start md:self-auto">
-          <NuxtLink to="/systems">
+          <NuxtLink to="/projects">
             View the full catalog
           </NuxtLink>
         </Button>
       </div>
 
-      <div class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div class="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         <CatalogProjectCard
           v-for="project in featuredProjects"
           :key="project.slug"
@@ -110,7 +110,7 @@ useSeoMeta({
                 Curated launch scope
               </p>
               <h3 class="mt-3 text-2xl font-semibold tracking-tight md:text-3xl">
-                Start with 8–12 flagship systems and keep expanding the catalog over time.
+                Start with 8–12 flagship projects and keep expanding the catalog over time.
               </h3>
             </div>
 
@@ -120,7 +120,7 @@ useSeoMeta({
                   {{ featuredProjects.length }}
                 </p>
                 <p class="mt-1 text-sm text-muted-foreground">
-                  Featured systems
+                  Featured projects
                 </p>
               </div>
               <div class="rounded-2xl border border-border/50 bg-background/75 p-4">
@@ -150,9 +150,9 @@ useSeoMeta({
         </p>
         <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
           <Button as-child size="lg" class="rounded-full px-7">
-            <NuxtLink to="/systems">
-              {{ homeCatalogContent.finalCtaPrimary }}
-            </NuxtLink>
+              <NuxtLink to="/projects">
+                {{ homeCatalogContent.finalCtaPrimary }}
+              </NuxtLink>
           </Button>
           <Button as-child variant="outline" size="lg" class="rounded-full px-7">
             <NuxtLink to="/contact">

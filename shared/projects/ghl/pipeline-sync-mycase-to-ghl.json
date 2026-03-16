@@ -1,0 +1,26 @@
+{
+  "slug": "pipeline-sync-mycase-to-ghl",
+  "title": "Pipeline Sync — MyCase to GHL",
+  "primaryPlatform": "ghl",
+  "category": "crm-follow-up-automation",
+  "summary": "Keeps GoHighLevel opportunity stages aligned with pipeline changes coming from MyCase.",
+  "businessOutcome": "Give operations and intake teams one reliable pipeline status across both platforms without manual updates.",
+  "platforms": ["GHL", "MyCase", "Pipeline sync"],
+  "thumbnail": "Case status changes sync into GHL automatically.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$149 workflow",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Teams lose trust in the CRM when case statuses diverge between MyCase and GoHighLevel.",
+  "solution": "This workflow listens for MyCase status updates, finds the related GHL opportunity, and maps each case stage into the correct GoHighLevel pipeline stage.",
+  "workflowOverview": [
+    "Receives MyCase pipeline updates in real time",
+    "Matches the correct GHL opportunity record",
+    "Applies the mapped stage for each pipeline state"
+  ],
+  "deliverables": ["workflow map", "pipeline sync logic", "status mapping checklist"],
+  "resultsOrExpectedOutcome": ["Cleaner CRM reporting", "Fewer manual stage edits", "Better handoff between intake and sales"],
+  "visibility": "anonymized",
+  "anonymized": true,
+  "audience": "Legal intake teams, operations managers, CRM owners",
+  "featured": true
+}
