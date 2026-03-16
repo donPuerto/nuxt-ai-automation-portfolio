@@ -5,8 +5,7 @@ export interface Route {
 
 export const routes: Route[] = [
   { name: 'Home', path: '/' },
-  { name: 'Services', path: '/services' },
-  { name: 'Testimonials', path: '/testimonials' },
+  { name: 'Systems', path: '/systems' },
   { name: 'Contact', path: '/contact' },
   { name: 'About', path: '/about' },
 ]

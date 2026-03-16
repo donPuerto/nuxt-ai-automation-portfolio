@@ -7,7 +7,7 @@
           Have a project in mind or want to collaborate? I'd love to hear from you.
         </p>
 
-        <form @submit.prevent="handleSubmit" class="space-y-6">
+        <form class="space-y-6" @submit.prevent="handleSubmit">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label for="name">Name</Label>
@@ -92,7 +92,7 @@ const handleSubmit = async () => {
     // Reset form
     Object.assign(form, { name: '', email: '', subject: '', message: '' })
     message.value = { type: 'success', text: 'Message sent successfully!' }
-  } catch (error) {
+  } catch {
     message.value = { type: 'error', text: 'Failed to send message. Please try again.' }
   } finally {
     isSubmitting.value = false

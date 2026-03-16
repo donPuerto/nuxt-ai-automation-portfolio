@@ -67,6 +67,11 @@ interface Pointer {
   color: ColorRGB;
 }
 
+interface SupportedFormat {
+  internalFormat: number;
+  format: number;
+}
+
 function pointerPrototype(): Pointer {
   return {
     id: -1,
@@ -112,6 +117,7 @@ onMounted(() => {
   // Get WebGL context (WebGL1 or WebGL2)
   const { gl, ext } = getWebGLContext(canvas);
   if (!gl || !ext) return;
+  if (!ext.formatRGBA || !ext.formatRG || !ext.formatR) return;
 
   // If no linear filtering, reduce resolution
   if (!ext.supportLinearFiltering) {
@@ -160,9 +166,9 @@ onMounted(() => {
       ? (gl as WebGL2RenderingContext).HALF_FLOAT
       : (halfFloat && halfFloat.HALF_FLOAT_OES) || 0;
 
-    let formatRGBA: unknown;
-    let formatRG: unknown;
-    let formatR: unknown;
+    let formatRGBA: SupportedFormat | null;
+    let formatRG: SupportedFormat | null;
+    let formatR: SupportedFormat | null;
 
     if (isWebGL2) {
       formatRGBA = getSupportedFormat(
@@ -838,9 +844,9 @@ onMounted(() => {
     const dyeRes = getResolution(config.DYE_RESOLUTION!);
 
     const texType = ext.halfFloatTexType;
-    const rgba = ext.formatRGBA;
-    const rg = ext.formatRG;
-    const r = ext.formatR;
+    const rgba = ext.formatRGBA!;
+    const rg = ext.formatRG!;
+    const r = ext.formatR!;
     const filtering = ext.supportLinearFiltering ? gl.LINEAR : gl.NEAREST;
     gl.disable(gl.BLEND);
 
@@ -1218,6 +1224,10 @@ onMounted(() => {
     pointer.down = false;
   }
 
+  function getPrimaryPointer(): Pointer {
+    return pointers[0] ?? (pointers[0] = pointerPrototype());
+  }
+
   function correctDeltaX(delta: number) {
     const aspectRatio = canvas!.width / canvas!.height;
     if (aspectRatio < 1) delta *= aspectRatio;
@@ -1291,7 +1301,7 @@ onMounted(() => {
 
   // -------------------- Event Listeners --------------------
   window.addEventListener("mousedown", (e) => {
-    const pointer = pointers[0];
+    const pointer = getPrimaryPointer();
     const posX = scaleByPixelRatio(e.clientX);
     const posY = scaleByPixelRatio(e.clientY);
     updatePointerDownData(pointer, -1, posX, posY);
@@ -1300,7 +1310,7 @@ onMounted(() => {
 
   // Start rendering on first mouse move
   function handleFirstMouseMove(e: MouseEvent) {
-    const pointer = pointers[0];
+    const pointer = getPrimaryPointer();
     const posX = scaleByPixelRatio(e.clientX);
     const posY = scaleByPixelRatio(e.clientY);
     const color = generateColor();
@@ -1311,7 +1321,7 @@ onMounted(() => {
   document.body.addEventListener("mousemove", handleFirstMouseMove);
 
   window.addEventListener("mousemove", (e) => {
-    const pointer = pointers[0];
+    const pointer = getPrimaryPointer();
     const posX = scaleByPixelRatio(e.clientX);
     const posY = scaleByPixelRatio(e.clientY);
     const color = pointer.color;
@@ -1321,12 +1331,14 @@ onMounted(() => {
   // Start rendering on first touch
   function handleFirstTouchStart(e: TouchEvent) {
     const touches = e.targetTouches;
-    const pointer = pointers[0];
     for (let i = 0; i < touches.length; i++) {
-      const posX = scaleByPixelRatio(touches[i].clientX);
-      const posY = scaleByPixelRatio(touches[i].clientY);
+      const touch = touches.item(i);
+      if (!touch) continue;
+      const pointer = getPrimaryPointer();
+      const posX = scaleByPixelRatio(touch.clientX);
+      const posY = scaleByPixelRatio(touch.clientY);
       updateFrame();
-      updatePointerDownData(pointer, touches[i].identifier, posX, posY);
+      updatePointerDownData(pointer, touch.identifier, posX, posY);
     }
     document.body.removeEventListener("touchstart", handleFirstTouchStart);
   }
@@ -1336,11 +1348,13 @@ onMounted(() => {
     "touchstart",
     (e) => {
       const touches = e.targetTouches;
-      const pointer = pointers[0];
       for (let i = 0; i < touches.length; i++) {
-        const posX = scaleByPixelRatio(touches[i].clientX);
-        const posY = scaleByPixelRatio(touches[i].clientY);
-        updatePointerDownData(pointer, touches[i].identifier, posX, posY);
+        const touch = touches.item(i);
+        if (!touch) continue;
+        const pointer = getPrimaryPointer();
+        const posX = scaleByPixelRatio(touch.clientX);
+        const posY = scaleByPixelRatio(touch.clientY);
+        updatePointerDownData(pointer, touch.identifier, posX, posY);
       }
     },
     false,
@@ -1350,10 +1364,12 @@ onMounted(() => {
     "touchmove",
     (e) => {
       const touches = e.targetTouches;
-      const pointer = pointers[0];
       for (let i = 0; i < touches.length; i++) {
-        const posX = scaleByPixelRatio(touches[i].clientX);
-        const posY = scaleByPixelRatio(touches[i].clientY);
+        const touch = touches.item(i);
+        if (!touch) continue;
+        const pointer = getPrimaryPointer();
+        const posX = scaleByPixelRatio(touch.clientX);
+        const posY = scaleByPixelRatio(touch.clientY);
         updatePointerMoveData(pointer, posX, posY, pointer.color);
       }
     },
@@ -1362,8 +1378,10 @@ onMounted(() => {
 
   window.addEventListener("touchend", (e) => {
     const touches = e.changedTouches;
-    const pointer = pointers[0];
     for (let i = 0; i < touches.length; i++) {
+      const touch = touches.item(i);
+      if (!touch) continue;
+      const pointer = getPrimaryPointer();
       updatePointerUpData(pointer);
     }
   });

@@ -244,7 +244,9 @@ function handlePointerMove(e: PointerEvent) {
 }
 
 function handleTouchMove(e: TouchEvent) {
-  updateMousePosition(e.touches[0].clientX, e.touches[0].clientY);
+  const touch = e.touches[0];
+  if (!touch) return;
+  updateMousePosition(touch.clientX, touch.clientY);
 }
 
 function handleClick(e: MouseEvent) {

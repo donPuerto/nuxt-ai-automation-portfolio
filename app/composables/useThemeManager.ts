@@ -1,127 +1,129 @@
+import { accentPresets, type AccentPreset } from '@@/shared'
+
+const THEME_STYLE_ID = 'accent-preset-style'
+const LEGACY_STYLE_IDS = [
+  'custom-color-overrides',
+  'custom-font-overrides',
+  'custom-radius-style',
+  'custom-letter-spacing',
+]
+
+const getDefaultPreset = (): AccentPreset => {
+  const preset = accentPresets[0]
+
+  if (!preset) {
+    throw new Error('Accent presets must define at least one preset.')
+  }
+
+  return preset
+}
+
+const getPresetById = (presetId: string): AccentPreset => {
+  return accentPresets.find(item => item.id === presetId) ?? getDefaultPreset()
+}
+
+const buildPresetStyles = (presetId: string) => {
+  const preset = getPresetById(presetId)
+
+  return `
+    :root,
+    .theme-container,
+    [data-reka-popper-content-wrapper] {
+      --primary: ${preset.light.primary} !important;
+      --primary-foreground: ${preset.light.primaryForeground} !important;
+      --ring: ${preset.light.ring} !important;
+      --chart-1: ${preset.light.chart1} !important;
+      --chart-2: ${preset.light.chart2} !important;
+      --chart-3: ${preset.light.chart3} !important;
+      --chart-4: ${preset.light.chart4} !important;
+      --chart-5: ${preset.light.chart5} !important;
+      --sidebar-primary: ${preset.light.sidebarPrimary} !important;
+      --sidebar-primary-foreground: ${preset.light.sidebarPrimaryForeground} !important;
+      --sidebar-ring: ${preset.light.sidebarRing} !important;
+      --selection: ${preset.light.selection} !important;
+      --selection-foreground: ${preset.light.selectionForeground} !important;
+    }
+
+    .dark,
+    .dark .theme-container,
+    .dark [data-reka-popper-content-wrapper] {
+      --primary: ${preset.dark.primary} !important;
+      --primary-foreground: ${preset.dark.primaryForeground} !important;
+      --ring: ${preset.dark.ring} !important;
+      --chart-1: ${preset.dark.chart1} !important;
+      --chart-2: ${preset.dark.chart2} !important;
+      --chart-3: ${preset.dark.chart3} !important;
+      --chart-4: ${preset.dark.chart4} !important;
+      --chart-5: ${preset.dark.chart5} !important;
+      --sidebar-primary: ${preset.dark.sidebarPrimary} !important;
+      --sidebar-primary-foreground: ${preset.dark.sidebarPrimaryForeground} !important;
+      --sidebar-ring: ${preset.dark.sidebarRing} !important;
+      --selection: ${preset.dark.selection} !important;
+      --selection-foreground: ${preset.dark.selectionForeground} !important;
+    }
+  `
+}
+
+const removeLegacyThemeClasses = () => {
+  const html = document.documentElement
+
+  html.classList.forEach((className) => {
+    if (className.startsWith('theme-')) {
+      html.classList.remove(className)
+    }
+  })
+}
+
+const cleanupLegacyThemeArtifacts = () => {
+  removeLegacyThemeClasses()
+
+  for (const styleId of LEGACY_STYLE_IDS) {
+    document.getElementById(styleId)?.remove()
+  }
+
+  sessionStorage.removeItem('selected-theme')
+  sessionStorage.removeItem('selected-radius')
+  sessionStorage.removeItem('custom-colors')
+  sessionStorage.removeItem('custom-fonts')
+  sessionStorage.removeItem('letter-spacing')
+}
+
 export const useThemeManager = () => {
-  const currentTheme = useState('current-theme', () => {
-    if (import.meta.client) {
-      return sessionStorage.getItem('selected-theme') || 'default'
-    }
-    return 'default'
-  })
-
   const currentColor = useState('current-color', () => {
+    const defaultPreset = getDefaultPreset()
+
     if (import.meta.client) {
-      return sessionStorage.getItem('selected-color') || 'blue'
+      return sessionStorage.getItem('selected-color') || defaultPreset.id
     }
-    return 'blue'
+
+    return defaultPreset.id
   })
 
-  const currentRadius = useState('current-radius', () => {
-    if (import.meta.client) {
-      return sessionStorage.getItem('selected-radius') || '0.5'
+  const applyPreset = (presetId: string) => {
+    if (!import.meta.client) return
+
+    const preset = getPresetById(presetId)
+    let styleElement = document.getElementById(THEME_STYLE_ID) as HTMLStyleElement | null
+
+    if (!styleElement) {
+      styleElement = document.createElement('style')
+      styleElement.id = THEME_STYLE_ID
+      document.head.appendChild(styleElement)
     }
-    return '0.5'
-  })
 
-  const loadTheme = (themeId: string) => {
-    if (import.meta.client) {
-      // Remove existing theme class
-      const html = document.documentElement
-      html.classList.forEach(className => {
-        if (className.startsWith('theme-') && !className.startsWith('theme-color-')) {
-          html.classList.remove(className)
-        }
-      })
-
-      // Add new theme class
-      html.classList.add(`theme-${themeId}`)
-
-      // Save to sessionStorage
-      sessionStorage.setItem('selected-theme', themeId)
-      currentTheme.value = themeId
-    }
+    styleElement.textContent = buildPresetStyles(preset.id)
+    sessionStorage.setItem('selected-color', preset.id)
+    currentColor.value = preset.id
   }
 
-  const loadColor = (colorId: string) => {
-    if (import.meta.client) {
-      const html = document.documentElement
-      // Remove existing color theme class
-      html.classList.forEach(className => {
-        if (className.startsWith('theme-') && ['zinc', 'rose', 'blue', 'green', 'orange', 'red', 'slate', 'stone', 'gray', 'neutral', 'yellow', 'violet', 'amber', 'purple', 'teal'].some(c => className === `theme-${c}`)) {
-          html.classList.remove(className)
-        }
-      })
-
-      // Add new color theme class
-      html.classList.add(`theme-${colorId}`)
-
-      // Save to sessionStorage
-      sessionStorage.setItem('selected-color', colorId)
-      currentColor.value = colorId
-    }
-  }
-
-  const loadRadius = (radius: string) => {
-    if (import.meta.client) {
-      // Remove existing radius style if it exists
-      const existingStyle = document.getElementById('custom-radius-style')
-      if (existingStyle) {
-        existingStyle.remove()
-      }
-
-      // Create a style element to override radius globally
-      const style = document.createElement('style')
-      style.id = 'custom-radius-style'
-      style.textContent = `
-        .theme-container,
-        [data-reka-popper-content-wrapper] {
-          --radius: ${radius}rem !important;
-        }
-      `
-      document.head.appendChild(style)
-
-      sessionStorage.setItem('selected-radius', radius)
-      currentRadius.value = radius
-    }
-  }
-
-  // Auto-init on client
   if (import.meta.client) {
-    const savedTheme = sessionStorage.getItem('selected-theme') || 'default'
-    const savedColor = sessionStorage.getItem('selected-color') || 'blue'
-    const savedRadius = sessionStorage.getItem('selected-radius') || '0.5'
-    
-    const html = document.documentElement
-    
-    // Apply theme
-    if (!html.classList.contains(`theme-${savedTheme}`)) {
-      html.classList.add(`theme-${savedTheme}`)
-    }
-    
-    // Apply color
-    if (!html.classList.contains(`theme-${savedColor}`)) {
-      html.classList.add(`theme-${savedColor}`)
-    }
-    
-    // Apply radius
-    const style = document.createElement('style')
-    style.id = 'custom-radius-style'
-    style.textContent = `
-      .theme-container,
-      [data-reka-popper-content-wrapper] {
-        --radius: ${savedRadius}rem !important;
-      }
-    `
-    document.head.appendChild(style)
-    
-    currentTheme.value = savedTheme
-    currentColor.value = savedColor
-    currentRadius.value = savedRadius
+    cleanupLegacyThemeArtifacts()
+    applyPreset(currentColor.value)
   }
 
   return {
-    currentTheme,
     currentColor,
-    currentRadius,
-    loadTheme,
-    loadColor,
-    loadRadius
+    accentPresets,
+    loadColor: applyPreset,
   }
 }

@@ -4,7 +4,7 @@
     <div class="absolute inset-0 w-screen h-full z-0 max-w-none">
       <div class="relative w-screen h-full bg-black/40 max-w-none">
         <ClientOnly>
-          <Spline
+          <AsyncSpline
             :scene="sceneUrl"
             class="w-screen! h-full! max-w-none! spline-responsive"
             :style="{ width: '100vw', height: '100vh', maxWidth: 'none' }"
@@ -41,6 +41,10 @@
 
 
 <script setup lang="ts">
+import { defineAsyncComponent } from 'vue'
+
+const AsyncSpline = defineAsyncComponent(() => import('~/components/ui/spline/Spline.vue'))
+
 const sceneUrl = "https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
 </script>
 

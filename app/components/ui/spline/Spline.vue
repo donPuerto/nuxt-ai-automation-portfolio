@@ -15,9 +15,7 @@
 </template>
 
 <script setup lang="ts">
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { ref, onMounted, onUnmounted, computed, watch, nextTick } from "vue";
+import { ref, onMounted, onUnmounted, computed, watch, nextTick, type CSSProperties } from "vue";
 import { Application, type SplineEventName } from "@splinetool/runtime";
 import { useDebounceFn, useIntersectionObserver } from "@vueuse/core";
 import ParentSize from "./ParentSize.vue";
@@ -53,7 +51,6 @@ const isLoading = ref(false);
 const splineApp = ref<Application | null>(null);
 const isVisible = ref(true);
 
-// eslint-disable-next-line func-style
 let cleanup: () => void = () => {};
 
 const parentSizeStyles = computed(() => ({
@@ -63,7 +60,7 @@ const parentSizeStyles = computed(() => ({
   ...props.style,
 }));
 
-const canvasStyle = computed(() => ({
+const canvasStyle = computed<CSSProperties>(() => ({
   display: "block",
   width: "100%",
   height: "100%",
@@ -76,7 +73,8 @@ const canvasStyle = computed(() => ({
 // Use IntersectionObserver to detect when component is visible
 const { stop: stopIntersectionObserver } = useIntersectionObserver(
   canvasRef,
-  ([{ isIntersecting }]) => {
+  (entries) => {
+    const isIntersecting = entries[0]?.isIntersecting ?? false;
     isVisible.value = isIntersecting;
     if (isIntersecting && splineApp.value) {
       // When becoming visible again, force a resize
@@ -93,7 +91,7 @@ const { stop: stopIntersectionObserver } = useIntersectionObserver(
   { threshold: 0.01 }, // Lower threshold for better mobile detection
 );
 
-function eventHandler(name: SplineEventName, handler?: (e: any) => void) {
+function eventHandler(name: SplineEventName, handler?: (e: unknown) => void) {
   if (!handler || !splineApp.value) return;
   const debouncedHandler = useDebounceFn(handler, 50, { maxWait: 100 });
   splineApp.value.addEventListener(name, debouncedHandler);
@@ -120,15 +118,15 @@ async function initSpline() {
 
     // Set up event listeners
     const cleanUpFns = [
-      eventHandler("mouseDown", (e: any) => emit("spline-mouse-down", e)),
-      eventHandler("mouseUp", (e: any) => emit("spline-mouse-up", e)),
-      eventHandler("mouseHover", (e: any) => emit("spline-mouse-hover", e)),
-      eventHandler("keyDown", (e: any) => emit("spline-key-down", e)),
-      eventHandler("keyUp", (e: any) => emit("spline-key-up", e)),
-      eventHandler("start", (e: any) => emit("spline-start", e)),
-      eventHandler("lookAt", (e: any) => emit("spline-look-at", e)),
-      eventHandler("follow", (e: any) => emit("spline-follow", e)),
-      eventHandler("scroll", (e: any) => emit("spline-scroll", e)),
+      eventHandler("mouseDown", (e: unknown) => emit("spline-mouse-down", e)),
+      eventHandler("mouseUp", (e: unknown) => emit("spline-mouse-up", e)),
+      eventHandler("mouseHover", (e: unknown) => emit("spline-mouse-hover", e)),
+      eventHandler("keyDown", (e: unknown) => emit("spline-key-down", e)),
+      eventHandler("keyUp", (e: unknown) => emit("spline-key-up", e)),
+      eventHandler("start", (e: unknown) => emit("spline-start", e)),
+      eventHandler("lookAt", (e: unknown) => emit("spline-look-at", e)),
+      eventHandler("follow", (e: unknown) => emit("spline-follow", e)),
+      eventHandler("scroll", (e: unknown) => emit("spline-scroll", e)),
     ].filter(Boolean);
 
     isLoading.value = false;

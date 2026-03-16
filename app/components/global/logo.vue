@@ -25,7 +25,7 @@ interface Props {
   showRole?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   logoOnly: false,
   showTitle: true,
   showRole: true

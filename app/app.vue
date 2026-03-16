@@ -9,10 +9,10 @@
 
 <script setup lang="ts">
 // Initialize layout manager globally to ensure it applies to all pages
-const { isLayoutFixed } = useLayoutManager()
+useLayoutManager()
 
 // Ensure color mode is initialized
-const colorMode = useColorMode()
+useColorMode()
 
 // Add font preload and prevent FOUC
 useHead({

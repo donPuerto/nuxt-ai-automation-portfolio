@@ -28,8 +28,10 @@
       <!-- Theme Selector & Book a Call -->
       <div class="flex items-center gap-2">
         <ThemeSelector />
-        <Button variant="default" size="default" class="hidden md:inline-flex">
-          Book a call
+        <Button as-child variant="default" size="default" class="hidden rounded-full md:inline-flex">
+          <NuxtLink to="/contact">
+            Book a call
+          </NuxtLink>
         </Button>
       </div>
 
@@ -52,6 +54,7 @@
 
 <script setup lang="ts">
 import { routes } from '@@/shared'
+import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from '@/components/ui/navigation-menu'
 
 // Scroll detection
 const isScrolled = ref(false)
@@ -67,8 +70,6 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
 })
-import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from '@/components/ui/navigation-menu'
 
 const isOpen = ref(false)
-const { isDark, toggleTheme } = useTheme()
 </script>

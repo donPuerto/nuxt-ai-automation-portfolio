@@ -2,7 +2,7 @@
   <div data-slot="layout" class="theme-container relative min-h-screen bg-background/70 text-foreground transition-colors duration-300">
     <!-- Neural Background Layer -->
     <ClientOnly>
-      <NeuralBg class="fixed inset-0 -z-10" :hue="200" :saturation="0.8" :chroma="0.6" />
+      <AsyncNeuralBg class="fixed inset-0 -z-10" :hue="200" :saturation="0.8" :chroma="0.6" />
     </ClientOnly>
     
     <!-- Subtle Gradient Overlay -->
@@ -27,8 +27,10 @@
 </template>
 
 <script setup lang="ts">
-// Ensure layout manager is accessible in the layout
-const { isLayoutFixed } = useLayoutManager()
-// Ensure color mode is reactive
-const colorMode = useColorMode()
+import { defineAsyncComponent } from 'vue'
+
+const AsyncNeuralBg = defineAsyncComponent(() => import('~/components/ui/bg-neural/NeuralBg.vue'))
+
+useLayoutManager()
+useColorMode()
 </script>

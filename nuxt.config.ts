@@ -55,9 +55,6 @@ export default defineNuxtConfig({
         'monospace': ['Courier New'],
       },
     },
-    experimental: {
-      processCSSVariables: true,
-    },
     families: [
       // Sans-serif fonts
       { name: 'Inter', provider: 'google' },
@@ -111,11 +108,12 @@ export default defineNuxtConfig({
     ],
     build: {
       cssCodeSplit: false,
+      chunkSizeWarningLimit: 2500,
       sourcemap: false,
       rollupOptions: {
         output: {
           sourcemap: false,
-          assetFileNames: (assetInfo) => {
+          assetFileNames: () => {
             return 'assets/[name]-[hash][extname]'
           }
         }
