@@ -86,10 +86,13 @@ const projectUrl = computed(() => `/projects/${props.project.category}/${props.p
           </p>
         </div>
 
-        <Button as-child variant="outline" class="rounded-full border-slate-300 bg-white hover:bg-slate-50 dark:border-border dark:bg-transparent">
-          <NuxtLink :to="projectUrl">
-            View project
-          </NuxtLink>
+        <Button
+          type="button"
+          variant="outline"
+          class="rounded-full border-slate-300 bg-white hover:bg-slate-50 dark:border-border dark:bg-transparent"
+          @click="navigateTo(projectUrl)"
+        >
+          View project
         </Button>
       </div>
     </CardContent>
