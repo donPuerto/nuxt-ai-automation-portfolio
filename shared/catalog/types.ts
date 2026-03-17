@@ -23,8 +23,32 @@ export interface CatalogProjectOffer {
   priceLabel: string
   ctaLabel: string
   paymentLink: string
+  stripePriceId?: string
+  productCode?: string
   originalPriceLabel?: string
   bullets?: readonly string[]
+}
+
+export interface CatalogProjectCheckout {
+  provider: 'stripe'
+  productCode: string
+  stripePriceId: string
+  mode?: 'payment'
+  allowPromotionCodes?: boolean
+  n8nFulfillmentKey?: string
+}
+
+export interface CatalogProjectDeliveryLink {
+  label: string
+  url: string
+  description?: string
+}
+
+export interface CatalogProjectDelivery {
+  emailSubject: string
+  emailPreview: string
+  instructions?: string
+  links: CatalogProjectDeliveryLink[]
 }
 
 export interface CatalogProjectAccess {
@@ -62,5 +86,7 @@ export interface CatalogProject {
   anonymized: boolean
   audience: string
   featured?: boolean
+  checkout?: CatalogProjectCheckout
+  delivery?: CatalogProjectDelivery
   access?: CatalogProjectAccess
 }

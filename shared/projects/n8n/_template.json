@@ -19,6 +19,26 @@
   "anonymized": false,
   "audience": "",
   "featured": false,
+  "checkout": {
+    "provider": "stripe",
+    "productCode": "n8n-new-project",
+    "stripePriceId": "price_replace_me",
+    "mode": "payment",
+    "allowPromotionCodes": true,
+    "n8nFulfillmentKey": "n8n-new-project"
+  },
+  "delivery": {
+    "emailSubject": "Your new n8n workflow is ready",
+    "emailPreview": "Open the workflow link and follow the setup notes to get started.",
+    "instructions": "Use this delivery section to list the links and setup notes the buyer should receive after payment.",
+    "links": [
+      {
+        "label": "Workflow download",
+        "url": "https://example.com/downloads/replace-me",
+        "description": "Primary workflow export or template link."
+      }
+    ]
+  },
   "access": {
     "enabled": true,
     "eyebrow": "",
@@ -35,7 +55,8 @@
       "summary": "",
       "priceLabel": "",
       "ctaLabel": "",
-      "paymentLink": ""
+      "paymentLink": "",
+      "stripePriceId": ""
     }
   }
 }

@@ -138,12 +138,23 @@ export default defineNuxtConfig({
     storage: 'sessionStorage', // Match theme manager's sessionStorage
     storageKey: 'nuxt-color-mode'
   },
+  runtimeConfig: {
+    stripeSecretKey: '',
+    stripeWebhookSecret: '',
+    n8nFulfillmentWebhookUrl: '',
+    n8nFulfillmentWebhookToken: '',
+    public: {
+      stripePublishableKey: '',
+    },
+  },
   security: {
     headers: {
       contentSecurityPolicy: {
-        'img-src': ["'self'", 'data:', 'blob:', 'https://cdn.simpleicons.org'],
-        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        'img-src': ["'self'", 'data:', 'blob:', 'https://cdn.simpleicons.org', 'https://*.stripe.com'],
+        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://js.stripe.com'],
         'style-src': ["'self'", "'unsafe-inline'"],
+        'frame-src': ["'self'", 'https://js.stripe.com', 'https://hooks.stripe.com'],
+        'connect-src': ["'self'", 'https://api.stripe.com', 'https://r.stripe.com', 'https://m.stripe.network'],
       }
     }
   },

@@ -18,9 +18,20 @@ export const homeCatalogContent = {
 
 export const accessPageDefaults = {
   eyebrow: 'Instant access',
-  guarantee: 'Digital delivery with guided setup notes and direct next steps so you can move from checkout to implementation quickly.',
-  supportNote: 'Prefer a tailored rollout, custom fields, or channel changes? Start with the project and we can adapt it around your team and pipeline.',
-  checkoutLabel: 'Continue to secure checkout',
+  guarantee: 'Digital products are delivered by email after payment, with setup notes and direct links so you can move from checkout to implementation quickly.',
+  supportNote: 'Secure checkout is handled with Stripe Elements. Eligible buyers will see card, Link, and wallet options such as Google Pay directly inside the page.',
+  checkoutLabel: 'Pay now',
+  contactHeading: 'Buyer details',
+  contactBody: 'Enter the email address where you want the workflow links and setup notes delivered.',
+  paymentMethodsLabel: 'Payment methods',
+  paymentMethodsBody: 'This embedded Stripe form supports cards, Link, and eligible wallets. The exact options shown depend on device and browser eligibility.',
+  summaryLabel: 'Order summary',
+  deliveryLabel: 'Delivery',
+  deliveryBody: 'After payment, Stripe confirms the purchase and the workflow link is emailed to the buyer through our n8n fulfillment flow.',
+  buyerEmailLabel: 'Email address',
+  buyerEmailPlaceholder: 'you@example.com',
+  buyerEmailHelp: 'We will send the workflow links, setup notes, and bonus materials to this address after payment.',
+  checkoutErrorFallback: 'We could not load or confirm the secure payment form right now. Please try again in a moment.',
 }
 
 export const platformBundleOffers = {
@@ -31,6 +42,8 @@ export const platformBundleOffers = {
     originalPriceLabel: '$697 value',
     ctaLabel: 'Unlock all n8n projects',
     paymentLink: 'https://buy.stripe.com/test_00g000000000000000',
+    stripePriceId: 'price_n8nProjectLibrary_test',
+    productCode: 'bundle-n8n-project-library',
     bullets: [
       'All published n8n projects in the catalog',
       'Future n8n additions added to your library',
@@ -44,6 +57,8 @@ export const platformBundleOffers = {
     originalPriceLabel: '$557 value',
     ctaLabel: 'Unlock all Claude worker projects',
     paymentLink: 'https://buy.stripe.com/test_00g000000000000000',
+    stripePriceId: 'price_claudeWorkerLibrary_test',
+    productCode: 'bundle-claude-worker-library',
     bullets: [
       'All Claude worker projects in one purchase',
       'Shared prompt and handoff patterns included',
@@ -57,6 +72,8 @@ export const platformBundleOffers = {
     originalPriceLabel: '$636 value',
     ctaLabel: 'Unlock all GHL projects',
     paymentLink: 'https://buy.stripe.com/test_00g000000000000000',
+    stripePriceId: 'price_ghlProjectPack_test',
+    productCode: 'bundle-ghl-project-pack',
     bullets: [
       'All current GHL projects in the catalog',
       'A faster path to a full CRM operating layer',
@@ -70,6 +87,8 @@ export const platformBundleOffers = {
     originalPriceLabel: '$497 value',
     ctaLabel: 'Unlock all Zapier projects',
     paymentLink: 'https://buy.stripe.com/test_00g000000000000000',
+    stripePriceId: 'price_zapierProjectPack_test',
+    productCode: 'bundle-zapier-project-pack',
     bullets: [
       'All current Zapier-based catalog projects',
       'Quick-win automations for marketing and operations',
@@ -83,6 +102,8 @@ export const platformBundleOffers = {
     originalPriceLabel: '$557 value',
     ctaLabel: 'Unlock all Make projects',
     paymentLink: 'https://buy.stripe.com/test_00g000000000000000',
+    stripePriceId: 'price_makeScenarioPack_test',
+    productCode: 'bundle-make-scenario-pack',
     bullets: [
       'All Make-powered projects in one place',
       'A stronger fit for multi-step orchestration work',
@@ -96,6 +117,8 @@ export const platformBundleOffers = {
     originalPriceLabel: '$997 value',
     ctaLabel: 'Unlock all full-stack projects',
     paymentLink: 'https://buy.stripe.com/test_00g000000000000000',
+    stripePriceId: 'price_fullStackBuildPack_test',
+    productCode: 'bundle-full-stack-build-pack',
     bullets: [
       'All full-stack product projects in the catalog',
       'Best when you need UI, logic, and delivery together',
@@ -109,6 +132,8 @@ export const platformBundleOffers = {
     originalPriceLabel: '$747 value',
     ctaLabel: 'Unlock all mobile projects',
     paymentLink: 'https://buy.stripe.com/test_00g000000000000000',
+    stripePriceId: 'price_mobileProjectPack_test',
+    productCode: 'bundle-mobile-project-pack',
     bullets: [
       'All mobile projects in one bundle',
       'Useful for teams building cross-platform client experiences',

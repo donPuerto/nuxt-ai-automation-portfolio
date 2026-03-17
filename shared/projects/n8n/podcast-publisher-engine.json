@@ -23,6 +23,31 @@
   "anonymized": false,
   "audience": "Coaches, creators, and service brands",
   "featured": true,
+  "checkout": {
+    "provider": "stripe",
+    "productCode": "n8n-podcast-publisher-engine",
+    "stripePriceId": "price_podcastPublisherEngine_test",
+    "mode": "payment",
+    "allowPromotionCodes": true,
+    "n8nFulfillmentKey": "n8n-podcast-publisher-engine"
+  },
+  "delivery": {
+    "emailSubject": "Your Podcast Publisher Engine workflow is ready",
+    "emailPreview": "Here are your workflow assets, setup notes, and the fastest path to getting your podcast automation live.",
+    "instructions": "Start with the setup guide, then import the workflow and prompt pack before changing publishing destinations.",
+    "links": [
+      {
+        "label": "Workflow download",
+        "url": "https://example.com/downloads/podcast-publisher-engine",
+        "description": "Primary n8n workflow export for the Podcast Publisher Engine."
+      },
+      {
+        "label": "Setup guide",
+        "url": "https://example.com/downloads/podcast-publisher-engine/setup-guide",
+        "description": "Implementation notes for prompts, assets, and publishing destinations."
+      }
+    ]
+  },
   "access": {
     "enabled": true,
     "eyebrow": "Project access",
@@ -45,6 +70,8 @@
         "originalPriceLabel": "$127 value",
         "ctaLabel": "Add kickstart pack",
         "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+        "stripePriceId": "price_contentOpsKickstartPack_test",
+        "productCode": "content-ops-kickstart-pack",
         "bullets": [
           "Prompt and naming starter set",
           "Content operations checklist",

@@ -5,6 +5,7 @@ export * from './types'
 export * from './categories'
 export * from './content'
 export * from './projects'
+export * from './pricing'
 
 export const getCategoryBySlug = (slug: string) =>
   catalogCategories.find(category => category.slug === slug)

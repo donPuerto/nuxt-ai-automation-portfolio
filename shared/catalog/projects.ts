@@ -32,8 +32,8 @@ export const platformLabels: Record<CatalogPlatformFolder, string> = {
   'make': 'Make',
   'full-stack': 'Full stack',
   'mobile': 'Mobile',
+  
 }
-
 export const getPlatformLabel = (platform: CatalogPlatformFolder) =>
   platformLabels[platform]
 

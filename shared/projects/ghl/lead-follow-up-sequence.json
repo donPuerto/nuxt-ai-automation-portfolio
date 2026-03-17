@@ -23,6 +23,31 @@
   "anonymized": false,
   "audience": "Agencies, sales teams, service businesses",
   "featured": true,
+  "checkout": {
+    "provider": "stripe",
+    "productCode": "ghl-lead-follow-up-sequence",
+    "stripePriceId": "price_leadFollowUpSequence_test",
+    "mode": "payment",
+    "allowPromotionCodes": true,
+    "n8nFulfillmentKey": "ghl-lead-follow-up-sequence"
+  },
+  "delivery": {
+    "emailSubject": "Your Lead Follow-Up Sequence workflow is ready",
+    "emailPreview": "Here are your workflow assets, timing map, and setup notes for getting your follow-up sequence live.",
+    "instructions": "Import the workflow first, then apply the timing map and owner/tag settings before activating the sequence.",
+    "links": [
+      {
+        "label": "Workflow download",
+        "url": "https://example.com/downloads/lead-follow-up-sequence",
+        "description": "Primary workflow export for the Lead Follow-Up Sequence."
+      },
+      {
+        "label": "Timing map",
+        "url": "https://example.com/downloads/lead-follow-up-sequence/timing-map",
+        "description": "Recommended wait timers, reply handling, and escalation notes."
+      }
+    ]
+  },
   "access": {
     "enabled": true,
     "eyebrow": "Project access",
@@ -45,6 +70,8 @@
         "originalPriceLabel": "$97 value",
         "ctaLabel": "Add optimization pack",
         "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+        "stripePriceId": "price_followUpOptimizationPack_test",
+        "productCode": "follow-up-optimization-pack",
         "bullets": [
           "Call and SMS angle library",
           "Reply-handling guide for warm leads",
