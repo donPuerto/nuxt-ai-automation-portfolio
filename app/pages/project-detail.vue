@@ -160,11 +160,12 @@ useSeoMeta({
                   Get Instant Access
                 </NuxtLink>
               </Button>
-              <Button as-child variant="outline" size="lg" class="rounded-full">
-                <NuxtLink to="/contact">
-                  Need a custom version?
-                </NuxtLink>
-              </Button>
+              <DiscoveryCallButton
+                label="Need a custom version?"
+                variant="outline"
+                size="lg"
+                button-class="rounded-full"
+              />
             </div>
           </div>
         </div>

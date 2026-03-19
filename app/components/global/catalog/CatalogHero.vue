@@ -25,14 +25,15 @@ import { homeCatalogContent } from '@@/shared'
         <div class="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
           <Button as-child size="lg" class="rounded-full px-7">
             <NuxtLink to="/projects">
-              Browse all projects
+              {{ homeCatalogContent.finalCtaPrimary }}
             </NuxtLink>
           </Button>
-          <Button as-child variant="outline" size="lg" class="rounded-full px-7">
-            <NuxtLink to="/contact">
-              Book a discovery call
-            </NuxtLink>
-          </Button>
+          <DiscoveryCallButton
+            :label="homeCatalogContent.finalCtaSecondary"
+            variant="outline"
+            size="lg"
+            button-class="rounded-full px-7"
+          />
         </div>
       </div>
     </div>

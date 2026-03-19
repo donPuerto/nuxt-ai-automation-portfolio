@@ -139,6 +139,9 @@ export default defineNuxtConfig({
     storageKey: 'nuxt-color-mode'
   },
   runtimeConfig: {
+    retellAgentId: '',
+    retellStartCallWebhookUrl: '',
+    retellStartCallWebhookToken: '',
     stripeSecretKey: '',
     stripeWebhookSecret: '',
     n8nFulfillmentWebhookUrl: '',
@@ -154,8 +157,23 @@ export default defineNuxtConfig({
         'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://js.stripe.com'],
         'style-src': ["'self'", "'unsafe-inline'"],
         'frame-src': ["'self'", 'https://js.stripe.com', 'https://hooks.stripe.com'],
-        'connect-src': ["'self'", 'https://api.stripe.com', 'https://r.stripe.com', 'https://m.stripe.network'],
-      }
+        'connect-src': [
+          "'self'",
+          'https://api.iconify.design',
+          'https://api.stripe.com',
+          'https://r.stripe.com',
+          'https://m.stripe.network',
+          'https://*.livekit.cloud',
+          'wss://*.livekit.cloud',
+        ],
+      },
+      permissionsPolicy: {
+        camera: [],
+        'display-capture': [],
+        fullscreen: ['self'],
+        geolocation: [],
+        microphone: ['self'],
+      },
     }
   },
   build: {

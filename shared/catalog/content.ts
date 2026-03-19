@@ -1,7 +1,7 @@
 export const homeCatalogContent = {
-  eyebrow: 'Automation projects, packaged like products',
-  headline: 'A catalog of workflow projects built to sell, scale, and support service businesses.',
-  subheadline: 'Explore curated automation projects across content, lead generation, appointments, admin ops, AI agents, and CRM follow-up. Every project is structured like a deliverable, not a vague portfolio entry.',
+  eyebrow: 'Automation projects for service businesses',
+  headline: 'I build automation projects that help businesses work smarter and operate more efficiently.',
+  subheadline: 'Browse selected projects across operations, customer workflows, content systems, and internal processes. Some projects are available for instant access.',
   featuredCategoriesLabel: 'Browse by business outcome',
   featuredProjectsLabel: 'Featured projects',
   processLabel: 'How these projects are delivered',
@@ -11,9 +11,9 @@ export const homeCatalogContent = {
     'Every detail page is built to show what the project does, how it works, and what a buyer gets.',
   ],
   finalCtaTitle: 'Need one of these adapted to your workflow?',
-  finalCtaBody: 'Use the catalog to find the closest-fit project, then we can adapt the stack, channels, and handoff logic to your process.',
-  finalCtaPrimary: 'Browse all projects',
-  finalCtaSecondary: 'Book a discovery call',
+  finalCtaBody: 'Find the closest-fit project, then we can tailor the logic, handoff, and delivery flow to match your business process.',
+  finalCtaPrimary: 'Browse projects',
+  finalCtaSecondary: 'Start a discovery call',
 }
 
 export const accessPageDefaults = {

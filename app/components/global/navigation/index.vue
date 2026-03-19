@@ -28,11 +28,12 @@
       <!-- Theme Selector & Book a Call -->
       <div class="flex items-center gap-2">
         <ThemeSelector />
-        <Button as-child variant="default" size="default" class="hidden rounded-full md:inline-flex">
-          <NuxtLink to="/contact">
-            Book a call
-          </NuxtLink>
-        </Button>
+        <DiscoveryCallButton
+          label="Start a discovery call"
+          variant="default"
+          size="default"
+          button-class="hidden rounded-full md:inline-flex"
+        />
       </div>
 
       

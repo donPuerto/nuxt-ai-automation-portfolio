@@ -745,11 +745,12 @@ useSeoMeta({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button as-child variant="outline" size="lg" class="w-full rounded-full">
-                <NuxtLink to="/contact">
-                  Book a discovery call
-                </NuxtLink>
-              </Button>
+              <DiscoveryCallButton
+                label="Start a discovery call"
+                variant="outline"
+                size="lg"
+                button-class="w-full rounded-full"
+              />
             </CardContent>
           </Card>
         </div>
