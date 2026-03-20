@@ -1,5 +1,6 @@
 export { default as AiPortfolioAvatar } from './AiPortfolioAvatar.vue'
 export { default as AiPortfolioCanvas } from './AiPortfolioCanvas.vue'
+export { default as AiPortfolioDescriptor } from './AiPortfolioDescriptor.vue'
 export { default as AiPortfolioExpandedProject } from './AiPortfolioExpandedProject.vue'
 export { default as AiPortfolioMarquee } from './AiPortfolioMarquee.vue'
 export { default as AiPortfolioNavigator } from './AiPortfolioNavigator.vue'

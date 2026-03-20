@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { aiPortfolioContent } from '@@/shared'
+import AiPortfolioDescriptor from './AiPortfolioDescriptor.vue'
 
 const {
   prompt,
-  promptPlaceholder,
   loading,
   error,
   response,
@@ -16,10 +16,30 @@ const {
   toggleExpandedProject,
   getProjectBySlug,
 } = useAiPortfolio()
+
+const displayName = computed(() => aiPortfolioContent.nameLine.replace(/^Hey,\s*I'm\s*/i, '').trim())
+
+const greetingLine = computed(() => {
+  const hour = new Date().getHours()
+
+  if (hour < 12) {
+    return `Good morning, ${displayName.value}`
+  }
+
+  if (hour < 18) {
+    return `Good afternoon, ${displayName.value}`
+  }
+
+  return `Good evening, ${displayName.value}`
+})
+
+const descriptorTexts = computed(() => {
+  return aiPortfolioContent.descriptorLines.map(item => item.text)
+})
 </script>
 
 <template>
-  <section class="relative flex min-h-screen w-full overflow-hidden px-4 pb-10 pt-6 md:px-8 md:pb-12 md:pt-8">
+  <section class="relative flex min-h-screen w-full overflow-hidden px-4 pb-8 pt-6 md:px-8 md:pb-10 md:pt-8">
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[42rem] bg-[radial-gradient(circle_at_12%_18%,rgba(34,197,94,0.22),transparent_26%),radial-gradient(circle_at_74%_24%,rgba(56,189,248,0.18),transparent_28%),radial-gradient(circle_at_88%_62%,rgba(217,70,239,0.18),transparent_24%)] blur-3xl" />
 
     <div class="relative flex w-full flex-col">
@@ -29,23 +49,42 @@ const {
         </div>
       </div>
 
-      <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center">
-        <div class="mx-auto flex w-full max-w-5xl flex-col items-center gap-6 text-center md:gap-7">
-          <AiPortfolioAvatar />
+      <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col justify-between">
+        <div class="mx-auto flex w-full max-w-4xl flex-1 flex-col items-center justify-center gap-6 text-center md:gap-7">
+          <AiPortfolioAvatar compact />
 
           <div class="space-y-3">
-            <p class="text-4xl font-semibold tracking-tight text-foreground md:text-6xl">
-              {{ aiPortfolioContent.nameLine }}
-            </p>
-            <p class="text-base text-muted-foreground md:text-lg">
-              {{ aiPortfolioContent.descriptor }}
-            </p>
-          </div>
+            <div class="inline-flex items-center gap-3 text-[2.15rem] leading-none text-[#efd7c0] md:text-[5rem]" style="font-family: Lora, Georgia, serif;">
+              <Icon name="lucide:sparkles" class="size-7 text-[#df7f55] md:size-8" />
+              <AiPortfolioGreeting
+                :text="greetingLine"
+                :animation-type="aiPortfolioContent.greetingAnimation"
+                class="tracking-[-0.035em]"
+              />
+            </div>
 
-          <div class="w-full max-w-5xl">
+            <AiPortfolioDescriptor :texts="descriptorTexts" />
+          </div>
+        </div>
+
+        <div class="mx-auto flex w-full max-w-4xl flex-col items-center gap-4 pb-2">
+          <div class="w-full max-w-4xl">
             <AiPortfolioMarquee
               :items="aiPortfolioContent.marqueeItems"
               @select="runMarqueeIntent"
+            />
+          </div>
+
+          <div class="w-full max-w-3xl">
+            <AiPortfolioPrompt
+              v-model="prompt"
+              :loading="loading"
+              :agent-label="aiPortfolioContent.promptAgentLabel"
+              :agent-description="aiPortfolioContent.promptAgentDescription"
+              :agent-options="aiPortfolioContent.promptAgentOptions"
+              :selected-agent-id="aiPortfolioContent.selectedPromptAgentId"
+              :tool-menu="aiPortfolioContent.promptToolMenu"
+              @submit="submitPrompt"
             />
           </div>
 
@@ -53,15 +92,6 @@ const {
             :items="aiPortfolioContent.navItems"
             @select="runNavIntent"
           />
-
-          <div class="w-full max-w-3xl">
-            <AiPortfolioPrompt
-              v-model="prompt"
-              :placeholder="promptPlaceholder"
-              :loading="loading"
-              @submit="submitPrompt"
-            />
-          </div>
         </div>
       </div>
 

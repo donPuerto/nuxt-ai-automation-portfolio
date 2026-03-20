@@ -85,15 +85,6 @@ export const buildPortfolioAssistantResponse = (
     }
   }
 
-  if (intent === 'fun') {
-    return {
-      answer: 'A lot of my work style is about making automation feel tangible. I want people to understand what a workflow does, how it looks, and how quickly they can put it to work.',
-      sections: [
-        getHighlightsSection('Fun facts', skillsKnowledge.funFacts),
-      ],
-    }
-  }
-
   if (intent === 'projects') {
     return {
       answer: 'These are the projects I usually surface first when someone wants to understand the kind of workflow products and custom solutions I build.',
