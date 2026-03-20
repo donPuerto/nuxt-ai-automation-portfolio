@@ -39,14 +39,13 @@ const descriptorTexts = computed(() => {
 </script>
 
 <template>
-  <section class="relative flex min-h-screen w-full overflow-hidden px-4 pb-8 pt-6 md:px-8 md:pb-10 md:pt-8">
-    <div class="pointer-events-none absolute inset-x-0 top-0 h-[42rem] bg-[radial-gradient(circle_at_12%_18%,rgba(34,197,94,0.22),transparent_26%),radial-gradient(circle_at_74%_24%,rgba(56,189,248,0.18),transparent_28%),radial-gradient(circle_at_88%_62%,rgba(217,70,239,0.18),transparent_24%)] blur-3xl" />
+  <section class="relative min-h-screen w-full overflow-hidden bg-[#11100f]">
+    <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,rgba(32,120,73,0.22),transparent_28%),radial-gradient(circle_at_78%_18%,rgba(56,189,248,0.12),transparent_25%),radial-gradient(circle_at_88%_68%,rgba(217,70,239,0.14),transparent_24%),linear-gradient(180deg,rgba(17,16,15,0.98)_0%,rgba(13,12,12,0.97)_100%)]" />
+    <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_78%,rgba(22,163,74,0.12),transparent_26%),radial-gradient(circle_at_74%_82%,rgba(124,58,237,0.1),transparent_22%)] blur-3xl" />
 
-    <div class="relative flex w-full flex-col">
+    <div class="relative flex min-h-screen w-full flex-col px-4 pb-8 pt-6 md:px-8 md:pb-10 md:pt-8">
       <div class="mb-4 flex w-full justify-end md:mb-6">
-        <div class="inline-flex items-center rounded-full border border-border/60 bg-background/60 p-1.5 shadow-[0_16px_40px_-28px_rgba(0,0,0,0.9)] backdrop-blur">
-          <ThemeSelector />
-        </div>
+        <ThemeSelector />
       </div>
 
       <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col justify-between">
