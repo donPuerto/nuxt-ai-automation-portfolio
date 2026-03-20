@@ -116,7 +116,10 @@ const handleKeydown = (event: KeyboardEvent) => {
                     </span>
                   </DropdownMenuSubTrigger>
 
-                  <DropdownMenuSubContent class="w-56 rounded-2xl border-white/10 bg-[#2f2d29]/98 p-2 text-[#f1ece4] shadow-[0_32px_80px_-40px_rgba(0,0,0,0.95)] backdrop-blur-xl">
+                  <DropdownMenuSubContent
+                    :side-offset="10"
+                    class="z-[90] w-56 rounded-2xl border-white/10 bg-[#2f2d29]/98 p-2 text-[#f1ece4] shadow-[0_32px_80px_-40px_rgba(0,0,0,0.95)] backdrop-blur-xl"
+                  >
                     <DropdownMenuItem
                       v-for="child in item.children"
                       :key="child.id"
