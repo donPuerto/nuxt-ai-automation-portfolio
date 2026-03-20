@@ -1,2 +1,2 @@
 export const title = "Don Puerto"
-export const description = "Automation Projects Catalog"
+export const description = "AI Portfolio"

@@ -1,6 +1,9 @@
 // Personal Information - Update these with your details
 export const personalInfo = {
   name: 'Don Puerto',
+  shortName: 'Don',
+  role: 'Workflow Builder and Automation Specialist',
+  location: 'Philippines, PH',
   email: 'don.puerto.1003@gmail.com',
   phone: '+63 976 093 8376',
   social: {

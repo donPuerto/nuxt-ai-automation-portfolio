@@ -1,4 +1,6 @@
 export const homePageCopy = {
-  metaTitle: 'Automation Projects Catalog',
-  metaDescription: 'A category-first catalog of automation projects across n8n, Claude workers, GoHighLevel, Zapier, and Make.'
+  metaTitle: 'Don Puerto AI Portfolio',
+  metaDescription: 'An AI-first automation portfolio where visitors can explore Don Puerto’s workflow products, projects, skills, and discovery paths through a single prompt-driven experience.',
 }
+
+export * from './ai-portfolio'

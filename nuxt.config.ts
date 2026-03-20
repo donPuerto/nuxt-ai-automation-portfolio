@@ -156,7 +156,13 @@ export default defineNuxtConfig({
         'img-src': ["'self'", 'data:', 'blob:', 'https://cdn.simpleicons.org', 'https://*.stripe.com'],
         'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://js.stripe.com'],
         'style-src': ["'self'", "'unsafe-inline'"],
-        'frame-src': ["'self'", 'https://js.stripe.com', 'https://hooks.stripe.com'],
+        'frame-src': [
+          "'self'",
+          'https://js.stripe.com',
+          'https://hooks.stripe.com',
+          'https://www.youtube.com',
+          'https://www.youtube-nocookie.com',
+        ],
         'connect-src': [
           "'self'",
           'https://api.iconify.design',

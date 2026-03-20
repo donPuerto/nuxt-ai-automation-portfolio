@@ -13,7 +13,7 @@
         <FluidCursor />
       </ClientOnly>
 
-      <Navigation />
+      <Navigation v-if="!isAiHome" />
 
       <main class="w-full overflow-x-hidden">
         <NuxtPage />
@@ -22,14 +22,16 @@
       <BackToTop />
     </div>
 
-    <Footer />
-  </div>
+    <Footer v-if="!isAiHome" />
+</div>
 </template>
 
 <script setup lang="ts">
 import { defineAsyncComponent } from 'vue'
 
 const AsyncNeuralBg = defineAsyncComponent(() => import('~/components/ui/bg-neural/NeuralBg.vue'))
+const route = useRoute()
+const isAiHome = computed(() => route.path === '/')
 
 useLayoutManager()
 useColorMode()
