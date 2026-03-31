@@ -106,9 +106,6 @@ export default defineNuxtConfig({
     ]
   },
   vite: {
-    server: {
-      allowedHosts: ['unportioned-mechelle-nonodorously.ngrok-free.dev'],
-    },
     plugins: [
       {
         name: 'ignore-tailwind-sourcemap-warnings',
