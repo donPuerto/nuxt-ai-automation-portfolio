@@ -112,15 +112,7 @@ export default defineNuxtConfig({
     build: {
       cssCodeSplit: false,
       chunkSizeWarningLimit: 2500,
-      sourcemap: false,
-      rollupOptions: {
-        output: {
-          sourcemap: false,
-          assetFileNames: () => {
-            return 'assets/[name]-[hash][extname]'
-          }
-        }
-      }
+      sourcemap: false
     },
     html: {
       cspNonce: undefined
