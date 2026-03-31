@@ -110,23 +110,39 @@ export default defineNuxtConfig({
       allowedHosts: ['unportioned-mechelle-nonodorously.ngrok-free.dev'],
     },
     plugins: [
+      {
+        name: 'ignore-tailwind-sourcemap-warnings',
+        apply: 'build',
+        configResolved(config) {
+          const originalOnWarn = config.build.rollupOptions.onwarn
+
+          config.build.rollupOptions.onwarn = (warning, warn) => {
+            if (
+              typeof warning !== 'string'
+              && warning.code === 'SOURCEMAP_BROKEN'
+              && (
+                warning.plugin === '@tailwindcss/vite:generate:build'
+                || warning.plugin === 'nuxt:module-preload-polyfill'
+              )
+            ) {
+              return
+            }
+
+            if (typeof originalOnWarn === 'function') {
+              originalOnWarn(warning, warn)
+              return
+            }
+
+            warn(warning)
+          }
+        }
+      },
       tailwindcss(),
     ],
     build: {
       cssCodeSplit: false,
       chunkSizeWarningLimit: 2500,
-      sourcemap: false,
-      rollupOptions: {
-        onwarn(warning, defaultHandler) {
-          const message = typeof warning === 'string' ? warning : (warning.message || '')
-
-          if (message.includes('Sourcemap is likely to be incorrect')) {
-            return
-          }
-
-          defaultHandler(warning)
-        }
-      }
+      sourcemap: false
     },
     html: {
       cspNonce: undefined
