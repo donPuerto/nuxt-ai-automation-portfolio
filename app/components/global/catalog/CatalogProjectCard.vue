@@ -15,7 +15,7 @@ const projectUrl = computed(() => `/projects/${props.project.category}/${props.p
 
 <template>
   <Card
-    class="group flex h-full flex-col overflow-hidden rounded-3xl border border-slate-300/85 bg-white shadow-[0_18px_50px_-24px_rgba(15,23,42,0.24)] transition-all hover:-translate-y-1 hover:border-primary/35 hover:shadow-[0_24px_60px_-24px_rgba(15,23,42,0.28)] dark:border-border/60 dark:bg-card/82 dark:shadow-sm"
+    class="group flex h-full flex-col overflow-hidden rounded-3xl border border-border/70 bg-card/95 shadow-[0_18px_50px_-24px_rgba(15,23,42,0.18)] transition-all hover:-translate-y-1 hover:border-primary/35 hover:shadow-[0_24px_60px_-24px_rgba(15,23,42,0.22)] dark:border-border/60 dark:bg-card/82 dark:shadow-sm"
   >
     <CardHeader class="space-y-4">
       <div
@@ -67,7 +67,7 @@ const projectUrl = computed(() => `/projects/${props.project.category}/${props.p
     </CardHeader>
 
     <CardContent class="flex flex-1 flex-col justify-end space-y-4">
-      <div class="rounded-2xl border border-slate-200/80 bg-slate-50/92 p-4 dark:border-transparent dark:bg-muted/40">
+      <div class="rounded-2xl border border-border/70 bg-surface/88 p-4 dark:border-transparent dark:bg-muted/40">
         <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Business outcome
         </p>
@@ -89,7 +89,7 @@ const projectUrl = computed(() => `/projects/${props.project.category}/${props.p
         <Button
           type="button"
           variant="outline"
-          class="rounded-full border-slate-300 bg-white hover:bg-slate-50 dark:border-border dark:bg-transparent"
+          class="rounded-full border-border/70 bg-background/85 hover:bg-accent dark:border-border dark:bg-background/30 dark:hover:bg-accent/70"
           @click="navigateTo(projectUrl)"
         >
           View project

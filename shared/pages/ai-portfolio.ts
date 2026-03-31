@@ -39,13 +39,6 @@ export type AiPortfolioGreetingAnimation =
   | 'fade-up'
   | 'blur-rise'
 
-export interface AiPortfolioMarqueeItem {
-  id: string
-  label: string
-  description: string
-  prompt: string
-}
-
 export interface AiPortfolioNavItem {
   id: AiPortfolioNavIntent
   label: string
@@ -58,6 +51,7 @@ export type PortfolioAssistantIntent =
   | 'me'
   | 'projects'
   | 'skills'
+  | 'discovery-call'
   | 'category'
 
 export interface PortfolioAssistantRequest {
@@ -70,12 +64,14 @@ export interface PortfolioAssistantHighlightsSection {
   type: 'highlights'
   title: string
   items: string[]
+  layout?: PortfolioAssistantSectionLayout
 }
 
 export interface PortfolioAssistantProjectsSection {
   type: 'projects'
   title: string
   projectSlugs: string[]
+  layout?: PortfolioAssistantSectionLayout
 }
 
 export interface PortfolioAssistantCtaSection {
@@ -83,6 +79,29 @@ export interface PortfolioAssistantCtaSection {
   title: string
   action: 'discovery-call'
   label: string
+  layout?: PortfolioAssistantSectionLayout
+}
+
+export type PortfolioAssistantSectionPresentation =
+  | 'list'
+  | 'grid'
+  | 'cta'
+
+export type PortfolioAssistantSectionWidth =
+  | 'normal'
+  | 'wide'
+  | 'full'
+
+export type PortfolioAssistantSectionAlign =
+  | 'start'
+  | 'center'
+
+export interface PortfolioAssistantSectionLayout {
+  presentation?: PortfolioAssistantSectionPresentation
+  width?: PortfolioAssistantSectionWidth
+  align?: PortfolioAssistantSectionAlign
+  minCardWidth?: number
+  maxColumns?: number
 }
 
 export type PortfolioAssistantSection =
@@ -299,44 +318,6 @@ export const aiPortfolioContent = {
       text: 'Tell me about your automation experience...',
     },
   ] satisfies AiPortfolioPromptSuggestion[],
-  marqueeItems: [
-    {
-      id: 'content-social-media',
-      label: 'Content Creation & Social Media',
-      description: 'Publishing-ready workflows for content systems.',
-      prompt: 'Show me your Content Creation & Social Media workflow projects.',
-    },
-    {
-      id: 'sales-lead-generation',
-      label: 'Sales & Lead Generation',
-      description: 'Lead capture, outreach, and follow-up automations.',
-      prompt: 'Show me your Sales & Lead Generation workflow projects.',
-    },
-    {
-      id: 'appointments-customer-support',
-      label: 'Appointments & Customer Support',
-      description: 'Booking, routing, reminders, and support workflow builds.',
-      prompt: 'Show me your Appointments & Customer Support projects.',
-    },
-    {
-      id: 'productivity-admin',
-      label: 'Productivity & Admin',
-      description: 'Internal approvals, handoffs, and reporting automations.',
-      prompt: 'Show me your Productivity & Admin workflow projects.',
-    },
-    {
-      id: 'ai-agents-internal-tools',
-      label: 'AI Agents & Internal Tools',
-      description: 'AI copilots, agents, and internal tools.',
-      prompt: 'Show me your AI Agents & Internal Tools projects.',
-    },
-    {
-      id: 'crm-follow-up-automation',
-      label: 'CRM & Follow-up Automation',
-      description: 'CRM automations that keep follow-up moving.',
-      prompt: 'Show me your CRM & Follow-up Automation projects.',
-    },
-  ] satisfies AiPortfolioMarqueeItem[],
   navItems: [
     {
       id: 'me',

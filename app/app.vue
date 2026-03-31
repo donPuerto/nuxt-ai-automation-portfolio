@@ -37,7 +37,7 @@ useHead({
   ],
   style: [
     {
-      innerHTML: `html,body{visibility:visible!important;font-family:system-ui,Arial,sans-serif;background-color:hsl(var(--background,0 0% 100%));color:hsl(var(--foreground,0 0% 3.9%));}`,
+      innerHTML: `html,body{visibility:visible!important;font-family:"Anthropic Sans",system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background-color:hsl(var(--background,0 0% 100%));color:hsl(var(--foreground,0 0% 3.9%));}`,
       key: 'critical-css'
     }
   ]

@@ -1,0 +1,29 @@
+{
+  "slug": "video-to-text-transcriber",
+  "title": "Video to Text Transcriber",
+  "primaryPlatform": "n8n",
+  "category": "content-social-media",
+  "summary": "Drop in a YouTube or video URL and get back a transcription through an n8n-powered multi-source pipeline.",
+  "businessOutcome": "Turn source videos into searchable text faster so clips, summaries, SOPs, and content repurposing start from clean transcripts instead of manual note-taking.",
+  "platforms": ["n8n", "AssemblyAI", "Deepgram", "OpenAI"],
+  "thumbnail": "Paste URL in. Queue transcription. Read the transcript below.",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+  "priceLabel": "$129 workflow",
+  "paymentLink": "https://buy.stripe.com/test_00g000000000000000",
+  "problem": "Video content is hard to reuse when the transcript sits behind manual downloads, copy-paste workflows, or tool switching.",
+  "solution": "This transcriber accepts video URLs, routes them through the right source pipeline, and returns transcription text back into the web app callback flow.",
+  "workflowOverview": [
+    "Accepts a YouTube, social, or supported video URL",
+    "Routes the job through n8n with the selected transcription provider",
+    "Returns the finished transcript back into the app via callback"
+  ],
+  "deliverables": ["URL input canvas", "callback-driven transcript result", "multi-source transcription pipeline"],
+  "resultsOrExpectedOutcome": ["Faster transcript turnaround", "Less manual downloading", "Cleaner content repurposing workflow"],
+  "visibility": "public",
+  "anonymized": false,
+  "audience": "Creators, agencies, operators, and teams repurposing long-form video content",
+  "featured": true,
+  "interactiveTool": {
+    "type": "video-to-text-transcriber"
+  }
+}

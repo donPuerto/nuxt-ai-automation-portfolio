@@ -1,5 +1,6 @@
 @theme {
-  --font-sans: "Inter", Arial, ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Anthropic Sans", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: "Anthropic Serif", Georgia, "Times New Roman", Times, serif;
   --font-mono: "JetBrains Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 

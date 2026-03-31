@@ -65,6 +65,10 @@ export interface CatalogProjectAccess {
   bundleOffer?: CatalogProjectOffer
 }
 
+export interface CatalogProjectInteractiveTool {
+  type: 'video-to-text-transcriber'
+}
+
 export interface CatalogProject {
   slug: string
   title: string
@@ -86,6 +90,7 @@ export interface CatalogProject {
   anonymized: boolean
   audience: string
   featured?: boolean
+  interactiveTool?: CatalogProjectInteractiveTool
   checkout?: CatalogProjectCheckout
   delivery?: CatalogProjectDelivery
   access?: CatalogProjectAccess

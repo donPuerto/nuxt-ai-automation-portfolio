@@ -1,10 +1,10 @@
 // Personal Information - Update these with your details
 export const personalInfo = {
-  name: 'Don Puerto',
+  name: 'Arlindo Remorosa Puerto',
   shortName: 'Don',
-  role: 'Workflow Builder and Automation Specialist',
-  location: 'Philippines, PH',
-  email: 'don.puerto.1003@gmail.com',
+  role: 'Freelance Developer and Automation Specialist',
+  location: 'Davao City, Philippines',
+  email: 'don.puerto@hotmail.com',
   phone: '+63 976 093 8376',
   social: {
     linkedin: 'https://www.linkedin.com/in/arlindo-puerto-58a26295/',

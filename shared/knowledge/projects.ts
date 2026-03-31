@@ -13,6 +13,9 @@ export interface PortfolioKnowledgeProject {
   customBuildAvailable: boolean
   workflowOverview: string[]
   valueBullets: string[]
+  interactiveTool?: {
+    type: 'video-to-text-transcriber'
+  }
 }
 
 export const portfolioKnowledgeProjects: PortfolioKnowledgeProject[] = catalogProjects.map((project) => {
@@ -31,5 +34,6 @@ export const portfolioKnowledgeProjects: PortfolioKnowledgeProject[] = catalogPr
     customBuildAvailable: true,
     workflowOverview: project.workflowOverview,
     valueBullets: project.deliverables.slice(0, 3),
+    interactiveTool: project.interactiveTool,
   }
 })

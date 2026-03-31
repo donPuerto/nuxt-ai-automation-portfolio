@@ -81,38 +81,38 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --background: oklch(0.988 0.004 95);
+  --foreground: oklch(0.205 0.01 55);
+  --card: oklch(0.995 0.003 95);
+  --card-foreground: oklch(0.205 0.01 55);
+  --popover: oklch(0.995 0.003 95);
+  --popover-foreground: oklch(0.205 0.01 55);
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.972 0.004 95);
+  --secondary-foreground: oklch(0.205 0.01 55);
+  --muted: oklch(0.968 0.003 95);
+  --muted-foreground: oklch(0.5 0.008 60);
+  --accent: oklch(0.974 0.004 95);
+  --accent-foreground: oklch(0.205 0.01 55);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: oklch(0.905 0.004 95);
+  --input: oklch(0.905 0.004 95);
+  --ring: oklch(0.72 0.012 65);
   --chart-1: var(--color-blue-300);
   --chart-2: var(--color-blue-500);
   --chart-3: var(--color-blue-600);
   --chart-4: var(--color-blue-700);
   --chart-5: var(--color-blue-800);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar: oklch(0.988 0.004 95);
+  --sidebar-foreground: oklch(0.205 0.01 55);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-  --surface: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.974 0.004 95);
+  --sidebar-accent-foreground: oklch(0.205 0.01 55);
+  --sidebar-border: oklch(0.905 0.004 95);
+  --sidebar-ring: oklch(0.72 0.012 65);
+  --surface: oklch(0.978 0.004 95);
   --surface-foreground: var(--foreground);
   --code: var(--surface);
   --code-foreground: var(--surface-foreground);
@@ -183,7 +183,7 @@
   }
 
   [data-slot="layout"] {
-    @apply overscroll-none fixed:3xl:p-2;
+    @apply overscroll-none;
   }
 
   @supports (font: -apple-system-body) and (-webkit-appearance: none) {

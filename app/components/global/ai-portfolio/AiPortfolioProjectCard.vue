@@ -14,9 +14,11 @@ const emit = defineEmits<{
 <template>
   <button
     type="button"
-    class="group flex h-full w-full flex-col rounded-[1.75rem] border border-border/60 bg-card/75 p-5 text-left shadow-sm transition hover:-translate-y-1 hover:border-primary/30 hover:bg-card"
+    class="group relative flex h-full w-full flex-col overflow-hidden rounded-[1.75rem] border border-border/75 bg-card/92 p-5 text-left shadow-[0_18px_40px_-34px_rgba(0,0,0,0.52)] transition duration-300 ease-out hover:-translate-y-1.5 hover:scale-[1.01] hover:border-primary/35 hover:bg-card hover:shadow-[0_30px_60px_-36px_rgba(0,0,0,0.62)]"
     @click="emit('select', project.slug)"
   >
+    <div class="pointer-events-none absolute inset-x-6 top-0 h-16 rounded-b-full bg-primary/8 opacity-0 blur-2xl transition duration-300 group-hover:opacity-100" />
+
     <div class="space-y-3">
       <div class="flex items-center justify-between gap-3">
         <span class="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
@@ -38,18 +40,18 @@ const emit = defineEmits<{
       </div>
     </div>
 
-    <div class="mt-5 rounded-2xl border border-border/50 bg-background/70 p-4">
+    <div class="mt-5 rounded-2xl border border-border/60 bg-background/90 p-4 transition duration-300 group-hover:border-primary/20 group-hover:bg-background">
       <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         Workflow preview
       </p>
-      <p class="mt-2 text-sm font-medium text-foreground">
+      <p class="mt-2 text-sm font-medium text-foreground transition duration-300 group-hover:text-foreground/95">
         {{ project.thumbnail }}
       </p>
     </div>
 
     <div class="mt-5 flex items-center justify-between text-sm">
       <span class="font-semibold text-foreground">{{ project.priceLabel }}</span>
-      <span class="text-primary">{{ expanded ? 'Hide details' : 'View details' }}</span>
+      <span class="text-primary transition duration-300 group-hover:translate-x-0.5">{{ expanded ? 'Hide details' : 'View details' }}</span>
     </div>
   </button>
 </template>

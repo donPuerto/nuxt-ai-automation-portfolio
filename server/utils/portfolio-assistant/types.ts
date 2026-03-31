@@ -6,4 +6,5 @@ export type {
   PortfolioAssistantRequest,
   PortfolioAssistantResponse,
   PortfolioAssistantSection,
+  PortfolioAssistantSectionLayout,
 } from '@@/shared'

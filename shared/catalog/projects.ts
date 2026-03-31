@@ -19,6 +19,7 @@ import aiBookingConcierge from '../projects/n8n/ai-booking-concierge.json'
 import linkedinOutreachOrchestrator from '../projects/n8n/linkedin-outreach-orchestrator.json'
 import opsApprovalRail from '../projects/n8n/ops-approval-rail.json'
 import podcastPublisherEngine from '../projects/n8n/podcast-publisher-engine.json'
+import videoToTextTranscriber from '../projects/n8n/video-to-text-transcriber.json'
 import socialRepurposingFactory from '../projects/zapier/social-repurposing-factory.json'
 import type { CatalogPlatformFolder, CatalogProject } from './types'
 
@@ -38,6 +39,7 @@ export const getPlatformLabel = (platform: CatalogPlatformFolder) =>
   platformLabels[platform]
 
 export const catalogProjects = [
+  asCatalogProject(videoToTextTranscriber as CatalogProject),
   asCatalogProject(podcastPublisherEngine as CatalogProject),
   asCatalogProject(socialRepurposingFactory as CatalogProject),
   asCatalogProject(linkedinOutreachOrchestrator as CatalogProject),

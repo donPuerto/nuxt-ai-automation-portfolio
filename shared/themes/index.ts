@@ -21,6 +21,29 @@ export interface FontOption {
   family: string
 }
 
+export interface FontSelection {
+  sans: string
+  serif: string
+  mono: string
+}
+
+export interface CursorPaletteMode {
+  core: string
+  glow: string
+  ring: string
+  mainTrail: [string, string, string]
+  sideTrailA: [string, string, string]
+  sideTrailB: [string, string, string]
+}
+
+export interface CursorPalette {
+  id: string
+  label: string
+  swatch: string
+  light: CursorPaletteMode
+  dark: CursorPaletteMode
+}
+
 export interface AccentPreset {
   id: string
   label: string
@@ -59,6 +82,7 @@ export interface AccentPreset {
 
 // Font options for customization
 export const fontSansOptions: FontOption[] = [
+  { value: 'anthropic-sans', label: 'Anthropic Sans', family: '"Anthropic Sans", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' },
   { value: 'system-ui', label: 'System UI', family: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif' },
   { value: 'inter', label: 'Inter', family: 'Inter, sans-serif' },
   { value: 'plus-jakarta', label: 'Plus Jakarta Sans', family: 'Plus Jakarta Sans, sans-serif' },
@@ -82,6 +106,7 @@ export const fontSansOptions: FontOption[] = [
 ]
 
 export const fontSerifOptions: FontOption[] = [
+  { value: 'anthropic-serif', label: 'Anthropic Serif', family: '"Anthropic Serif", Georgia, "Times New Roman", Times, serif' },
   { value: 'georgia', label: 'Georgia', family: 'Georgia, serif' },
   { value: 'lora', label: 'Lora', family: 'Lora, serif' },
   { value: 'merriweather', label: 'Merriweather', family: 'Merriweather, serif' },
@@ -121,8 +146,8 @@ export const styleThemes: ThemeConfig[] = [
     label: 'Default',
     icon: 'lucide:palette',
     fonts: {
-      sans: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, \'Noto Sans\', sans-serif, \'Apple Color Emoji\', \'Segoe UI Emoji\', \'Segoe UI Symbol\', \'Noto Color Emoji\'',
-      serif: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
+      sans: '"Anthropic Sans", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+      serif: '"Anthropic Serif", Georgia, "Times New Roman", Times, serif',
       mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
     }
   },
@@ -204,6 +229,93 @@ export const radiusOptions: RadiusOption[] = [
   { value: '1.5', label: '1.5' },
   { value: '1.75', label: '1.75' },
   { value: '2', label: '2' }
+]
+
+export const cursorPalettes: CursorPalette[] = [
+  {
+    id: 'prism',
+    label: 'Prism',
+    swatch: 'linear-gradient(135deg, #00f5ff 0%, #8b5cf6 45%, #ff7a18 100%)',
+    light: {
+      core: 'rgba(255, 248, 241, 0.98)',
+      glow: 'rgba(255, 132, 66, 0.18)',
+      ring: 'rgba(255, 120, 36, 0.52)',
+      mainTrail: ['rgba(255, 112, 32, 0.0)', 'rgba(255, 120, 36, 0.42)', 'rgba(255, 196, 120, 0.95)'],
+      sideTrailA: ['rgba(88, 176, 255, 0.0)', 'rgba(88, 176, 255, 0.28)', 'rgba(171, 222, 255, 0.92)'],
+      sideTrailB: ['rgba(190, 92, 255, 0.0)', 'rgba(190, 92, 255, 0.22)', 'rgba(233, 192, 255, 0.9)'],
+    },
+    dark: {
+      core: 'rgba(242, 255, 254, 0.98)',
+      glow: 'rgba(0, 255, 224, 0.28)',
+      ring: 'rgba(0, 255, 224, 0.68)',
+      mainTrail: ['rgba(0, 255, 224, 0.0)', 'rgba(0, 255, 224, 0.34)', 'rgba(134, 255, 240, 0.95)'],
+      sideTrailA: ['rgba(99, 102, 241, 0.0)', 'rgba(99, 102, 241, 0.26)', 'rgba(183, 191, 255, 0.9)'],
+      sideTrailB: ['rgba(255, 0, 153, 0.0)', 'rgba(255, 0, 153, 0.24)', 'rgba(255, 169, 223, 0.88)'],
+    },
+  },
+  {
+    id: 'aurora',
+    label: 'Aurora',
+    swatch: 'linear-gradient(135deg, #34d399 0%, #22d3ee 50%, #6366f1 100%)',
+    light: {
+      core: 'rgba(244, 255, 252, 0.98)',
+      glow: 'rgba(34, 211, 238, 0.18)',
+      ring: 'rgba(16, 185, 129, 0.48)',
+      mainTrail: ['rgba(16, 185, 129, 0.0)', 'rgba(16, 185, 129, 0.34)', 'rgba(167, 243, 208, 0.94)'],
+      sideTrailA: ['rgba(34, 211, 238, 0.0)', 'rgba(34, 211, 238, 0.26)', 'rgba(187, 247, 255, 0.9)'],
+      sideTrailB: ['rgba(99, 102, 241, 0.0)', 'rgba(99, 102, 241, 0.18)', 'rgba(199, 210, 254, 0.86)'],
+    },
+    dark: {
+      core: 'rgba(233, 255, 250, 0.98)',
+      glow: 'rgba(16, 185, 129, 0.28)',
+      ring: 'rgba(52, 211, 153, 0.66)',
+      mainTrail: ['rgba(16, 185, 129, 0.0)', 'rgba(16, 185, 129, 0.34)', 'rgba(110, 255, 203, 0.95)'],
+      sideTrailA: ['rgba(34, 211, 238, 0.0)', 'rgba(34, 211, 238, 0.3)', 'rgba(152, 247, 255, 0.92)'],
+      sideTrailB: ['rgba(129, 140, 248, 0.0)', 'rgba(129, 140, 248, 0.22)', 'rgba(209, 213, 255, 0.86)'],
+    },
+  },
+  {
+    id: 'sunset',
+    label: 'Sunset',
+    swatch: 'linear-gradient(135deg, #fb7185 0%, #f97316 55%, #facc15 100%)',
+    light: {
+      core: 'rgba(255, 247, 240, 0.98)',
+      glow: 'rgba(249, 115, 22, 0.2)',
+      ring: 'rgba(244, 114, 32, 0.52)',
+      mainTrail: ['rgba(249, 115, 22, 0.0)', 'rgba(249, 115, 22, 0.36)', 'rgba(255, 210, 132, 0.95)'],
+      sideTrailA: ['rgba(251, 113, 133, 0.0)', 'rgba(251, 113, 133, 0.24)', 'rgba(255, 205, 216, 0.9)'],
+      sideTrailB: ['rgba(250, 204, 21, 0.0)', 'rgba(250, 204, 21, 0.22)', 'rgba(255, 243, 171, 0.86)'],
+    },
+    dark: {
+      core: 'rgba(255, 247, 238, 0.98)',
+      glow: 'rgba(249, 115, 22, 0.3)',
+      ring: 'rgba(251, 146, 60, 0.68)',
+      mainTrail: ['rgba(249, 115, 22, 0.0)', 'rgba(249, 115, 22, 0.36)', 'rgba(255, 202, 115, 0.95)'],
+      sideTrailA: ['rgba(251, 113, 133, 0.0)', 'rgba(251, 113, 133, 0.22)', 'rgba(255, 183, 197, 0.88)'],
+      sideTrailB: ['rgba(250, 204, 21, 0.0)', 'rgba(250, 204, 21, 0.22)', 'rgba(255, 241, 153, 0.84)'],
+    },
+  },
+  {
+    id: 'matrix',
+    label: 'Matrix',
+    swatch: 'linear-gradient(135deg, #22c55e 0%, #14b8a6 100%)',
+    light: {
+      core: 'rgba(240, 255, 245, 0.98)',
+      glow: 'rgba(34, 197, 94, 0.16)',
+      ring: 'rgba(34, 197, 94, 0.48)',
+      mainTrail: ['rgba(34, 197, 94, 0.0)', 'rgba(34, 197, 94, 0.32)', 'rgba(187, 247, 208, 0.94)'],
+      sideTrailA: ['rgba(20, 184, 166, 0.0)', 'rgba(20, 184, 166, 0.22)', 'rgba(176, 255, 246, 0.88)'],
+      sideTrailB: ['rgba(132, 204, 22, 0.0)', 'rgba(132, 204, 22, 0.18)', 'rgba(231, 255, 181, 0.84)'],
+    },
+    dark: {
+      core: 'rgba(239, 255, 244, 0.98)',
+      glow: 'rgba(34, 197, 94, 0.28)',
+      ring: 'rgba(74, 222, 128, 0.66)',
+      mainTrail: ['rgba(34, 197, 94, 0.0)', 'rgba(34, 197, 94, 0.34)', 'rgba(136, 255, 182, 0.94)'],
+      sideTrailA: ['rgba(20, 184, 166, 0.0)', 'rgba(20, 184, 166, 0.24)', 'rgba(126, 255, 240, 0.88)'],
+      sideTrailB: ['rgba(132, 204, 22, 0.0)', 'rgba(132, 204, 22, 0.2)', 'rgba(217, 255, 137, 0.82)'],
+    },
+  },
 ]
 
 export const accentPresets: AccentPreset[] = [

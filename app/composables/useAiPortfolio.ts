@@ -1,5 +1,4 @@
 import type {
-  AiPortfolioMarqueeItem,
   AiPortfolioNavIntent,
   PortfolioAssistantRequest,
   PortfolioAssistantResponse,
@@ -11,6 +10,11 @@ type AssistantApiResult = {
   ok: boolean
   message: string
   response?: PortfolioAssistantResponse
+}
+
+type NavWebhookResult = {
+  ok: boolean
+  message: string
 }
 
 export const useAiPortfolio = () => {
@@ -72,9 +76,36 @@ export const useAiPortfolio = () => {
     })
   }
 
-  const runNavIntent = async (intent: AiPortfolioNavIntent) => {
-    if (intent === 'discovery-call') {
+  const triggerNavWebhook = async (intent: AiPortfolioNavIntent) => {
+    const navItem = aiPortfolioContent.navItems.find(item => item.id === intent)
+
+    if (!navItem) {
       return
+    }
+
+    try {
+      const result = await $fetch<NavWebhookResult>('/api/portfolio-assistant/me-webhook', {
+        method: 'POST',
+        body: {
+          intent,
+          label: navItem.label,
+          prompt: navItem.prompt,
+          path: import.meta.client ? window.location.pathname : '/',
+        },
+      })
+
+      if (!result.ok) {
+        console.warn('portfolio nav webhook unavailable', result.message)
+      }
+    }
+    catch (caughtError) {
+      console.warn('portfolio nav webhook skipped', caughtError)
+    }
+  }
+
+  const runNavIntent = async (intent: AiPortfolioNavIntent) => {
+    if (intent === 'me') {
+      await triggerNavWebhook(intent)
     }
 
     const navItem = aiPortfolioContent.navItems.find(item => item.id === intent)
@@ -85,16 +116,18 @@ export const useAiPortfolio = () => {
     })
   }
 
-  const runMarqueeIntent = async (item: AiPortfolioMarqueeItem) => {
-    await fetchResponse({
-      intent: 'category',
-      categoryId: item.id,
-      prompt: item.prompt,
-    })
-  }
-
   const toggleExpandedProject = (slug: string) => {
     expandedProjectSlug.value = expandedProjectSlug.value === slug ? null : slug
+
+    if (import.meta.client && expandedProjectSlug.value) {
+      nextTick(() => {
+        const target = document.getElementById(`expanded-project-${expandedProjectSlug.value}`)
+        target?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        })
+      })
+    }
   }
 
   return {
@@ -107,7 +140,6 @@ export const useAiPortfolio = () => {
     expandedProjectSlug,
     submitPrompt,
     runNavIntent,
-    runMarqueeIntent,
     toggleExpandedProject,
     getProjectBySlug,
   }

@@ -103,6 +103,9 @@ export default defineNuxtConfig({
     ]
   },
   vite: {
+    server: {
+      allowedHosts: ['unportioned-mechelle-nonodorously.ngrok-free.dev'],
+    },
     plugins: [
       tailwindcss(),
     ],
@@ -146,8 +149,13 @@ export default defineNuxtConfig({
     stripeWebhookSecret: '',
     n8nFulfillmentWebhookUrl: '',
     n8nFulfillmentWebhookToken: '',
+    n8nAskDonWebhookUrl: '',
+    videoToTextWebhookUrl: '',
+    videoToTextApiKey: '',
+    videoToTextCallbackUrl: '',
     public: {
       stripePublishableKey: '',
+      siteUrl: '',
     },
   },
   security: {

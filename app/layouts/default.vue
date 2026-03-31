@@ -1,25 +1,15 @@
 <template>
   <div
     data-slot="layout"
-    :class="[
-      'theme-container relative min-h-screen text-foreground transition-colors duration-300',
-      isAiHome ? 'bg-transparent' : 'bg-background/92 dark:bg-background/70',
-    ]"
+    class="theme-container relative min-h-screen bg-background text-foreground transition-colors duration-300"
   >
-    <!-- Neural Background Layer -->
-    <ClientOnly>
-      <AsyncNeuralBg class="fixed inset-0 -z-10" :hue="200" :saturation="0.8" :chroma="0.6" />
-    </ClientOnly>
-    
-    <!-- Subtle Gradient Overlay -->
     <div
-      v-if="!isAiHome"
-      class="pointer-events-none fixed inset-0 -z-5 bg-linear-to-br from-white/65 via-white/25 to-slate-200/40 dark:from-blue-500/5 dark:via-purple-500/5 dark:to-pink-500/5"
+      class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_0%_7%,rgba(250,223,110,0.34),transparent_11%),radial-gradient(circle_at_32%_0%,rgba(251,223,108,0.26),transparent_12%),radial-gradient(circle_at_50%_26%,rgba(162,205,255,0.12),transparent_16%),linear-gradient(180deg,rgba(255,255,255,0.12),rgba(255,255,255,0))] dark:hidden"
     />
 
     <div data-wrapper class="relative mx-auto w-full overflow-x-hidden">
       <ClientOnly>
-        <FluidCursor />
+        <NeonCursor />
       </ClientOnly>
 
       <Navigation v-if="!isAiHome" />
@@ -36,12 +26,10 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent } from 'vue'
+import NeonCursor from '~/components/ui/neon-cursor/NeonCursor.vue'
 
-const AsyncNeuralBg = defineAsyncComponent(() => import('~/components/ui/bg-neural/NeuralBg.vue'))
 const route = useRoute()
 const isAiHome = computed(() => route.path === '/')
 
 useLayoutManager()
-useColorMode()
 </script>

@@ -158,7 +158,7 @@ const createAppearance = (): Appearance => ({
     colorText: colorMode.value === 'dark' ? '#fafafa' : '#09090b',
     colorDanger: '#ef4444',
     borderRadius: '16px',
-    fontFamily: 'Inter, system-ui, sans-serif',
+    fontFamily: '"Anthropic Sans", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
     spacingUnit: '4px',
   },
   rules: {
