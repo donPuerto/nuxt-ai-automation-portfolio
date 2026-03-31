@@ -17,9 +17,12 @@ export default defineNuxtConfig({
     },
     preset: "cloudflare_module",
     cloudflare: {
-        deployConfig: true,
-        nodeCompat: true
-      },
+      deployConfig: true,
+      nodeCompat: true,
+      wrangler: {
+        name: 'nuxt-ai-automation-portfolio'
+      }
+    },
     externals: {
       inline: ['@nuxt/nitro-server']
     }
