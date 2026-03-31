@@ -115,7 +115,18 @@ export default defineNuxtConfig({
     build: {
       cssCodeSplit: false,
       chunkSizeWarningLimit: 2500,
-      sourcemap: false
+      sourcemap: false,
+      rollupOptions: {
+        onwarn(warning, defaultHandler) {
+          const message = typeof warning === 'string' ? warning : (warning.message || '')
+
+          if (message.includes('Sourcemap is likely to be incorrect')) {
+            return
+          }
+
+          defaultHandler(warning)
+        }
+      }
     },
     html: {
       cspNonce: undefined
