@@ -226,7 +226,9 @@ const submitForTranscription = async () => {
     console.error('video-to-text submit failed', error)
     loading.value = false
     status.value = 'failed'
-    errorMessage.value = 'We could not start the transcription workflow right now.'
+    errorMessage.value = error instanceof Error
+      ? error.message
+      : 'We could not start the transcription workflow right now.'
     statusMessage.value = 'Transcription could not be started.'
   }
 }
