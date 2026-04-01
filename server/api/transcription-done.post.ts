@@ -28,28 +28,30 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const existingJob = await getVideoToTextJob(jobId)
-
-  if (!existingJob) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'Transcription job not found.',
-    })
+  const success = body?.success !== false
+  const existingJob = await getVideoToTextJob(jobId, event)
+  const now = body?.timestamp || new Date().toISOString()
+  const baseJob = existingJob ?? {
+    id: jobId,
+    status: 'processing' as const,
+    sourceUrl: body?.source_url || '',
+    source: body?.source || 'unknown',
+    transcriber: body?.transcriber || 'assemblyai',
+    createdAt: now,
+    updatedAt: now,
   }
 
-  const success = body?.success !== false
-
   await setVideoToTextJob({
-    ...existingJob,
+    ...baseJob,
     status: success ? 'completed' : 'failed',
-    sourceUrl: body?.source_url || existingJob.sourceUrl,
-    source: body?.source || existingJob.source,
-    transcriber: body?.transcriber || existingJob.transcriber,
-    transcription: body?.transcription || existingJob.transcription,
+    sourceUrl: body?.source_url || baseJob.sourceUrl,
+    source: body?.source || baseJob.source,
+    transcriber: body?.transcriber || baseJob.transcriber,
+    transcription: body?.transcription || baseJob.transcription,
     wordCount: body?.word_count,
     error: success ? undefined : body?.error || body?.message || 'Transcription failed.',
-    updatedAt: body?.timestamp || new Date().toISOString(),
-  })
+    updatedAt: now,
+  }, event)
 
   return {
     ok: true,

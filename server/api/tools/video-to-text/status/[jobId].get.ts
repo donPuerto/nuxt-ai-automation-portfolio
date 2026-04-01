@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const job = await getVideoToTextJob(jobId)
+  const job = await getVideoToTextJob(jobId, event)
 
   if (!job) {
     return {

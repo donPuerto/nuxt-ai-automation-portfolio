@@ -1,3 +1,5 @@
+import type { H3Event } from 'h3'
+
 export type VideoToTextJobStatus =
   | 'processing'
   | 'completed'
@@ -18,12 +20,36 @@ export interface VideoToTextJobRecord {
 
 const getJobKey = (jobId: string) => `video-to-text:${jobId}`
 
-export const getVideoToTextJob = async (jobId: string) => {
-  const storage = useStorage('data')
-  return await storage.getItem<VideoToTextJobRecord>(getJobKey(jobId))
+type VideoToTextJobsKv = {
+  get(key: string, type: 'json'): Promise<VideoToTextJobRecord | null>
+  put(key: string, value: string): Promise<void>
 }
 
-export const setVideoToTextJob = async (job: VideoToTextJobRecord) => {
+const getVideoToTextJobsKv = (event?: H3Event): VideoToTextJobsKv | undefined =>
+  event?.context.cloudflare?.env?.VIDEO_TO_TEXT_JOBS as VideoToTextJobsKv | undefined
+
+export const getVideoToTextJob = async (jobId: string, event?: H3Event) => {
+  const key = getJobKey(jobId)
+  const jobsKv = getVideoToTextJobsKv(event)
+
+  if (jobsKv) {
+    const job = await jobsKv.get(key, 'json')
+    return job as VideoToTextJobRecord | null
+  }
+
   const storage = useStorage('data')
-  await storage.setItem(getJobKey(job.id), job)
+  return await storage.getItem<VideoToTextJobRecord>(key)
+}
+
+export const setVideoToTextJob = async (job: VideoToTextJobRecord, event?: H3Event) => {
+  const key = getJobKey(job.id)
+  const jobsKv = getVideoToTextJobsKv(event)
+
+  if (jobsKv) {
+    await jobsKv.put(key, JSON.stringify(job))
+    return
+  }
+
+  const storage = useStorage('data')
+  await storage.setItem(key, job)
 }

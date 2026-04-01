@@ -84,7 +84,7 @@ export default defineEventHandler(async (event) => {
     transcriber,
     createdAt: now,
     updatedAt: now,
-  })
+  }, event)
 
   try {
     const response = await $fetch.raw<{ message?: string }>(config.videoToTextWebhookUrl, {
@@ -122,7 +122,7 @@ export default defineEventHandler(async (event) => {
         createdAt: now,
         updatedAt: new Date().toISOString(),
         error: message,
-      })
+      }, event)
 
       return {
         ok: false,
@@ -130,13 +130,13 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    const existingJob = await getVideoToTextJob(jobId)
+    const existingJob = await getVideoToTextJob(jobId, event)
 
     if (existingJob) {
       await setVideoToTextJob({
         ...existingJob,
         updatedAt: new Date().toISOString(),
-      })
+      }, event)
     }
 
     return {
@@ -164,7 +164,7 @@ export default defineEventHandler(async (event) => {
       createdAt: now,
       updatedAt: new Date().toISOString(),
       error: message,
-    })
+    }, event)
 
     return {
       ok: false,
