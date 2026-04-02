@@ -427,8 +427,8 @@ watch(transcriber, (value) => {
       </CardHeader>
 
       <CardContent class="p-0">
-        <div class="rounded-[1.5rem] border border-border/70 bg-card/90">
-          <ScrollArea class="min-h-[22rem] max-h-[28rem] rounded-[1.5rem]">
+        <div class="overflow-hidden rounded-[1.5rem] border border-border/70 bg-card/90">
+          <ScrollArea class="h-[22rem] rounded-[1.5rem] md:h-[28rem]">
             <div
               v-if="formattedTranscriptParagraphs.length"
               class="space-y-5 px-5 py-4 text-sm leading-7 text-foreground md:text-[0.95rem]"
@@ -444,7 +444,7 @@ watch(transcriber, (value) => {
 
             <div
               v-else
-              class="flex min-h-[22rem] items-center justify-center px-5 py-4 text-center text-sm text-muted-foreground md:min-h-[28rem] md:text-[0.95rem]"
+              class="flex h-[22rem] items-center justify-center px-5 py-4 text-center text-sm text-muted-foreground md:h-[28rem] md:text-[0.95rem]"
             >
               {{ loading ? 'Waiting for transcription callback...' : 'Your transcript will appear here.' }}
             </div>
