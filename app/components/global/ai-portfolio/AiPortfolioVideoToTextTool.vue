@@ -66,6 +66,57 @@ const transcriberOptions = [
 ] as const
 
 const canSubmit = computed(() => sourceUrl.value.trim().length > 0 && !loading.value)
+const formattedTranscriptParagraphs = computed(() => {
+  const normalizedTranscript = transcript.value
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .trim()
+
+  if (!normalizedTranscript) {
+    return []
+  }
+
+  const explicitParagraphs = normalizedTranscript
+    .split(/\n{2,}/)
+    .map(paragraph => paragraph.trim())
+    .filter(Boolean)
+
+  if (explicitParagraphs.length > 1) {
+    return explicitParagraphs
+  }
+
+  const sentences = normalizedTranscript
+    .split(/(?<=[.!?])\s+(?=(?:[A-Z0-9"'])|(?:No\b)|(?:But\b)|(?:And\b)|(?:So\b))/)
+    .map(sentence => sentence.trim())
+    .filter(Boolean)
+
+  if (sentences.length <= 3) {
+    return [normalizedTranscript]
+  }
+
+  const paragraphs: string[] = []
+  let currentParagraph = ''
+
+  for (const sentence of sentences) {
+    const nextParagraph = currentParagraph
+      ? `${currentParagraph} ${sentence}`
+      : sentence
+
+    if (nextParagraph.length > 420 && currentParagraph) {
+      paragraphs.push(currentParagraph)
+      currentParagraph = sentence
+      continue
+    }
+
+    currentParagraph = nextParagraph
+  }
+
+  if (currentParagraph) {
+    paragraphs.push(currentParagraph)
+  }
+
+  return paragraphs
+})
 const callbackNotice = computed(() => {
   if (!callbackPending.value) {
     return ''
@@ -376,12 +427,29 @@ watch(transcriber, (value) => {
       </CardHeader>
 
       <CardContent class="p-0">
-        <Textarea
-          :model-value="transcript"
-          readonly
-          :placeholder="loading ? 'Waiting for transcription callback...' : 'Your transcript will appear here.'"
-          class="min-h-[22rem] resize-none rounded-[1.5rem] border-border/70 bg-card/90 px-5 py-4 text-sm leading-7 shadow-none md:min-h-[28rem] md:text-[0.95rem]"
-        />
+        <div class="rounded-[1.5rem] border border-border/70 bg-card/90">
+          <ScrollArea class="min-h-[22rem] max-h-[28rem] rounded-[1.5rem]">
+            <div
+              v-if="formattedTranscriptParagraphs.length"
+              class="space-y-5 px-5 py-4 text-sm leading-7 text-foreground md:text-[0.95rem]"
+            >
+              <p
+                v-for="(paragraph, index) in formattedTranscriptParagraphs"
+                :key="`${index}-${paragraph.slice(0, 24)}`"
+                class="whitespace-pre-wrap text-pretty"
+              >
+                {{ paragraph }}
+              </p>
+            </div>
+
+            <div
+              v-else
+              class="flex min-h-[22rem] items-center justify-center px-5 py-4 text-center text-sm text-muted-foreground md:min-h-[28rem] md:text-[0.95rem]"
+            >
+              {{ loading ? 'Waiting for transcription callback...' : 'Your transcript will appear here.' }}
+            </div>
+          </ScrollArea>
+        </div>
       </CardContent>
     </Card>
   </section>
