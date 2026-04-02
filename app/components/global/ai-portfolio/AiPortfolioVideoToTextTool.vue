@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PortfolioKnowledgeProject } from '@@/shared'
+import { toast } from 'vue-sonner'
 
 type StartTranscriptionResult = {
   ok: boolean
@@ -66,6 +67,7 @@ const transcriberOptions = [
 ] as const
 
 const canSubmit = computed(() => sourceUrl.value.trim().length > 0 && !loading.value)
+const canCopyTranscript = computed(() => transcript.value.trim().length > 0)
 const formattedTranscriptParagraphs = computed(() => {
   const normalizedTranscript = transcript.value
     .replace(/\r\n/g, '\n')
@@ -198,6 +200,7 @@ const pollStatus = async () => {
       statusMessage.value = `Transcript ready via ${result.job.transcriber}.`
       loading.value = false
       callbackPending.value = false
+      toast.success('Transcript is ready.')
       clearPolling()
       return
     }
@@ -207,6 +210,7 @@ const pollStatus = async () => {
       statusMessage.value = 'Transcription failed.'
       loading.value = false
       callbackPending.value = false
+      toast.error(errorMessage.value)
       clearPolling()
       return
     }
@@ -281,6 +285,7 @@ const submitForTranscription = async () => {
       ? error.message
       : 'We could not start the transcription workflow right now.'
     statusMessage.value = 'Transcription could not be started.'
+    toast.error(errorMessage.value)
   }
 }
 
@@ -294,6 +299,27 @@ const refreshStatus = async () => {
   pollAttempts.value = 0
   statusMessage.value = 'Checking for the latest transcript status...'
   await pollStatus()
+}
+
+const copyTranscript = async () => {
+  if (!canCopyTranscript.value) {
+    toast.error('There is no transcript to copy yet.')
+    return
+  }
+
+  if (!import.meta.client || !navigator.clipboard) {
+    toast.error('Clipboard access is not available in this browser.')
+    return
+  }
+
+  try {
+    await navigator.clipboard.writeText(transcript.value)
+    toast.success('Transcript copied to clipboard.')
+  }
+  catch (error) {
+    console.error('video-to-text copy failed', error)
+    toast.error('We could not copy the transcript right now.')
+  }
 }
 
 onBeforeUnmount(() => {
@@ -421,9 +447,23 @@ watch(transcriber, (value) => {
           </CardDescription>
         </div>
 
-        <span class="inline-flex rounded-full border border-border/70 px-3 py-1 text-[0.7rem] uppercase tracking-[0.18em] text-muted-foreground dark:border-white/10 dark:text-[#d1ccc4]/78">
-          {{ status }}
-        </span>
+        <div class="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            class="rounded-full"
+            :disabled="!canCopyTranscript"
+            @click="copyTranscript"
+          >
+            <Icon name="lucide:copy" class="mr-2 size-4" />
+            Copy text
+          </Button>
+
+          <span class="inline-flex rounded-full border border-border/70 px-3 py-1 text-[0.7rem] uppercase tracking-[0.18em] text-muted-foreground dark:border-white/10 dark:text-[#d1ccc4]/78">
+            {{ status }}
+          </span>
+        </div>
       </CardHeader>
 
       <CardContent class="p-0">

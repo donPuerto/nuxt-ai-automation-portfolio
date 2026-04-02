@@ -14,6 +14,7 @@ A skill is a set of local instructions stored in a `SKILL.md` file. Use the proj
 - If a task overlaps with built-in session skills, use the project-local skill first for repo conventions, then use the broader skill for framework rules if needed.
 - UI implementation priority for this repo:
   - First: reuse existing local `app/components/ui` wrappers and shadcn-nuxt/shadcn-style components.
+  - For toast and notification feedback, prefer the local shadcn-style Sonner wrapper when available.
   - Second: if the needed component does not exist, build it with Tailwind utilities following nearby repo patterns.
   - Last: use custom CSS only when the UI cannot be expressed cleanly with the existing component layer plus Tailwind.
 - Do not duplicate content data inside page components when it already belongs in `shared/`.

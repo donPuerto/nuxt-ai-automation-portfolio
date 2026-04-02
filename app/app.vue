@@ -4,10 +4,17 @@
       <!-- Markup shared across all pages, ex: NavBar -->
       <NuxtPage />
     </NuxtLayout>
+    <Toaster
+      rich-colors
+      close-button
+      position="top-right"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import { Toaster } from '@/components/ui/sonner'
+
 // Initialize layout manager globally to ensure it applies to all pages
 useLayoutManager()
 
