@@ -20,7 +20,8 @@ export default defineNuxtConfig({
       deployConfig: true,
       nodeCompat: true,
       wrangler: {
-        name: 'nuxt-ai-automation-portfolio'
+        name: 'nuxt-ai-automation-portfolio',
+        keepVars: true
       }
     },
     externals: {
