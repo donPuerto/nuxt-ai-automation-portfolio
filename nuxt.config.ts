@@ -21,7 +21,14 @@ export default defineNuxtConfig({
       nodeCompat: true,
       wrangler: {
         name: 'nuxt-ai-automation-portfolio',
-        keep_vars: true
+        keep_vars: true,
+        kv_namespaces: [
+          {
+            binding: 'VIDEO_TO_TEXT_JOBS',
+            id: 'dead8846188b4f6298aafbeeb8afeddd',
+            preview_id: 'dead8846188b4f6298aafbeeb8afeddd',
+          },
+        ],
       }
     },
     externals: {
