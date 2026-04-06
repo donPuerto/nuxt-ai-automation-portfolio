@@ -20,6 +20,7 @@ A skill is a set of local instructions stored in a `SKILL.md` file. Use the proj
 - Do not duplicate content data inside page components when it already belongs in `shared/`.
 - When implementing design work, preserve the existing theme and layout controls unless the task explicitly changes them.
 - After running installs, builds, tests, or dev commands, check terminal output for warnings and errors.
+- For dependency changes in this repo, keep `package-lock.json` compatible with Cloudflare Workers Builds (`npm@10.9.2`). If install or lockfile work is needed for release stability, regenerate the lockfile with `npx npm@10.9.2 install` before pushing.
 - After code changes or verification steps, also check the editor Problems state or rerun the equivalent lint/typecheck commands so stale diagnostics do not get mistaken for live issues.
 - Fix actionable terminal errors as part of the current task whenever it is safe and relevant to do so.
 - Fix actionable Problems items as part of the current task whenever it is safe and relevant to do so.

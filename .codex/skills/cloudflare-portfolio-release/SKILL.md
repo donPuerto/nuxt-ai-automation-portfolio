@@ -22,6 +22,7 @@ Use this skill when the task involves deployment readiness, build output validat
 - Treat changes to security headers and CSP as deployment-sensitive.
 - Do not change `wrangler` or output settings casually; confirm the impact on Cloudflare first.
 - Prefer additive release guidance over large config churn.
+- Cloudflare Workers Builds for this repo use `npm@10.9.2`. When dependencies or the lockfile change, regenerate `package-lock.json` with `npx npm@10.9.2 install` so `npm ci` does not fail on missing nested lockfile entries like `cac@6.7.14`.
 
 ## Files To Check First
 
@@ -35,4 +36,5 @@ Use this skill when the task involves deployment readiness, build output validat
 
 - Run a production build when deployment behavior changes.
 - Confirm no config edit breaks the Cloudflare Nitro target.
+- If `package.json` or `package-lock.json` changed, verify the lockfile still contains the nested Cloudflare-critical entries for both `node_modules/@nuxt/cli/node_modules/cac` and `node_modules/vite-node/node_modules/cac` before pushing.
 - Note any manual secrets or dashboard steps that code changes cannot complete.
