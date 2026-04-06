@@ -1,10 +1,13 @@
 import { getVideoToTextJob, setVideoToTextJob } from '../utils/video-to-text-jobs'
+import { extractTranscriptFromPayload } from '../utils/video-to-text-payload'
 
 type VideoToTextCallbackPayload = {
   jobId?: string
   job_id?: string
   success?: boolean
   transcription?: string
+  transcript?: string
+  text?: string
   source_url?: string
   source?: string
   transcriber?: string
@@ -12,6 +15,10 @@ type VideoToTextCallbackPayload = {
   timestamp?: string
   error?: string
   message?: string
+  output?: Record<string, unknown>
+  data?: Record<string, unknown>
+  segments?: Array<{ text?: string }>
+  utterances?: Array<{ text?: string }>
 }
 
 export default defineEventHandler(async (event) => {
@@ -31,6 +38,7 @@ export default defineEventHandler(async (event) => {
   const success = body?.success !== false
   const existingJob = await getVideoToTextJob(jobId, event)
   const now = body?.timestamp || new Date().toISOString()
+  const transcript = extractTranscriptFromPayload(body)
   const baseJob = existingJob ?? {
     id: jobId,
     status: 'processing' as const,
@@ -47,7 +55,7 @@ export default defineEventHandler(async (event) => {
     sourceUrl: body?.source_url || baseJob.sourceUrl,
     source: body?.source || baseJob.source,
     transcriber: body?.transcriber || baseJob.transcriber,
-    transcription: body?.transcription || baseJob.transcription,
+    transcription: transcript || baseJob.transcription,
     wordCount: body?.word_count,
     error: success ? undefined : body?.error || body?.message || 'Transcription failed.',
     updatedAt: now,
