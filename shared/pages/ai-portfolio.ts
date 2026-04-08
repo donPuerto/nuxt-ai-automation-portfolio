@@ -369,8 +369,9 @@ export const aiPortfolioContent = {
     },
     {
       id: 'discovery-call',
-      label: 'Discovery Call',
-      icon: 'lucide:phone-call',
+      label: 'AI booking',
+      icon: 'lucide:calendar-clock',
+      prompt: 'Book an AI consultation call powered by Retell.',
     },
   ] satisfies AiPortfolioNavItem[],
   sidebarNavigationLabel: 'Navigation',
@@ -387,8 +388,8 @@ export const aiPortfolioContent = {
     },
     {
       id: 'discovery-call',
-      label: 'Discovery Call',
-      icon: 'lucide:phone-call',
+      label: 'AI booking',
+      icon: 'lucide:calendar-clock',
     },
   ] satisfies AiPortfolioSidebarNavItem[],
   sidebarTitle: 'Claude workspace',

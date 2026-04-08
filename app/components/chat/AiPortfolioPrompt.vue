@@ -69,7 +69,7 @@ const handleBlur = () => {
 <template>
   <div
     ref="dropzoneRef"
-    class="relative rounded-[1rem] border border-border/80 bg-background/94 px-5 py-4 shadow-[0_30px_70px_-36px_rgba(0,0,0,0.22),0_12px_28px_-18px_rgba(0,0,0,0.12)] backdrop-blur-md dark:border-white/8 dark:bg-[#2d2c29]/92 dark:shadow-[0_28px_70px_-48px_rgba(0,0,0,0.95)] md:px-6"
+    class="relative rounded-[1rem] border border-border/80 bg-card/94 px-5 py-4 shadow-[0_30px_70px_-36px_rgba(0,0,0,0.22),0_12px_28px_-18px_rgba(0,0,0,0.12)] backdrop-blur-md md:px-6"
   >
     <DragDropOverlay :show="dragging" />
 
@@ -84,7 +84,7 @@ const handleBlur = () => {
       <div class="relative flex-1 overflow-hidden px-1 py-1">
         <div
           v-if="!hasValue"
-          class="pointer-events-none absolute inset-x-1 top-1 flex items-center text-base leading-6 text-muted-foreground/90 dark:text-[#d1ccc4]/78"
+          class="pointer-events-none absolute inset-x-1 top-1 flex items-center text-base leading-6 text-muted-foreground/90"
         >
           <span>Type your message here...</span>
         </div>
@@ -93,14 +93,14 @@ const handleBlur = () => {
           v-model="modelValue"
           placeholder=""
           rows="1"
-          class="min-h-[1.9rem] resize-none border-0 !bg-transparent px-0 py-0 text-base leading-6 text-foreground shadow-none focus-visible:border-transparent focus-visible:ring-0 dark:!bg-transparent dark:text-[#f3efe9]"
+          class="min-h-[1.9rem] resize-none border-0 !bg-transparent px-0 py-0 text-base leading-6 text-foreground shadow-none focus-visible:border-transparent focus-visible:ring-0"
           @keydown="handleKeydown"
           @focus="handleFocus"
           @blur="handleBlur"
         />
       </div>
 
-      <div class="flex flex-wrap items-center justify-between gap-2.5 pt-2.5 text-muted-foreground dark:text-[#d1ccc4]/78">
+      <div class="flex flex-wrap items-center justify-between gap-2.5 pt-2.5 text-muted-foreground">
         <div class="flex min-w-0 items-center gap-2 text-sm">
           <FileUploadButton :disabled="loading" @files="addFiles" />
           <span class="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground/85">AI</span>
@@ -112,7 +112,7 @@ const handleBlur = () => {
             >
               <SelectValue :placeholder="visibleAgentLabel" class="truncate" />
             </SelectTrigger>
-            <SelectContent class="rounded-2xl border-border/80 bg-background/96 dark:bg-[#2f2d29]/98">
+            <SelectContent class="rounded-2xl border-border/80 bg-popover/96">
               <SelectItem
                 v-for="option in selectableAgents"
                 :key="option.id"
@@ -130,9 +130,9 @@ const handleBlur = () => {
           <Button
             type="button"
             size="icon"
-            variant="ghost"
-            class="size-8 rounded-md border border-border/70 bg-background/40 text-foreground shadow-none hover:bg-accent hover:text-accent-foreground dark:bg-white/[0.02]"
-            :class="isInputFocused ? 'border-primary/70 bg-primary/10 text-primary' : ''"
+            variant="default"
+            class="size-8 rounded-full bg-primary text-primary-foreground shadow-none hover:bg-primary/90"
+            :class="isInputFocused ? 'ring-2 ring-primary/35 ring-offset-0' : ''"
             :disabled="loading || !hasValue"
             @click="emit('submit', { files: [...attachedFiles] })"
           >

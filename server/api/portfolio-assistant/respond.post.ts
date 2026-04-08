@@ -7,6 +7,11 @@ type AssistantApiResult = {
   response?: PortfolioAssistantResponse
   answer?: string
   sections?: PortfolioAssistantResponse['sections']
+  data?: {
+    answer?: string
+    sections?: PortfolioAssistantResponse['sections']
+    response?: PortfolioAssistantResponse
+  }
 }
 
 const toMessage = (error: unknown) => {
@@ -32,10 +37,21 @@ const normalizeResponse = (payload: AssistantApiResult): PortfolioAssistantRespo
     return payload.response
   }
 
+  if (payload.data?.response?.answer && Array.isArray(payload.data.response.sections)) {
+    return payload.data.response
+  }
+
   if (payload.answer && Array.isArray(payload.sections)) {
     return {
       answer: payload.answer,
       sections: payload.sections,
+    }
+  }
+
+  if (payload.data?.answer && Array.isArray(payload.data.sections)) {
+    return {
+      answer: payload.data.answer,
+      sections: payload.data.sections,
     }
   }
 
@@ -48,8 +64,9 @@ export default defineEventHandler(async (event) => {
 
   if (config.n8nAskDonWebhookUrl) {
     try {
-      const upstream = await $fetch<AssistantApiResult>(config.n8nAskDonWebhookUrl, {
+      const upstream = await $fetch.raw<AssistantApiResult>(config.n8nAskDonWebhookUrl, {
         method: 'POST',
+        ignoreResponseError: true,
         headers: config.n8nAskDonWebhookToken
           ? {
               Authorization: `Bearer ${config.n8nAskDonWebhookToken}`,
@@ -68,18 +85,25 @@ export default defineEventHandler(async (event) => {
         },
       })
 
-      const normalized = normalizeResponse(upstream)
+      if (!upstream.ok) {
+        const upstreamError = typeof upstream._data?.message === 'string'
+          ? upstream._data.message
+          : `Ask Don webhook returned ${upstream.status}.`
+        throw new Error(upstreamError)
+      }
+
+      const normalized = normalizeResponse(upstream._data ?? {})
 
       if (normalized) {
         return {
           ok: true,
-          message: upstream.message || 'Portfolio assistant response ready.',
+          message: upstream._data?.message || 'Portfolio assistant response ready.',
           response: normalized,
           provider: 'n8n',
         }
       }
 
-      console.warn('ask-don webhook returned unexpected shape, using fallback', upstream)
+      console.warn('ask-don webhook returned unexpected shape, using fallback', upstream._data)
     }
     catch (error) {
       console.warn('ask-don webhook failed, using fallback', toMessage(error) || error)

@@ -51,7 +51,7 @@ const getDiscoveryCta = () => ({
   type: 'cta' as const,
   title: aiPortfolioContent.responseLabels.nextStep,
   action: 'discovery-call' as const,
-  label: 'Start a discovery call',
+  label: 'Start AI booking call',
   layout: ctaSectionLayout,
 })
 
@@ -106,7 +106,7 @@ export const buildPortfolioAssistantResponse = (
 
   if (intent === 'discovery-call') {
     return {
-      answer: 'A discovery call is the best starting point when you want to scope a custom system, pressure-test an automation plan, or decide whether a reusable workflow product already solves the problem.',
+      answer: 'The discovery call is an AI booking consultation powered by Retell, designed to quickly scope your workflow and decide the best build path.',
       sections: [
         getHighlightsSection('What happens on the call', [
           'We clarify the workflow, bottlenecks, tools, and business outcome you actually need.',

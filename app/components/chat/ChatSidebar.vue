@@ -32,13 +32,13 @@ const collapsed = computed(() => state.value === 'collapsed')
 </script>
 
 <template>
-  <SidebarContent class="gap-0 overflow-x-hidden bg-[#262321] text-[#d7c8b7]">
-    <SidebarGroup class="border-b border-[#4a433d]/55 px-1 pt-2 pb-1">
+  <SidebarContent class="gap-0 overflow-x-hidden bg-sidebar text-sidebar-foreground">
+    <SidebarGroup class="border-b border-sidebar-border px-1 pt-2 pb-1">
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton
             size="default"
-            class="h-8 rounded-lg border-0 bg-transparent px-2 text-[13px] font-medium text-[#e0d1bc] shadow-none hover:bg-transparent hover:text-[#f3e5d1] data-[active=true]:bg-transparent data-[active=true]:text-[#f3e5d1] group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-lg group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:text-[#f0dfca]"
+            class="h-8 rounded-lg border-0 bg-transparent px-2 text-[13px] font-medium text-sidebar-foreground/90 shadow-none hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-lg group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:text-sidebar-foreground"
             :tooltip="aiPortfolioContent.sidebarNewChatLabel"
             @click="emit('newChat')"
           >
@@ -51,7 +51,7 @@ const collapsed = computed(() => state.value === 'collapsed')
 
     <SidebarGroup class="px-1 pt-2 pb-1">
       <SidebarGroupLabel
-        class="px-1.5 text-[0.66rem] font-medium tracking-[0.16em] text-[#8f857a] uppercase group-data-[collapsible=icon]:hidden"
+        class="px-1.5 text-[0.66rem] font-medium tracking-[0.16em] text-sidebar-foreground/65 uppercase group-data-[collapsible=icon]:hidden"
       >
         {{ aiPortfolioContent.sidebarNavigationLabel }}
       </SidebarGroupLabel>
@@ -62,7 +62,7 @@ const collapsed = computed(() => state.value === 'collapsed')
         >
           <SidebarMenuButton
             :tooltip="item.label"
-            class="h-8 rounded-lg px-2 text-[13px] font-normal text-[#dac9b4] hover:bg-[#1a1817] hover:text-[#f3e5d1] data-[active=true]:bg-[#161514] data-[active=true]:text-[#f3e5d1] group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:text-[#f0dfca]"
+            class="h-8 rounded-lg px-2 text-[13px] font-normal text-sidebar-foreground/90 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:text-sidebar-foreground"
             :data-active="props.activeIntent === item.id"
             @click="emit('navigate', item.id)"
           >
@@ -75,7 +75,7 @@ const collapsed = computed(() => state.value === 'collapsed')
 
     <SidebarGroup class="px-1 pt-2.5 pb-1.5">
       <SidebarGroupLabel
-        class="px-1.5 text-[0.66rem] font-medium tracking-[0.16em] text-[#8f857a] uppercase group-data-[collapsible=icon]:hidden"
+        class="px-1.5 text-[0.66rem] font-medium tracking-[0.16em] text-sidebar-foreground/65 uppercase group-data-[collapsible=icon]:hidden"
       >
         {{ aiPortfolioContent.sidebarHistoryLabel }}
       </SidebarGroupLabel>
@@ -87,7 +87,7 @@ const collapsed = computed(() => state.value === 'collapsed')
         >
           <SidebarMenuButton
             :tooltip="entry.label"
-            class="h-8 rounded-lg px-2 text-[13px] font-normal text-[#dac9b4] hover:bg-[#1a1817] hover:text-[#f3e5d1] data-[active=true]:bg-[#161514] data-[active=true]:text-[#f3e5d1] group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:text-[#f0dfca]"
+            class="h-8 rounded-lg px-2 text-[13px] font-normal text-sidebar-foreground/90 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:text-sidebar-foreground"
             :data-active="entry.label === activeHistoryLabel"
             @click="emit('replay', entry)"
           >
@@ -99,14 +99,14 @@ const collapsed = computed(() => state.value === 'collapsed')
 
       <div
         v-else
-        class="px-2 py-2 text-[12px] text-[#8f857a] group-data-[collapsible=icon]:hidden"
+        class="px-2 py-2 text-[12px] text-sidebar-foreground/65 group-data-[collapsible=icon]:hidden"
       >
         {{ aiPortfolioContent.sidebarEmptyLabel }}
       </div>
     </SidebarGroup>
   </SidebarContent>
 
-  <SidebarFooter class="border-t border-white/10 bg-[#262321] p-0">
+  <SidebarFooter class="border-t border-sidebar-border bg-sidebar p-0">
     <ChatSidebarFooter :collapsed="collapsed" />
   </SidebarFooter>
 </template>

@@ -71,8 +71,6 @@ const activeSidebarIntent = computed(() => {
   return activePrompt.value ? 'prompt' : ''
 })
 
-const greetingSparkColors = ['#D97757', '#E08A6A', '#C86A4A', '#D4734F', '#E89070', '#BF6040', '#D07050']
-
 const handleReplayHistory = async (entry: (typeof historyEntries.value)[number]) => {
   await replayHistoryEntry(entry)
 }
@@ -97,7 +95,7 @@ const handlePromptSubmit = async (payload: { files: ChatFileWithStatus[] }) => {
         side="left"
         variant="sidebar"
         collapsible="icon"
-        class="border-r border-[#4a433d]/65 bg-[#262321] text-[#d7c8b7]"
+        class="border-r border-sidebar-border bg-sidebar text-sidebar-foreground"
       >
         <ChatSidebar
           :history-entries="historyEntries"
@@ -112,10 +110,10 @@ const handlePromptSubmit = async (payload: { files: ChatFileWithStatus[] }) => {
 
       <SidebarInset class="relative min-w-0 flex-1">
         <div class="flex h-screen min-h-screen flex-col">
-          <header class="sticky top-0 z-20 border-b border-[#4a433d]/55 bg-background/88 backdrop-blur">
+          <header class="sticky top-0 z-20 border-b border-border/80 bg-background/88 backdrop-blur">
             <div class="flex h-11 w-full items-center justify-between px-1 md:px-1.5">
               <div class="flex items-center">
-                <SidebarTrigger class="size-8 text-[#d7c8b7] shadow-none [&_svg]:size-3.5 hover:bg-[#2d2926] hover:text-[#f3e5d1]" />
+                <SidebarTrigger class="size-8 text-foreground/70 shadow-none [&_svg]:size-3.5 hover:bg-accent hover:text-accent-foreground" />
               </div>
 
               <div class="flex items-center">
@@ -145,12 +143,11 @@ const handlePromptSubmit = async (payload: { files: ChatFileWithStatus[] }) => {
                           <AiPortfolioSparkIcon
                             :size="46"
                             :speed="0.8"
-                            :colors="greetingSparkColors"
                           />
                         </div>
 
                         <div
-                          class="text-center text-[2.1rem] leading-[1.02] text-[#3c342c] dark:text-[#efd7c0] md:text-[2.7rem]"
+                          class="text-center text-[2.1rem] leading-[1.02] text-foreground md:text-[2.7rem]"
                           style="font-family: var(--font-serif); font-weight: 400;"
                         >
                           <AiPortfolioGreeting

@@ -2,7 +2,7 @@
   <Button
     variant="ghost"
     size="icon"
-    class="h-8 w-8 text-[#d7c8b7] shadow-none hover:bg-[#2d2926] hover:text-[#f3e5d1] dark:text-[#d7c8b7] dark:hover:bg-[#2d2926] dark:hover:text-[#f3e5d1]"
+    class="h-8 w-8 text-foreground/70 shadow-none hover:bg-accent hover:text-accent-foreground"
     aria-label="Toggle theme"
     @click="toggleTheme($event)"
   >

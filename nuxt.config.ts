@@ -177,6 +177,7 @@ export default defineNuxtConfig({
     n8nFulfillmentWebhookUrl: '',
     n8nFulfillmentWebhookToken: '',
     n8nAskDonWebhookUrl: '',
+    n8nAskDonWebhookToken: '',
     supabaseServiceRoleKey: '',
     videoToTextWebhookUrl: '',
     videoToTextApiKey: '',
