@@ -1,10 +1,11 @@
 export const skillsKnowledge = {
   coreSkills: [
-    'Workflow design and productization',
-    'CRM automation and follow-up systems',
-    'AI agent and assistant workflows',
-    'Prompt systems and operational copilots',
-    'Custom implementation planning',
+    'n8n workflow orchestration and advanced automation flows',
+    'Make.com scenario design for multi-step business processes',
+    'Zapier integrations for fast no-code app connections',
+    'GoHighLevel CRM automation, pipelines, and follow-up sequences',
+    'AI agent pipelines across Claude, OpenRouter, and OpenAI',
+    'Webhook-first architecture and API-to-automation bridging',
   ],
   funFacts: [
     'I like turning automation work into product-style offers instead of hiding it behind vague service pages.',

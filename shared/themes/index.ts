@@ -141,80 +141,14 @@ export const fontMonoOptions: FontOption[] = [
 // Style themes (from CSS files)
 export const styleThemes: ThemeConfig[] = [
   {
-    id: 'default',
-    name: 'default',
-    label: 'Default',
+    id: 'claude',
+    name: 'claude',
+    label: 'Claude',
     icon: 'lucide:palette',
     fonts: {
       sans: '"Anthropic Sans", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
       serif: '"Anthropic Serif", Georgia, "Times New Roman", Times, serif',
       mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
-    }
-  },
-  {
-    id: 'claymorphism',
-    name: 'claymorphism',
-    label: 'Claymorphism',
-    icon: 'lucide:flower-2',
-    fonts: {
-      sans: 'Plus Jakarta Sans, sans-serif',
-      serif: 'Lora, serif',
-      mono: 'Roboto Mono, monospace'
-    }
-  },
-  {
-    id: 'doom64',
-    name: 'doom64',
-    label: 'Doom 64',
-    icon: 'lucide:gamepad-2',
-    fonts: {
-      sans: 'Orbitron, sans-serif',
-      serif: 'Courier Prime, monospace',
-      mono: 'VT323, monospace'
-    }
-  },
-  {
-    id: 'graphite',
-    name: 'graphite',
-    label: 'Graphite',
-    icon: 'lucide:circle',
-    fonts: {
-      sans: 'Inter, sans-serif',
-      serif: 'Playfair Display, serif',
-      mono: 'JetBrains Mono, monospace'
-    }
-  },
-  {
-    id: 'mochamouse',
-    name: 'mochamouse',
-    label: 'Mocha Mouse',
-    icon: 'lucide:coffee',
-    fonts: {
-      sans: 'Nunito, sans-serif',
-      serif: 'Merriweather, serif',
-      mono: 'Fira Code, monospace'
-    }
-  },
-  {
-    id: 'nature',
-    name: 'nature',
-    label: 'Nature',
-    icon: 'lucide:leaf',
-    fonts: {
-      sans: 'Quicksand, sans-serif',
-      serif: 'Crimson Text, serif',
-      mono: 'Source Code Pro, monospace'
-    }
-  },
-  {
-    id: 'vercel',
-    name: 'vercel',
-    label: 'Vercel',
-    icon: 'lucide:triangle',
-    fonts: {
-      sans: 'Geist, sans-serif',
-      serif: 'Georgia, serif',
-      mono: 'Geist Mono, monospace'
     }
   }
 ]
@@ -319,6 +253,41 @@ export const cursorPalettes: CursorPalette[] = [
 ]
 
 export const accentPresets: AccentPreset[] = [
+  {
+    id: 'claude',
+    label: 'Claude',
+    swatch: '#C97757',
+    light: {
+      primary: 'oklch(0.6171 0.1375 39.0427)',
+      primaryForeground: 'oklch(1 0 0)',
+      ring: 'oklch(0.6171 0.1375 39.0427)',
+      chart1: 'oklch(0.5583 0.1276 42.9956)',
+      chart2: 'oklch(0.6898 0.1581 290.4107)',
+      chart3: 'oklch(0.8816 0.0276 93.128)',
+      chart4: 'oklch(0.8822 0.0403 298.1792)',
+      chart5: 'oklch(0.5608 0.1348 42.0584)',
+      sidebarPrimary: 'oklch(0.6171 0.1375 39.0427)',
+      sidebarPrimaryForeground: 'oklch(0.9881 0 0)',
+      sidebarRing: 'oklch(0.7731 0 0)',
+      selection: 'oklch(0.6171 0.1375 39.0427)',
+      selectionForeground: 'oklch(1 0 0)',
+    },
+    dark: {
+      primary: 'oklch(0.6724 0.1308 38.7559)',
+      primaryForeground: 'oklch(1 0 0)',
+      ring: 'oklch(0.6724 0.1308 38.7559)',
+      chart1: 'oklch(0.5583 0.1276 42.9956)',
+      chart2: 'oklch(0.6898 0.1581 290.4107)',
+      chart3: 'oklch(0.213 0.0078 95.4245)',
+      chart4: 'oklch(0.3074 0.0516 289.323)',
+      chart5: 'oklch(0.5608 0.1348 42.0584)',
+      sidebarPrimary: 'oklch(0.325 0 0)',
+      sidebarPrimaryForeground: 'oklch(0.9881 0 0)',
+      sidebarRing: 'oklch(0.7731 0 0)',
+      selection: 'oklch(0.6724 0.1308 38.7559)',
+      selectionForeground: 'oklch(1 0 0)',
+    },
+  },
   {
     id: 'zinc',
     label: 'Zinc',

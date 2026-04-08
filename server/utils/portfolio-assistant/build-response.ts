@@ -129,9 +129,9 @@ export const buildPortfolioAssistantResponse = (
 
   if (intent === 'skills') {
     return {
-      answer: 'My strongest work sits at the intersection of workflow design, AI-assisted systems, and productized delivery. I like building things people can either buy instantly or adapt into custom solutions.',
+      answer: 'My stack is focused on automation platforms and AI routing that can move from quick wins to production workflows.',
       sections: [
-        getHighlightsSection('Core skills', skillsKnowledge.coreSkills),
+        getHighlightsSection('Core stack', skillsKnowledge.coreSkills),
         getDiscoveryCta(),
       ],
     }

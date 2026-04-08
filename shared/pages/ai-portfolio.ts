@@ -32,6 +32,7 @@ export interface AiPortfolioPromptAgentOption {
   label: string
   description: string
   available: boolean
+  provider?: 'openrouter' | 'claude' | 'openai'
 }
 
 export type AiPortfolioGreetingAnimation =
@@ -46,6 +47,29 @@ export interface AiPortfolioNavItem {
   prompt?: string
 }
 
+export interface AiPortfolioSidebarNavItem {
+  id: AiPortfolioNavIntent
+  label: string
+  icon: string
+}
+
+export interface AiPortfolioSidebarSeed {
+  id: string
+  label: string
+  icon: string
+  intent?: PortfolioAssistantIntent
+  prompt?: string
+}
+
+export type AiPortfolioSidebarProfileMenuItemType = 'item' | 'separator'
+
+export interface AiPortfolioSidebarProfileMenuItem {
+  id: string
+  label: string
+  icon?: string
+  type?: AiPortfolioSidebarProfileMenuItemType
+}
+
 export type PortfolioAssistantIntent =
   | 'prompt'
   | 'me'
@@ -54,10 +78,19 @@ export type PortfolioAssistantIntent =
   | 'discovery-call'
   | 'category'
 
+export interface PortfolioAssistantAttachment {
+  id: string
+  name: string
+  mimeType: string
+  size: number
+}
+
 export interface PortfolioAssistantRequest {
   prompt?: string
   intent?: PortfolioAssistantIntent
   categoryId?: string
+  attachments?: PortfolioAssistantAttachment[]
+  agentId?: string
 }
 
 export interface PortfolioAssistantHighlightsSection {
@@ -141,33 +174,30 @@ export const aiPortfolioContent = {
   ] satisfies AiPortfolioDescriptorLine[],
   greetingAnimation: 'blur-rise' as AiPortfolioGreetingAnimation,
   promptPlaceholder: 'Ask about my projects, workflows, or services...',
-  promptAgentLabel: 'Local portfolio agent',
-  promptAgentDescription: 'Don Puerto knowledge base',
-  selectedPromptAgentId: 'local-portfolio-agent',
+  promptAgentLabel: 'OpenRouter (Free)',
+  promptAgentDescription: 'Use OpenRouter free model by default.',
+  selectedPromptAgentId: 'openrouter-free',
   promptAgentOptions: [
     {
-      id: 'local-portfolio-agent',
-      label: 'Local portfolio agent',
-      description: 'Current knowledge source for this AI portfolio.',
+      id: 'openrouter-free',
+      label: 'OpenRouter (Free)',
+      description: 'Default provider using free-tier routing on OpenRouter.',
       available: true,
+      provider: 'openrouter',
     },
     {
       id: 'claude-sonnet',
-      label: 'Claude Sonnet',
-      description: 'Coming soon once Anthropic is wired into the portfolio.',
-      available: false,
+      label: 'Claude',
+      description: 'Route prompts to Anthropic Claude model via your workflow.',
+      available: true,
+      provider: 'claude',
     },
     {
-      id: 'claude-opus',
-      label: 'Claude Opus 4.5',
-      description: 'Coming soon once live Claude models are enabled.',
-      available: false,
-    },
-    {
-      id: 'custom-agent',
-      label: 'Custom knowledge agent',
-      description: 'Reserved for future persona and connector routing.',
-      available: false,
+      id: 'openai-gpt',
+      label: 'OpenAI',
+      description: 'Route prompts to OpenAI model via your workflow.',
+      available: true,
+      provider: 'openai',
     },
   ] satisfies AiPortfolioPromptAgentOption[],
   promptToolMenu: [
@@ -233,7 +263,7 @@ export const aiPortfolioContent = {
     },
     {
       id: 'skills',
-      label: 'Skills',
+      label: 'Stack',
       icon: 'lucide:graduation-cap',
       type: 'submenu',
       children: [
@@ -333,9 +363,9 @@ export const aiPortfolioContent = {
     },
     {
       id: 'skills',
-      label: 'Skills',
+      label: 'Stack',
       icon: 'lucide:layers-3',
-      prompt: 'What skills and tools do you work with most?',
+      prompt: 'What stack and tools do you use most?',
     },
     {
       id: 'discovery-call',
@@ -343,6 +373,94 @@ export const aiPortfolioContent = {
       icon: 'lucide:phone-call',
     },
   ] satisfies AiPortfolioNavItem[],
+  sidebarNavigationLabel: 'Navigation',
+  sidebarNavItems: [
+    {
+      id: 'me',
+      label: 'Me',
+      icon: 'lucide:user-round',
+    },
+    {
+      id: 'projects',
+      label: 'Projects',
+      icon: 'lucide:briefcase-business',
+    },
+    {
+      id: 'discovery-call',
+      label: 'Discovery Call',
+      icon: 'lucide:phone-call',
+    },
+  ] satisfies AiPortfolioSidebarNavItem[],
+  sidebarTitle: 'Claude workspace',
+  sidebarDescription: 'Portfolio chat',
+  sidebarNewChatLabel: 'New chat',
+  sidebarHistoryLabel: 'Recent prompts',
+  sidebarEmptyLabel: 'Your recent prompts will appear here.',
+  sidebarProfileName: 'Don Puerto',
+  sidebarProfileEmail: 'm@example.com',
+  sidebarProfilePlan: 'Pro plan',
+  sidebarProfileActionLabel: 'Download résumé',
+  sidebarProfileMenuLabel: 'Open profile actions',
+  sidebarProfileMenuItems: [
+    {
+      id: 'upgrade',
+      label: 'Upgrade to Pro',
+      icon: 'lucide:sparkles',
+    },
+    {
+      id: 'separator-account',
+      label: '',
+      type: 'separator',
+    },
+    {
+      id: 'account',
+      label: 'Account',
+      icon: 'lucide:badge-check',
+    },
+    {
+      id: 'billing',
+      label: 'Billing',
+      icon: 'lucide:credit-card',
+    },
+    {
+      id: 'notifications',
+      label: 'Notifications',
+      icon: 'lucide:bell',
+    },
+    {
+      id: 'separator-logout',
+      label: '',
+      type: 'separator',
+    },
+    {
+      id: 'logout',
+      label: 'Log out',
+      icon: 'lucide:log-out',
+    },
+  ] satisfies AiPortfolioSidebarProfileMenuItem[],
+  sidebarSeedItems: [
+    {
+      id: 'seed-projects',
+      label: 'Featured workflows',
+      icon: 'lucide:briefcase-business',
+      intent: 'projects',
+      prompt: 'Show me your featured workflow projects.',
+    },
+    {
+      id: 'seed-skills',
+      label: 'Automation stack',
+      icon: 'lucide:layers-3',
+      intent: 'skills',
+      prompt: 'What stack and tools do you use most?',
+    },
+    {
+      id: 'seed-about',
+      label: 'About Don Puerto',
+      icon: 'lucide:user-round',
+      intent: 'me',
+      prompt: 'Tell me about yourself, your background, and what you build.',
+    },
+  ] satisfies AiPortfolioSidebarSeed[],
   responseLabels: {
     answer: 'Answer',
     projects: 'Relevant Projects',

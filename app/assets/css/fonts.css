@@ -1,3 +1,21 @@
+@font-face {
+  font-family: "Anthropic Sans";
+  src: local("Anthropic Sans");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Anthropic Serif";
+  src: local("Anthropic Serif");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: local("JetBrains Mono");
+  font-display: swap;
+}
+
 @theme {
   --font-sans: "Anthropic Sans", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-serif: "Anthropic Serif", Georgia, "Times New Roman", Times, serif;

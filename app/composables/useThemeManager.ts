@@ -16,7 +16,7 @@ const LEGACY_STYLE_IDS = [
 ]
 
 const getDefaultPreset = (): AccentPreset => {
-  const preset = accentPresets[0]
+  const preset = accentPresets.find(item => item.id === 'claude') ?? accentPresets[0]
 
   if (!preset) {
     throw new Error('Accent presets must define at least one preset.')
@@ -44,7 +44,7 @@ const getCursorPaletteById = (paletteId: string): CursorPalette => {
 }
 
 const getDefaultFonts = (): FontSelection => {
-  const defaultTheme = styleThemes.find(theme => theme.id === 'default')
+  const defaultTheme = styleThemes.find(theme => theme.id === 'claude')
 
   if (!defaultTheme?.fonts) {
     return {

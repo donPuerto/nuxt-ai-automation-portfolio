@@ -21,6 +21,11 @@ export default defineEventHandler(async (event) => {
     const body = await readBody<MeWebhookRequest>(event)
     const response = await $fetch.raw(config.n8nAskDonWebhookUrl, {
       method: 'POST',
+      headers: config.n8nAskDonWebhookToken
+        ? {
+            Authorization: `Bearer ${config.n8nAskDonWebhookToken}`,
+          }
+        : undefined,
       ignoreResponseError: true,
       body: {
         intent: body?.intent ?? 'me',
