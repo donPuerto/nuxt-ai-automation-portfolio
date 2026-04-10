@@ -64,14 +64,16 @@ const toNumber = (value: string | number | undefined) => {
   return Number.NaN
 }
 
-const isFreeModel = (model: OpenRouterModel) => {
-  const promptCost = toNumber(model.pricing?.prompt)
-  const completionCost = toNumber(model.pricing?.completion)
+const toNonNegativePrice = (value: string | number | undefined) => {
+  const parsed = toNumber(value)
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null
+}
 
-  return Number.isFinite(promptCost)
-    && Number.isFinite(completionCost)
-    && promptCost <= 0
-    && completionCost <= 0
+const isFreeModel = (model: OpenRouterModel) => {
+  const promptCost = toNonNegativePrice(model.pricing?.prompt)
+  const completionCost = toNonNegativePrice(model.pricing?.completion)
+
+  return promptCost === 0 && completionCost === 0
 }
 
 const byDisplayName = (a: OpenRouterModel, b: OpenRouterModel) => {
@@ -237,11 +239,11 @@ export async function getOpenRouterPromptOptions({
 
   return picked.map((model) => {
     const modelId = model.id
-    const promptPrice = toNumber(model.pricing?.prompt)
-    const completionPrice = toNumber(model.pricing?.completion)
+    const promptPrice = toNonNegativePrice(model.pricing?.prompt)
+    const completionPrice = toNonNegativePrice(model.pricing?.completion)
     const pricing = pricingFromPerToken(
-      Number.isFinite(promptPrice) ? promptPrice : null,
-      Number.isFinite(completionPrice) ? completionPrice : null,
+      promptPrice,
+      completionPrice,
     )
     const costLabel = buildCompactCostLabel(pricing?.inputUsdPerMillion, pricing?.outputUsdPerMillion)
 
@@ -382,8 +384,8 @@ export async function syncOpenRouterModels({
         is_deprecated: isObsolete,
         is_obsolete: isObsolete,
         release_date: extractModelReleaseDate(model.id),
-        input_price: Number.isFinite(toNumber(model.pricing?.prompt)) ? toNumber(model.pricing?.prompt) : null,
-        output_price: Number.isFinite(toNumber(model.pricing?.completion)) ? toNumber(model.pricing?.completion) : null,
+        input_price: toNonNegativePrice(model.pricing?.prompt),
+        output_price: toNonNegativePrice(model.pricing?.completion),
         context_window: typeof model.context_length === 'number' && model.context_length > 0 ? model.context_length : null,
         capabilities: {},
         metadata: {},

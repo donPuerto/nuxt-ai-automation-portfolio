@@ -59,6 +59,9 @@ for select
 to anon, authenticated
 using (is_active = true and is_displayable = true and is_obsolete = false);
 
+grant select on public.ai_models_catalog to anon, authenticated;
+grant select, insert, update, delete on public.ai_models_catalog to service_role;
+
 create table if not exists public.ai_model_sync_runs (
   id uuid primary key default gen_random_uuid(),
   provider text not null,
@@ -86,6 +89,9 @@ on public.ai_model_sync_runs
 for select
 to authenticated
 using (true);
+
+grant select on public.ai_model_sync_runs to authenticated;
+grant select, insert, update, delete on public.ai_model_sync_runs to service_role;
 
 create table if not exists public.user_model_visibility (
   id uuid primary key default gen_random_uuid(),
@@ -136,6 +142,9 @@ on public.user_model_visibility
 for delete
 to authenticated
 using ((select auth.uid()) = user_id);
+
+grant select, insert, update, delete on public.user_model_visibility to authenticated;
+grant select, insert, update, delete on public.user_model_visibility to service_role;
 
 -- Initial seed so UI has defaults before first sync
 insert into public.ai_models_catalog (

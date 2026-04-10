@@ -14,6 +14,7 @@ const props = withDefaults(defineProps<{
 })
 
 const router = useRouter()
+const supabaseConfigured = useSupabaseConfigured()
 
 const {
   prompt,
@@ -36,7 +37,10 @@ const {
   replayHistoryEntry,
 } = useAiPortfolio()
 
+const settings = supabaseConfigured ? useUserSettings() : null
+const supabase = supabaseConfigured ? useSupabaseClient() : null
 const sidebarExpanded = useState('ai-portfolio-sidebar-expanded', () => true)
+const welcomeClosing = ref(false)
 
 const displayName = computed(() => aiPortfolioContent.nameLine.replace(/^Hey,\s*I'm\s*/i, '').trim())
 const greetingPeriod = useState<'morning' | 'afternoon' | 'evening'>('ai-portfolio-greeting-period', () => {
@@ -71,6 +75,12 @@ const isConversationMode = computed(() =>
   loading.value || hasResponse.value || Boolean(error.value) || Boolean(activePrompt.value),
 )
 const isPromptMode = computed(() => props.mode === 'prompt')
+const shouldShowWelcomeModal = computed(() =>
+  isPromptMode.value
+  && Boolean(settings?.initialized.value)
+  && Boolean(settings?.isAuthenticated.value)
+  && !Boolean(settings?.preferences.value.welcomeSeen),
+)
 
 const activeSidebarIntent = computed(() => {
   const activeEntry = historyEntries.value.find(entry => entry.label === activePrompt.value.trim())
@@ -109,6 +119,51 @@ const handlePromptSubmit = async (payload: { files: ChatFileWithStatus[] }) => {
 
 const handleAddAgent = async () => {
   await router.push('/settings?section=general#appearance-settings')
+}
+
+const handleWelcomeClose = async () => {
+  if (welcomeClosing.value) {
+    return
+  }
+
+  welcomeClosing.value = true
+
+  try {
+    if (settings && !settings.preferences.value.welcomeSeen) {
+      await settings.markWelcomeSeen()
+    }
+
+    await router.push('/settings?section=general')
+  }
+  catch (error) {
+    console.warn('failed to complete welcome onboarding', error)
+    if (settings) {
+      settings.preferences.value.welcomeSeen = false
+    }
+  }
+  finally {
+    welcomeClosing.value = false
+  }
+}
+
+let authStateSubscription: { unsubscribe: () => void } | null = null
+
+if (import.meta.client && settings && supabase) {
+  onMounted(async () => {
+    const { data: authSubscription } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+        void settings.loadSettings()
+      }
+    })
+
+    authStateSubscription = authSubscription.subscription
+    await settings.loadSettings()
+  })
+
+  onUnmounted(() => {
+    authStateSubscription?.unsubscribe()
+    authStateSubscription = null
+  })
 }
 </script>
 
@@ -251,6 +306,15 @@ const handleAddAgent = async () => {
           </div>
         </div>
       </SidebarInset>
+
+      <ClientOnly>
+        <WelcomeOnboardingModal
+          :open="shouldShowWelcomeModal"
+          :display-name="displayName"
+          :loading="welcomeClosing"
+          @close="handleWelcomeClose"
+        />
+      </ClientOnly>
     </section>
   </SidebarProvider>
 </template>
