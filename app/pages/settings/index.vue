@@ -573,46 +573,10 @@ definePageMeta({
               </div>
             </div>
 
-            <div v-else class="space-y-5">
-              <div>
-                <h2 class="text-xl font-semibold text-[#fff4e6]">
-                  Knowledge Base
-                </h2>
-                <p class="mt-1 text-sm text-[#ab9986]">
-                  This is where we manage information that feeds your RAG system.
-                </p>
-              </div>
-
-              <div class="space-y-4 rounded-xl border border-[#4a433d]/70 bg-[#2b2724] p-4">
-                <div class="space-y-1">
-                  <p class="text-sm font-medium text-[#fff4e6]">
-                    Source collections
-                  </p>
-                  <p class="text-xs text-[#ab9986]">
-                    Upload your PDFs and documents via n8n, then index and sync them into your knowledge store.
-                  </p>
-                </div>
-
-                <div class="grid gap-3 md:grid-cols-2">
-                  <div class="rounded-lg border border-[#4a433d]/70 bg-[#221f1d] p-3">
-                    <p class="text-sm font-medium text-[#fff4e6]">
-                      Upload pipeline
-                    </p>
-                    <p class="mt-1 text-xs text-[#ab9986]">
-                      Document ingest runs through n8n, then forwards chunks and metadata for retrieval.
-                    </p>
-                  </div>
-                  <div class="rounded-lg border border-[#4a433d]/70 bg-[#221f1d] p-3">
-                    <p class="text-sm font-medium text-[#fff4e6]">
-                      Retrieval scope
-                    </p>
-                    <p class="mt-1 text-xs text-[#ab9986]">
-                      Limit responses to your own portfolio and automation knowledge base.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <KnowledgeBaseSettings
+              v-else
+              :authenticated="isAuthenticated"
+            />
           </section>
         </CardContent>
       </Card>
