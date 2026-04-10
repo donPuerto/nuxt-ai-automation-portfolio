@@ -53,6 +53,13 @@ const isValidEmail = (value: string): boolean => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
 }
 
+const isRecoverableAuthUserError = (error: { message?: string, status?: number }): boolean => {
+  const message = error.message?.toLowerCase() ?? ''
+  return message.includes('auth session missing')
+    || message.includes('user from sub claim in jwt does not exist')
+    || error.status === 403
+}
+
 const getMetadataText = (metadata: Record<string, unknown>, key: string): string => {
   const value = metadata[key]
   return typeof value === 'string' ? value.trim() : ''
@@ -178,8 +185,8 @@ export const useUserSettings = () => {
       const { data: authData, error: authError } = await supabase.auth.getUser()
 
       if (authError) {
-        const message = authError.message.toLowerCase()
-        if (message.includes('auth session missing')) {
+        if (isRecoverableAuthUserError(authError)) {
+          await supabase.auth.signOut({ scope: 'local' }).catch(() => null)
           user.value = null
           profile.value = createDefaultProfile()
           preferences.value = createDefaultPreferences()

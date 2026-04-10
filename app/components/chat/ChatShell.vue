@@ -127,13 +127,23 @@ const handleWelcomeClose = async () => {
   }
 
   welcomeClosing.value = true
+  const shouldPersistWelcomeSeen = Boolean(settings && !settings.preferences.value.welcomeSeen)
+
+  if (settings) {
+    settings.preferences.value.welcomeSeen = true
+  }
 
   try {
-    if (settings && !settings.preferences.value.welcomeSeen) {
+    await router.push({
+      path: '/settings',
+      query: {
+        section: 'general',
+      },
+    })
+
+    if (shouldPersistWelcomeSeen && settings) {
       await settings.markWelcomeSeen()
     }
-
-    await router.push('/settings?section=general')
   }
   catch (error) {
     console.warn('failed to complete welcome onboarding', error)

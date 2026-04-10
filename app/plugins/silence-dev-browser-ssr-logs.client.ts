@@ -46,7 +46,7 @@ const isNoisyDevLog = (args: unknown[]) => {
     || lower.includes('link:prefetch')
     || lower.includes('nuxt devtools')
     || lower.includes('<suspense> is an experimental feature')
-    || lower.includes('your project has pages but the `<nuxtpage />` component has not been used')
+    || (lower.includes('your project has pages') && lower.includes('nuxtpage') && lower.includes('has not been used'))
     || (lower.includes('timer') && lower.includes('[nuxt-app]') && lower.includes('already exists'))
 }
 
