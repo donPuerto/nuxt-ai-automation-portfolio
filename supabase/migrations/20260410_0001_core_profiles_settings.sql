@@ -1,3 +1,7 @@
+-- Core profile + settings schema
+
+create extension if not exists pgcrypto;
+
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
@@ -33,22 +37,28 @@ create table if not exists public.user_settings (
   notify_response_completions boolean not null default true,
   notify_web_app_emails boolean not null default false,
   notify_dispatch_messages boolean not null default false,
+  welcome_seen boolean not null default false,
   color_mode text not null default 'system',
-  font_family text not null default 'sans',
+  font_family text not null default '"Anthropic Sans", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+  agent_provider text not null default 'openrouter',
+  agent_model text not null default 'openrouter-free',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint user_settings_color_mode_check check (color_mode in ('light', 'dark', 'system')),
-  constraint user_settings_font_family_check check (char_length(trim(font_family)) between 1 and 120)
+  constraint user_settings_font_family_check check (char_length(trim(font_family)) between 1 and 200),
+  constraint user_settings_agent_provider_check check (agent_provider in ('openrouter', 'claude', 'openai'))
 );
 
 create index if not exists profiles_email_idx
-  on public.profiles (email);
+  on public.profiles (lower(email));
 
+drop trigger if exists set_profiles_updated_at on public.profiles;
 create trigger set_profiles_updated_at
 before update on public.profiles
 for each row
 execute function public.set_updated_at();
 
+drop trigger if exists set_user_settings_updated_at on public.user_settings;
 create trigger set_user_settings_updated_at
 before update on public.user_settings
 for each row

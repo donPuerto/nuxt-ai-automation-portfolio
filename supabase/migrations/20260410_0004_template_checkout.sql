@@ -1,3 +1,5 @@
+-- One-time template checkout schema
+
 create table if not exists public.templates (
   id uuid primary key default gen_random_uuid(),
   slug text not null unique,
@@ -53,11 +55,13 @@ create index if not exists orders_buyer_email_idx
 create index if not exists template_access_buyer_email_idx
   on public.template_access (lower(buyer_email));
 
+drop trigger if exists set_templates_updated_at on public.templates;
 create trigger set_templates_updated_at
 before update on public.templates
 for each row
 execute function public.set_updated_at();
 
+drop trigger if exists set_orders_updated_at on public.orders;
 create trigger set_orders_updated_at
 before update on public.orders
 for each row

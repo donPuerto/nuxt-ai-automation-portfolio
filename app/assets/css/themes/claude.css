@@ -87,8 +87,8 @@
   --sidebar-primary-foreground: oklch(0.9881 0 0);
   --sidebar-accent: oklch(0.168 0.002 106.6177);
   --sidebar-accent-foreground: oklch(0.8074 0.0142 93.0137);
-  --sidebar-border: oklch(0.9401 0 0);
-  --sidebar-ring: oklch(0.7731 0 0);
+  --sidebar-border: oklch(0.325 0.0088 106.8928);
+  --sidebar-ring: oklch(0.4336 0.0113 100.2195);
   --surface: color-mix(in oklab, var(--background) 86%, black);
   --surface-foreground: var(--foreground);
   --code: var(--surface);

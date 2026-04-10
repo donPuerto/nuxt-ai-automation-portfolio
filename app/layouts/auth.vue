@@ -13,7 +13,7 @@
       </ClientOnly>
 
       <main class="w-full overflow-x-hidden">
-        <NuxtPage />
+        <slot />
       </main>
     </div>
   </div>

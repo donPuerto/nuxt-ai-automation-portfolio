@@ -1,5 +1,6 @@
 import type {
   AiPortfolioNavIntent,
+  AiPortfolioPromptAgentOption,
   AiPortfolioSidebarSeed,
   PortfolioAssistantAttachment,
   PortfolioAssistantRequest,
@@ -45,6 +46,9 @@ export const useAiPortfolio = () => {
   const expandedProjectSlug = ref<string | null>(null)
   const activePrompt = ref('')
   const selectedAgentId = useState<string>('ai-portfolio-selected-agent', () => aiPortfolioContent.selectedPromptAgentId)
+  const promptAgentOptions = useState('ai-portfolio-prompt-agent-options', () => aiPortfolioContent.promptAgentOptions)
+  const settings = useSupabaseConfigured() ? useUserSettings() : null
+  const isAuthenticated = computed(() => Boolean(settings?.isAuthenticated.value))
   const historyEntries = useState<AiPortfolioHistoryEntry[]>('ai-portfolio-history', () =>
     aiPortfolioContent.sidebarSeedItems.map(toHistoryEntry),
   )
@@ -57,6 +61,22 @@ export const useAiPortfolio = () => {
 
   const getProjectBySlug = (slug: string): PortfolioKnowledgeProject | undefined => {
     return projectMap.value.get(slug)
+  }
+
+  const isAgentSelectable = (option: AiPortfolioPromptAgentOption) => {
+    return option.available && (!option.requiresAuth || isAuthenticated.value)
+  }
+
+  const ensureSelectedAgentIsUsable = () => {
+    const selected = promptAgentOptions.value.find(item => item.id === selectedAgentId.value)
+    if (selected && isAgentSelectable(selected)) {
+      return
+    }
+
+    const firstUsable = promptAgentOptions.value.find(isAgentSelectable)
+    if (firstUsable) {
+      selectedAgentId.value = firstUsable.id
+    }
   }
 
   const addHistoryEntry = (entry: AiPortfolioHistoryEntry) => {
@@ -128,14 +148,127 @@ export const useAiPortfolio = () => {
     }
   }
 
-  const selectAgent = (agentId: string) => {
-    const option = aiPortfolioContent.promptAgentOptions.find(item => item.id === agentId)
+  const resolveAgentIdFromPreference = (
+    provider: 'openrouter' | 'claude' | 'openai',
+    model: string,
+    options: AiPortfolioPromptAgentOption[],
+  ) => {
+    if (provider === 'openrouter') {
+      const exact = options.find(item =>
+        item.provider === 'openrouter'
+        && (item.id === model || item.id === `openrouter:${model}`),
+      )
 
-    if (!option?.available) {
+      if (exact && isAgentSelectable(exact)) {
+        return exact.id
+      }
+
+      return options.find(item => item.provider === 'openrouter' && isAgentSelectable(item))?.id
+    }
+
+    const direct = options.find(item => item.provider === provider && item.id === model && isAgentSelectable(item))
+    if (direct) {
+      return direct.id
+    }
+
+    return options.find(item => item.provider === provider && isAgentSelectable(item))?.id
+  }
+
+  const applyStoredAgentPreference = () => {
+    if (!settings || !settings.isAuthenticated.value) {
+      return
+    }
+
+    const preferredId = resolveAgentIdFromPreference(
+      settings.preferences.value.agentProvider,
+      settings.preferences.value.agentModel,
+      promptAgentOptions.value,
+    )
+
+    if (preferredId) {
+      selectedAgentId.value = preferredId
+      return
+    }
+
+    const firstAvailable = promptAgentOptions.value.find(isAgentSelectable)
+    if (firstAvailable) {
+      selectedAgentId.value = firstAvailable.id
+    }
+  }
+
+  const loadOpenRouterFreeModels = async () => {
+    const fallbackOptions = aiPortfolioContent.promptAgentOptions
+
+    try {
+      const [openrouterResult, claudeResult, openaiResult] = await Promise.all([
+        $fetch<{ ok: boolean, models: typeof aiPortfolioContent.promptAgentOptions }>(
+          '/api/models/available?provider=openrouter&freeOnly=true&autoSync=true',
+        ),
+        $fetch<{ ok: boolean, models: typeof aiPortfolioContent.promptAgentOptions }>(
+          '/api/models/available?provider=claude&autoSync=true',
+        ),
+        $fetch<{ ok: boolean, models: typeof aiPortfolioContent.promptAgentOptions }>(
+          '/api/models/available?provider=openai&autoSync=true',
+        ),
+      ])
+
+      const pickProvider = (
+        result: { ok: boolean, models: typeof aiPortfolioContent.promptAgentOptions },
+        provider: 'openrouter' | 'claude' | 'openai',
+      ) => (result.ok ? result.models.filter(model => model.provider === provider) : [])
+
+      const merged = [
+        ...pickProvider(openrouterResult, 'openrouter'),
+        ...pickProvider(claudeResult, 'claude'),
+        ...pickProvider(openaiResult, 'openai'),
+      ]
+
+      const deduped = Array.from(new Map(merged.map(model => [model.id, model])).values())
+
+      if (!deduped.length) {
+        promptAgentOptions.value = [...fallbackOptions]
+        return
+      }
+
+      promptAgentOptions.value = deduped
+    }
+    catch {
+      promptAgentOptions.value = [...fallbackOptions]
+    }
+
+    ensureSelectedAgentIsUsable()
+
+    applyStoredAgentPreference()
+    ensureSelectedAgentIsUsable()
+  }
+
+  const selectAgent = async (agentId: string) => {
+    const option = promptAgentOptions.value.find(item => item.id === agentId)
+
+    if (!option || !isAgentSelectable(option)) {
       return
     }
 
     selectedAgentId.value = agentId
+
+    if (!settings || !settings.isAuthenticated.value) {
+      return
+    }
+
+    const normalizedProvider = option.provider ?? 'openrouter'
+    const normalizedModel = option.id.startsWith('openrouter:')
+      ? option.id.replace('openrouter:', '')
+      : option.id
+
+    settings.preferences.value.agentProvider = normalizedProvider
+    settings.preferences.value.agentModel = normalizedModel
+
+    try {
+      await settings.saveAppearance()
+    }
+    catch (error) {
+      console.warn('failed to persist selected agent model', error)
+    }
   }
 
   const submitPrompt = async (files: ChatFileWithStatus[] = []) => {
@@ -222,6 +355,21 @@ export const useAiPortfolio = () => {
     })
   }
 
+  if (import.meta.client) {
+    watch(isAuthenticated, () => {
+      ensureSelectedAgentIsUsable()
+    })
+
+    onMounted(async () => {
+      if (settings && !settings.initialized.value) {
+        await settings.loadSettings()
+      }
+
+      void loadOpenRouterFreeModels()
+      applyStoredAgentPreference()
+    })
+  }
+
   return {
     prompt,
     loading,
@@ -231,12 +379,15 @@ export const useAiPortfolio = () => {
     activePrompt,
     expandedProjectSlug,
     selectedAgentId,
+    promptAgentOptions,
+    isAuthenticated,
     historyEntries,
     submitPrompt,
     runNavIntent,
     toggleExpandedProject,
     getProjectBySlug,
     selectAgent,
+    loadOpenRouterFreeModels,
     resetConversation,
     replayHistoryEntry,
   }

@@ -31,6 +31,12 @@ export interface AiPortfolioPromptAgentOption {
   id: string
   label: string
   description: string
+  costLabel?: string
+  inputPriceUsdPerMillion?: number
+  outputPriceUsdPerMillion?: number
+  releaseDate?: string
+  isObsolete?: boolean
+  requiresAuth?: boolean
   available: boolean
   provider?: 'openrouter' | 'claude' | 'openai'
 }
@@ -180,22 +186,32 @@ export const aiPortfolioContent = {
   promptAgentOptions: [
     {
       id: 'openrouter-free',
-      label: 'OpenRouter (Free)',
+      label: 'OpenRouter (Free models)',
       description: 'Default provider using free-tier routing on OpenRouter.',
+      costLabel: 'Free',
+      requiresAuth: false,
       available: true,
       provider: 'openrouter',
     },
     {
-      id: 'claude-sonnet',
-      label: 'Claude',
-      description: 'Route prompts to Anthropic Claude model via your workflow.',
+      id: 'claude-sonnet-4-5',
+      label: 'Claude Sonnet 4.5',
+      description: 'Route prompts to Anthropic Claude Sonnet 4.5 via your workflow.',
+      costLabel: '$3.00 / $15.00 per 1M',
+      inputPriceUsdPerMillion: 3,
+      outputPriceUsdPerMillion: 15,
+      requiresAuth: true,
       available: true,
       provider: 'claude',
     },
     {
-      id: 'openai-gpt',
-      label: 'OpenAI',
-      description: 'Route prompts to OpenAI model via your workflow.',
+      id: 'openai-gpt-4-1-mini',
+      label: 'OpenAI GPT-4.1 mini',
+      description: 'Route prompts to OpenAI GPT-4.1 mini via your workflow.',
+      costLabel: '$0.40 / $1.60 per 1M',
+      inputPriceUsdPerMillion: 0.4,
+      outputPriceUsdPerMillion: 1.6,
+      requiresAuth: true,
       available: true,
       provider: 'openai',
     },
@@ -404,29 +420,39 @@ export const aiPortfolioContent = {
   sidebarProfileMenuLabel: 'Open profile actions',
   sidebarProfileMenuItems: [
     {
-      id: 'upgrade',
-      label: 'Upgrade to Pro',
-      icon: 'lucide:sparkles',
+      id: 'settings',
+      label: 'Settings',
+      icon: 'lucide:settings',
     },
     {
-      id: 'separator-account',
+      id: 'language',
+      label: 'Language (English)',
+      icon: 'lucide:languages',
+    },
+    {
+      id: 'get-help',
+      label: 'Get Help',
+      icon: 'lucide:circle-help',
+    },
+    {
+      id: 'separator-apps',
       label: '',
       type: 'separator',
     },
     {
-      id: 'account',
-      label: 'Account',
-      icon: 'lucide:badge-check',
+      id: 'extensions',
+      label: 'Extensions',
+      icon: 'lucide:puzzle',
     },
     {
-      id: 'billing',
-      label: 'Billing',
-      icon: 'lucide:credit-card',
+      id: 'roadmap',
+      label: 'Roadmap',
+      icon: 'lucide:map',
     },
     {
-      id: 'notifications',
-      label: 'Notifications',
-      icon: 'lucide:bell',
+      id: 'whats-new',
+      label: "What's New",
+      icon: 'lucide:sparkles',
     },
     {
       id: 'separator-logout',
@@ -435,7 +461,7 @@ export const aiPortfolioContent = {
     },
     {
       id: 'logout',
-      label: 'Log out',
+      label: 'Logout',
       icon: 'lucide:log-out',
     },
   ] satisfies AiPortfolioSidebarProfileMenuItem[],

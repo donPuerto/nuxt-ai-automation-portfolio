@@ -7,6 +7,14 @@ import AiPortfolioPrompt from './AiPortfolioPrompt.vue'
 import AiPortfolioDescriptor from './AiPortfolioDescriptor.vue'
 import ChatSidebar from './ChatSidebar.vue'
 
+const props = withDefaults(defineProps<{
+  mode?: 'prompt' | 'settings'
+}>(), {
+  mode: 'prompt',
+})
+
+const router = useRouter()
+
 const {
   prompt,
   loading,
@@ -16,6 +24,8 @@ const {
   activePrompt,
   expandedProjectSlug,
   selectedAgentId,
+  promptAgentOptions,
+  isAuthenticated,
   historyEntries,
   submitPrompt,
   runNavIntent,
@@ -60,6 +70,7 @@ const descriptorTexts = computed(() => aiPortfolioContent.descriptorLines.map(it
 const isConversationMode = computed(() =>
   loading.value || hasResponse.value || Boolean(error.value) || Boolean(activePrompt.value),
 )
+const isPromptMode = computed(() => props.mode === 'prompt')
 
 const activeSidebarIntent = computed(() => {
   const activeEntry = historyEntries.value.find(entry => entry.label === activePrompt.value.trim())
@@ -72,24 +83,37 @@ const activeSidebarIntent = computed(() => {
 })
 
 const handleReplayHistory = async (entry: (typeof historyEntries.value)[number]) => {
+  if (!isPromptMode.value) {
+    await router.push('/')
+  }
   await replayHistoryEntry(entry)
 }
 
-const handleNewChat = () => {
+const handleNewChat = async () => {
+  if (!isPromptMode.value) {
+    await router.push('/')
+  }
   resetConversation()
 }
 
 const handleSidebarNavigate = async (intent: 'me' | 'projects' | 'skills' | 'discovery-call') => {
+  if (!isPromptMode.value) {
+    await router.push('/')
+  }
   await runNavIntent(intent)
 }
 
 const handlePromptSubmit = async (payload: { files: ChatFileWithStatus[] }) => {
   await submitPrompt(payload.files)
 }
+
+const handleAddAgent = async () => {
+  await router.push('/settings?section=general#appearance-settings')
+}
 </script>
 
 <template>
-  <SidebarProvider v-model:open="sidebarExpanded" class="[--sidebar-width:17.75rem] [--sidebar-width-icon:3.35rem]">
+  <SidebarProvider v-model:open="sidebarExpanded" class="[--sidebar-width:17.75rem] [--sidebar-width-icon:3.35rem] font-sans">
     <section class="relative min-h-screen w-full overflow-hidden bg-background md:flex">
       <Sidebar
         side="left"
@@ -123,9 +147,14 @@ const handlePromptSubmit = async (payload: { files: ChatFileWithStatus[] }) => {
           </header>
 
           <div class="relative min-h-0 flex-1">
-            <div class="h-full overflow-y-auto px-4 pb-72 pt-6 md:px-8 md:pb-[19rem] md:pt-8">
+            <div
+              class="h-full overflow-y-auto"
+              :class="isPromptMode
+                ? 'px-4 pb-72 pt-6 md:px-8 md:pb-[19rem] md:pt-8'
+                : 'px-3 pb-8 pt-3 md:px-5 md:pb-10 md:pt-4'"
+            >
               <div class="mx-auto flex h-full w-full max-w-6xl flex-col">
-                <AnimatePresence mode="wait">
+                <AnimatePresence v-if="isPromptMode" mode="wait">
                   <motion.div
                     v-if="!isConversationMode"
                     key="landing-state"
@@ -184,10 +213,17 @@ const handlePromptSubmit = async (payload: { files: ChatFileWithStatus[] }) => {
                     />
                   </motion.div>
                 </AnimatePresence>
+
+                <div
+                  v-else
+                  class="mx-auto w-full max-w-6xl pt-1 md:pt-2 2xl:max-w-7xl"
+                >
+                  <slot />
+                </div>
               </div>
             </div>
 
-            <div class="pointer-events-none absolute inset-x-0 bottom-0 z-30 pb-4 md:pb-6">
+            <div v-if="isPromptMode" class="pointer-events-none absolute inset-x-0 bottom-0 z-30 pb-4 md:pb-6">
               <div class="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-background via-background/88 to-transparent" />
 
               <div class="pointer-events-auto relative mx-auto flex w-full max-w-6xl flex-col items-center gap-3 px-4 md:px-8">
@@ -197,10 +233,12 @@ const handlePromptSubmit = async (payload: { files: ChatFileWithStatus[] }) => {
                     :loading="loading"
                     :agent-label="aiPortfolioContent.promptAgentLabel"
                     :agent-description="aiPortfolioContent.promptAgentDescription"
-                    :agent-options="aiPortfolioContent.promptAgentOptions"
+                    :agent-options="promptAgentOptions"
                     :selected-agent-id="selectedAgentId"
+                    :is-authenticated="isAuthenticated"
                     @submit="handlePromptSubmit"
                     @select-agent="selectAgent"
+                    @add-agent="handleAddAgent"
                   />
                 </div>
 

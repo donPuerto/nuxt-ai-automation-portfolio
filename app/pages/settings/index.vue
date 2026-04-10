@@ -24,9 +24,8 @@ const {
 
 const sections: { id: SettingsSectionId, label: string }[] = [
   { id: 'general', label: 'General' },
-  { id: 'notifications', label: 'Notifications' },
-  { id: 'appearance', label: 'Appearance' },
   { id: 'account', label: 'Account' },
+  { id: 'knowledge-base', label: 'Knowledge Base' },
 ]
 
 const fontOptions = [
@@ -60,8 +59,8 @@ const agentProviderOptions = [
 
 const agentModelOptions = [
   { label: 'OpenRouter (Free)', value: 'openrouter-free', provider: 'openrouter' },
-  { label: 'Claude Sonnet', value: 'claude-sonnet', provider: 'claude' },
-  { label: 'OpenAI GPT', value: 'openai-gpt', provider: 'openai' },
+  { label: 'Claude Sonnet 4.5', value: 'claude-sonnet-4-5', provider: 'claude' },
+  { label: 'OpenAI GPT-4.1 mini', value: 'openai-gpt-4-1-mini', provider: 'openai' },
 ] as const
 
 const filteredAgentModels = computed(() =>
@@ -210,25 +209,24 @@ watch(
 
 useSeoMeta({
   title: 'Settings | Don Puerto',
-  description: 'Manage your profile, notifications, appearance, and account preferences.',
+  description: 'Manage your profile, account, and knowledge base preferences.',
+})
+
+definePageMeta({
+  layout: 'workspace',
+  workspaceMode: 'settings',
 })
 </script>
 
 <template>
-  <div class="container py-10 md:py-12">
-    <div class="mx-auto max-w-6xl">
-      <div class="mb-6">
-        <h1 class="text-3xl font-semibold tracking-tight text-[#f0deca]">
-          Settings
-        </h1>
-        <p class="mt-2 text-sm text-[#ab9986]">
-          Manage your profile, notifications, appearance, and account preferences.
-        </p>
+  <div class="mx-auto w-full max-w-5xl px-1 py-2 font-sans md:px-2 md:py-3">
+      <div class="mb-4">
+        <PageBackHeader title="Settings" to="/" />
       </div>
 
       <Card class="border-[#4a433d]/70 bg-[#262321] text-[#f0deca]">
-        <CardContent class="grid gap-0 p-0 md:grid-cols-[15rem_minmax(0,1fr)]">
-          <aside class="border-b border-[#4a433d]/60 p-3 md:border-r md:border-b-0">
+        <CardContent class="grid gap-0 p-0 lg:grid-cols-[13.25rem_minmax(0,1fr)]">
+          <aside class="border-b border-[#4a433d]/60 p-2.5 lg:border-r lg:border-b-0">
             <nav class="space-y-1.5">
               <Button
                 v-for="section in sections"
@@ -247,7 +245,7 @@ useSeoMeta({
             </nav>
           </aside>
 
-          <section class="p-4 md:p-6">
+          <section class="p-3 md:p-4 lg:p-5">
             <div v-if="loading" class="space-y-3">
               <Skeleton class="h-7 w-40 bg-[#3a342f]" />
               <Skeleton class="h-20 w-full bg-[#3a342f]" />
@@ -269,17 +267,17 @@ useSeoMeta({
               </Button>
             </div>
 
-            <div v-else-if="activeSection === 'general'" class="space-y-5">
+            <div v-else-if="activeSection === 'general'" class="space-y-6">
               <div>
                 <h2 class="text-xl font-semibold text-[#fff4e6]">
-                  General
+                  Profile
                 </h2>
                 <p class="mt-1 text-sm text-[#ab9986]">
-                  Update your profile details used across the app.
+                  Update your profile details and response preferences.
                 </p>
               </div>
 
-              <div class="grid gap-4 md:grid-cols-2">
+              <div class="grid gap-3 md:grid-cols-2">
                 <div class="space-y-2">
                   <Label for="first-name">First name</Label>
                   <Input id="first-name" v-model="profile.firstName" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]" />
@@ -290,9 +288,20 @@ useSeoMeta({
                 </div>
               </div>
 
-              <div class="space-y-2">
-                <Label for="nickname">What should I call you?</Label>
-                <Input id="nickname" v-model="profile.nickname" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]" />
+              <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_17rem]">
+                <div class="space-y-2">
+                  <Label for="full-name">Full name</Label>
+                  <Input
+                    id="full-name"
+                    :model-value="[profile.firstName, profile.lastName].filter(Boolean).join(' ')"
+                    class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]"
+                    readonly
+                  />
+                </div>
+                <div class="space-y-2">
+                  <Label for="nickname">What should Claude call you?</Label>
+                  <Input id="nickname" v-model="profile.nickname" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]" />
+                </div>
               </div>
 
               <div class="space-y-2">
@@ -305,7 +314,7 @@ useSeoMeta({
                 />
               </div>
 
-              <div class="grid gap-4 md:grid-cols-3">
+              <div class="grid gap-3 md:grid-cols-3">
                 <div class="space-y-2 md:col-span-2">
                   <Label for="email">Email</Label>
                   <Input id="email" v-model="profile.email" type="email" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]" />
@@ -328,169 +337,173 @@ useSeoMeta({
               >
                 {{ isSavingGeneral ? 'Saving...' : 'Save general settings' }}
               </Button>
+
+              <Separator class="bg-[#4a433d]/60" />
+
+              <div id="appearance-settings" class="space-y-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-[#fff4e6]">
+                    Notifications
+                  </h3>
+                  <p class="mt-1 text-sm text-[#ab9986]">
+                    Choose which alerts should be sent to you.
+                  </p>
+                </div>
+
+                <div class="space-y-3 rounded-xl border border-[#4a433d]/70 bg-[#2b2724] p-4">
+                  <Label class="flex items-center justify-between gap-4">
+                    <span class="space-y-1">
+                      <span class="block text-sm font-medium">Response completions</span>
+                      <span class="block text-xs text-[#ab9986]">Get notified when a long-running response is completed.</span>
+                    </span>
+                    <Checkbox
+                      :checked="preferences.notifyResponseCompletions"
+                      @update:checked="preferences.notifyResponseCompletions = $event === true"
+                    />
+                  </Label>
+
+                  <Separator class="bg-[#4a433d]/60" />
+
+                  <Label class="flex items-center justify-between gap-4">
+                    <span class="space-y-1">
+                      <span class="block text-sm font-medium">Emails from web app</span>
+                      <span class="block text-xs text-[#ab9986]">Get an email when web app actions need your response.</span>
+                    </span>
+                    <Checkbox
+                      :checked="preferences.notifyWebAppEmails"
+                      @update:checked="preferences.notifyWebAppEmails = $event === true"
+                    />
+                  </Label>
+
+                  <Separator class="bg-[#4a433d]/60" />
+
+                  <Label class="flex items-center justify-between gap-4">
+                    <span class="space-y-1">
+                      <span class="block text-sm font-medium">Dispatch messages</span>
+                      <span class="block text-xs text-[#ab9986]">Get push notifications when there is a new dispatch message.</span>
+                    </span>
+                    <Checkbox
+                      :checked="preferences.notifyDispatchMessages"
+                      @update:checked="preferences.notifyDispatchMessages = $event === true"
+                    />
+                  </Label>
+                </div>
+
+                <Button
+                  class="bg-[#b87449] text-white hover:bg-[#c6845a]"
+                  :disabled="isSavingNotifications"
+                  @click="handleSaveNotifications"
+                >
+                  {{ isSavingNotifications ? 'Saving...' : 'Save notification settings' }}
+                </Button>
+              </div>
+
+              <Separator class="bg-[#4a433d]/60" />
+
+              <div class="space-y-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-[#fff4e6]">
+                    Appearance
+                  </h3>
+                  <p class="mt-1 text-sm text-[#ab9986]">
+                    Control color mode, font, and default assistant model.
+                  </p>
+                </div>
+
+                <div class="space-y-2">
+                  <Label for="color-mode">Color mode</Label>
+                  <Select v-model="preferences.colorMode">
+                    <SelectTrigger id="color-mode" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]">
+                      <SelectValue placeholder="Select mode" />
+                    </SelectTrigger>
+                    <SelectContent class="border-[#4a433d] bg-[#2b2724] text-[#f0deca]">
+                      <SelectItem value="system">
+                        System
+                      </SelectItem>
+                      <SelectItem value="light">
+                        Light
+                      </SelectItem>
+                      <SelectItem value="dark">
+                        Dark
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div class="space-y-2">
+                  <Label for="font-family">Font</Label>
+                  <Select v-model="preferences.fontFamily">
+                    <SelectTrigger id="font-family" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]">
+                      <SelectValue placeholder="Select font" />
+                    </SelectTrigger>
+                    <SelectContent class="border-[#4a433d] bg-[#2b2724] text-[#f0deca]">
+                      <SelectItem
+                        v-for="font in fontOptions"
+                        :key="font.value"
+                        :value="font.value"
+                      >
+                        {{ font.label }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div class="space-y-2">
+                  <Label for="agent-provider">Agent provider</Label>
+                  <Select v-model="preferences.agentProvider">
+                    <SelectTrigger id="agent-provider" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]">
+                      <SelectValue placeholder="Select provider" />
+                    </SelectTrigger>
+                    <SelectContent class="border-[#4a433d] bg-[#2b2724] text-[#f0deca]">
+                      <SelectItem
+                        v-for="provider in agentProviderOptions"
+                        :key="provider.value"
+                        :value="provider.value"
+                      >
+                        {{ provider.label }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div class="space-y-2">
+                  <Label for="agent-model">Default model</Label>
+                  <Select v-model="preferences.agentModel">
+                    <SelectTrigger id="agent-model" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]">
+                      <SelectValue placeholder="Select model" />
+                    </SelectTrigger>
+                    <SelectContent class="border-[#4a433d] bg-[#2b2724] text-[#f0deca]">
+                      <SelectItem
+                        v-for="model in filteredAgentModels"
+                        :key="model.value"
+                        :value="model.value"
+                      >
+                        {{ model.label }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p class="text-xs text-[#ab9986]">
+                    OpenRouter is set as the default provider for free usage.
+                  </p>
+                </div>
+
+                <Button
+                  class="bg-[#b87449] text-white hover:bg-[#c6845a]"
+                  :disabled="isSavingAppearance"
+                  @click="handleSaveAppearance"
+                >
+                  {{ isSavingAppearance ? 'Saving...' : 'Save appearance settings' }}
+                </Button>
+              </div>
             </div>
 
-            <div v-else-if="activeSection === 'notifications'" class="space-y-5">
-              <div>
-                <h2 class="text-xl font-semibold text-[#fff4e6]">
-                  Notifications
-                </h2>
-                <p class="mt-1 text-sm text-[#ab9986]">
-                  Choose which alerts should be sent to you.
-                </p>
-              </div>
-
-              <div class="space-y-3 rounded-xl border border-[#4a433d]/70 bg-[#2b2724] p-4">
-                <Label class="flex items-center justify-between gap-4">
-                  <span class="space-y-1">
-                    <span class="block text-sm font-medium">Response completions</span>
-                    <span class="block text-xs text-[#ab9986]">Get notified when a long-running response is completed.</span>
-                  </span>
-                  <Checkbox
-                    :checked="preferences.notifyResponseCompletions"
-                    @update:checked="preferences.notifyResponseCompletions = $event === true"
-                  />
-                </Label>
-
-                <Separator class="bg-[#4a433d]/60" />
-
-                <Label class="flex items-center justify-between gap-4">
-                  <span class="space-y-1">
-                    <span class="block text-sm font-medium">Emails from web app</span>
-                    <span class="block text-xs text-[#ab9986]">Get an email when web app actions need your response.</span>
-                  </span>
-                  <Checkbox
-                    :checked="preferences.notifyWebAppEmails"
-                    @update:checked="preferences.notifyWebAppEmails = $event === true"
-                  />
-                </Label>
-
-                <Separator class="bg-[#4a433d]/60" />
-
-                <Label class="flex items-center justify-between gap-4">
-                  <span class="space-y-1">
-                    <span class="block text-sm font-medium">Dispatch messages</span>
-                    <span class="block text-xs text-[#ab9986]">Get push notifications when there is a new dispatch message.</span>
-                  </span>
-                  <Checkbox
-                    :checked="preferences.notifyDispatchMessages"
-                    @update:checked="preferences.notifyDispatchMessages = $event === true"
-                  />
-                </Label>
-              </div>
-
-              <Button
-                class="bg-[#b87449] text-white hover:bg-[#c6845a]"
-                :disabled="isSavingNotifications"
-                @click="handleSaveNotifications"
-              >
-                {{ isSavingNotifications ? 'Saving...' : 'Save notification settings' }}
-              </Button>
-            </div>
-
-            <div v-else-if="activeSection === 'appearance'" class="space-y-5">
-              <div>
-                <h2 class="text-xl font-semibold text-[#fff4e6]">
-                  Appearance
-                </h2>
-                <p class="mt-1 text-sm text-[#ab9986]">
-                  Control color mode and default font.
-                </p>
-              </div>
-
-              <div class="space-y-2">
-                <Label for="color-mode">Color mode</Label>
-                <Select v-model="preferences.colorMode">
-                  <SelectTrigger id="color-mode" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]">
-                    <SelectValue placeholder="Select mode" />
-                  </SelectTrigger>
-                  <SelectContent class="border-[#4a433d] bg-[#2b2724] text-[#f0deca]">
-                    <SelectItem value="system">
-                      System
-                    </SelectItem>
-                    <SelectItem value="light">
-                      Light
-                    </SelectItem>
-                    <SelectItem value="dark">
-                      Dark
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div class="space-y-2">
-                <Label for="font-family">Font</Label>
-                <Select v-model="preferences.fontFamily">
-                  <SelectTrigger id="font-family" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]">
-                    <SelectValue placeholder="Select font" />
-                  </SelectTrigger>
-                  <SelectContent class="border-[#4a433d] bg-[#2b2724] text-[#f0deca]">
-                    <SelectItem
-                      v-for="font in fontOptions"
-                      :key="font.value"
-                      :value="font.value"
-                    >
-                      {{ font.label }}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div class="space-y-2">
-                <Label for="agent-provider">Agent provider</Label>
-                <Select v-model="preferences.agentProvider">
-                  <SelectTrigger id="agent-provider" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]">
-                    <SelectValue placeholder="Select provider" />
-                  </SelectTrigger>
-                  <SelectContent class="border-[#4a433d] bg-[#2b2724] text-[#f0deca]">
-                    <SelectItem
-                      v-for="provider in agentProviderOptions"
-                      :key="provider.value"
-                      :value="provider.value"
-                    >
-                      {{ provider.label }}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div class="space-y-2">
-                <Label for="agent-model">Default model</Label>
-                <Select v-model="preferences.agentModel">
-                  <SelectTrigger id="agent-model" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]">
-                    <SelectValue placeholder="Select model" />
-                  </SelectTrigger>
-                  <SelectContent class="border-[#4a433d] bg-[#2b2724] text-[#f0deca]">
-                    <SelectItem
-                      v-for="model in filteredAgentModels"
-                      :key="model.value"
-                      :value="model.value"
-                    >
-                      {{ model.label }}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                <p class="text-xs text-[#ab9986]">
-                  OpenRouter is set as the default provider for free usage.
-                </p>
-              </div>
-
-              <Button
-                class="bg-[#b87449] text-white hover:bg-[#c6845a]"
-                :disabled="isSavingAppearance"
-                @click="handleSaveAppearance"
-              >
-                {{ isSavingAppearance ? 'Saving...' : 'Save appearance settings' }}
-              </Button>
-            </div>
-
-            <div v-else class="space-y-5">
+            <div v-else-if="activeSection === 'account'" class="space-y-5">
               <div>
                 <h2 class="text-xl font-semibold text-[#fff4e6]">
                   Account
                 </h2>
                 <p class="mt-1 text-sm text-[#ab9986]">
-                  Manage session security for this workspace.
+                  Account details from your signup and active session controls.
                 </p>
               </div>
 
@@ -559,9 +572,49 @@ useSeoMeta({
                 </Button>
               </div>
             </div>
+
+            <div v-else class="space-y-5">
+              <div>
+                <h2 class="text-xl font-semibold text-[#fff4e6]">
+                  Knowledge Base
+                </h2>
+                <p class="mt-1 text-sm text-[#ab9986]">
+                  This is where we manage information that feeds your RAG system.
+                </p>
+              </div>
+
+              <div class="space-y-4 rounded-xl border border-[#4a433d]/70 bg-[#2b2724] p-4">
+                <div class="space-y-1">
+                  <p class="text-sm font-medium text-[#fff4e6]">
+                    Source collections
+                  </p>
+                  <p class="text-xs text-[#ab9986]">
+                    Upload your PDFs and documents via n8n, then index and sync them into your knowledge store.
+                  </p>
+                </div>
+
+                <div class="grid gap-3 md:grid-cols-2">
+                  <div class="rounded-lg border border-[#4a433d]/70 bg-[#221f1d] p-3">
+                    <p class="text-sm font-medium text-[#fff4e6]">
+                      Upload pipeline
+                    </p>
+                    <p class="mt-1 text-xs text-[#ab9986]">
+                      Document ingest runs through n8n, then forwards chunks and metadata for retrieval.
+                    </p>
+                  </div>
+                  <div class="rounded-lg border border-[#4a433d]/70 bg-[#221f1d] p-3">
+                    <p class="text-sm font-medium text-[#fff4e6]">
+                      Retrieval scope
+                    </p>
+                    <p class="mt-1 text-xs text-[#ab9986]">
+                      Limit responses to your own portfolio and automation knowledge base.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </section>
         </CardContent>
       </Card>
     </div>
-  </div>
 </template>

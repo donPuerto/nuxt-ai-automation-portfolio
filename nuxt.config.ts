@@ -3,12 +3,13 @@ import tailwindcss from '@tailwindcss/vite'
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   ssr: true,
   experimental: {
     buildCache: false
   },
   features: {
+    devLogs: false,
     inlineStyles: true
   },
   nitro: {
@@ -114,6 +115,24 @@ export default defineNuxtConfig({
     ]
   },
   vite: {
+    optimizeDeps: {
+      include: [
+        '@vue/devtools-core',
+        '@vue/devtools-kit',
+        '@vueuse/core',
+        '@supabase/supabase-js',
+        'vue-sonner',
+        'motion-v',
+        'animejs',
+        'three',
+        'class-variance-authority',
+        'retell-client-js-sdk',
+        'reka-ui',
+        'lucide-vue-next',
+        'clsx',
+        'tailwind-merge',
+      ],
+    },
     plugins: [
       {
         name: 'ignore-tailwind-sourcemap-warnings',
@@ -178,13 +197,17 @@ export default defineNuxtConfig({
     n8nFulfillmentWebhookToken: '',
     n8nAskDonWebhookUrl: '',
     n8nAskDonWebhookToken: '',
-    supabaseServiceRoleKey: '',
+    modelCatalogSyncToken: process.env.MODEL_CATALOG_SYNC_TOKEN ?? '',
+    openrouterApiKey: process.env.OPENROUTER_API_KEY ?? '',
+    anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? process.env.NUXT_ANTHROPIC_API_KEY ?? '',
+    openaiApiKey: process.env.OPENAI_API_KEY ?? process.env.NUXT_OPENAI_API_KEY ?? '',
+    supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NUXT_SUPABASE_SERVICE_ROLE_KEY ?? '',
     videoToTextWebhookUrl: '',
     videoToTextApiKey: '',
     videoToTextCallbackUrl: '',
     public: {
-      supabaseUrl: process.env.SUPABASE_URL,
-      supabaseKey: process.env.SUPABASE_KEY,
+      supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL ?? '',
+      supabaseKey: process.env.NUXT_PUBLIC_SUPABASE_KEY ?? process.env.SUPABASE_KEY ?? '',
       stripePublishableKey: '',
       siteUrl: '',
     },
@@ -194,6 +217,7 @@ export default defineNuxtConfig({
       contentSecurityPolicy: {
         'img-src': ["'self'", 'data:', 'blob:', 'https://cdn.simpleicons.org', 'https://*.stripe.com'],
         'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://js.stripe.com'],
+        'worker-src': ["'self'", 'blob:'],
         'style-src': ["'self'", "'unsafe-inline'"],
         'frame-src': [
           "'self'",

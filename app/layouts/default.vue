@@ -15,14 +15,14 @@
       <Navigation v-if="!isAiHome" />
 
       <main class="w-full overflow-x-hidden">
-        <NuxtPage />
+        <slot />
       </main>
 
       <BackToTop />
     </div>
 
     <Footer v-if="!isAiHome" />
-</div>
+  </div>
 </template>
 
 <script setup lang="ts">
