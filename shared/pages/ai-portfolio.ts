@@ -14,6 +14,12 @@ export interface AiPortfolioDescriptorLine {
   text: string
 }
 
+export interface AiPortfolioNewsItem {
+  id: string
+  title: string
+  url: string
+}
+
 export type AiPortfolioPromptMenuItemType = 'item' | 'separator' | 'submenu'
 
 export interface AiPortfolioPromptMenuItem {
@@ -51,12 +57,6 @@ export interface AiPortfolioNavItem {
   label: string
   icon: string
   prompt?: string
-}
-
-export interface AiPortfolioSidebarNavItem {
-  id: AiPortfolioNavIntent
-  label: string
-  icon: string
 }
 
 export interface AiPortfolioSidebarSeed {
@@ -178,6 +178,58 @@ export const aiPortfolioContent = {
       text: 'Automation experience across delivery, systems, and support.',
     },
   ] satisfies AiPortfolioDescriptorLine[],
+  newsFeedItems: [
+    {
+      id: 'news-claude-integrations',
+      title: 'Claude tools are getting more agent-native',
+      url: 'https://www.anthropic.com/news',
+    },
+    {
+      id: 'news-claude-teams',
+      title: 'Teams are using Claude for tighter internal copilots',
+      url: 'https://www.anthropic.com/customers',
+    },
+    {
+      id: 'news-claude-api',
+      title: 'Claude API workflows keep leaning toward tool use',
+      url: 'https://docs.anthropic.com/',
+    },
+    {
+      id: 'news-claude-memory',
+      title: 'Persistent context is shaping better AI workspaces',
+      url: 'https://www.anthropic.com/news',
+    },
+    {
+      id: 'news-claude-enterprise',
+      title: 'Enterprise Claude rollouts are focusing on safer defaults',
+      url: 'https://www.anthropic.com/customers',
+    },
+    {
+      id: 'news-claude-research',
+      title: 'Model routing is becoming part of product UX',
+      url: 'https://www.anthropic.com/research',
+    },
+    {
+      id: 'news-claude-automation',
+      title: 'Claude-first automation stacks are getting leaner',
+      url: 'https://www.anthropic.com/news',
+    },
+    {
+      id: 'news-claude-ops',
+      title: 'Ops teams are pairing Claude with workflow orchestration',
+      url: 'https://www.anthropic.com/customers',
+    },
+    {
+      id: 'news-claude-builder',
+      title: 'Builders keep moving from chat UI to task UI',
+      url: 'https://www.anthropic.com/news',
+    },
+    {
+      id: 'news-claude-ux',
+      title: 'Claude-style interfaces keep pushing calmer motion patterns',
+      url: 'https://www.anthropic.com/news',
+    },
+  ] satisfies AiPortfolioNewsItem[],
   greetingAnimation: 'blur-rise' as AiPortfolioGreetingAnimation,
   promptPlaceholder: 'Ask about my projects, workflows, or services...',
   promptAgentLabel: 'OpenRouter (Free)',
@@ -391,28 +443,11 @@ export const aiPortfolioContent = {
     },
   ] satisfies AiPortfolioNavItem[],
   sidebarNavigationLabel: 'Navigation',
-  sidebarNavItems: [
-    {
-      id: 'me',
-      label: 'Me',
-      icon: 'lucide:user-round',
-    },
-    {
-      id: 'projects',
-      label: 'Projects',
-      icon: 'lucide:briefcase-business',
-    },
-    {
-      id: 'discovery-call',
-      label: 'AI booking',
-      icon: 'lucide:calendar-clock',
-    },
-  ] satisfies AiPortfolioSidebarNavItem[],
   sidebarTitle: 'Claude workspace',
   sidebarDescription: 'Portfolio chat',
   sidebarNewChatLabel: 'New chat',
   sidebarHistoryLabel: 'Recent prompts',
-  sidebarEmptyLabel: 'Your recent prompts will appear here.',
+  sidebarEmptyLabel: 'Your recent prompts will appear here. Sign in to sync them across devices.',
   sidebarProfileName: 'Don Puerto',
   sidebarProfileEmail: 'm@example.com',
   sidebarProfilePlan: 'Pro plan',

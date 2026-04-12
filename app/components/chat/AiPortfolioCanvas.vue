@@ -151,7 +151,7 @@ const isStackSection = (section: PortfolioAssistantSection) => {
             :animate="{ opacity: 1, y: 0 }"
             :transition="{ duration: 0.22, delay: 0.02 }"
           >
-            <div class="max-w-[min(100%,44rem)] rounded-[1.45rem] border border-border/60 bg-muted/45 px-4 py-3 text-sm leading-6 text-foreground/88 shadow-[0_16px_36px_-28px_rgba(0,0,0,0.45)] md:px-5">
+            <div class="max-w-[min(100%,42rem)] rounded-[1.6rem] border border-border/70 bg-background/55 px-4 py-3 text-sm leading-6 text-foreground/86 shadow-[0_18px_40px_-30px_rgba(0,0,0,0.38)] backdrop-blur-sm md:px-5">
               {{ activePrompt }}
             </div>
           </motion.div>
@@ -162,7 +162,7 @@ const isStackSection = (section: PortfolioAssistantSection) => {
             :animate="{ opacity: 1, y: 0 }"
             :transition="{ duration: 0.28, delay: 0.05 }"
           >
-            <div class="absolute left-0 top-0 hidden md:flex size-10 shrink-0 items-center justify-center rounded-full border border-border/70 bg-background/80 shadow-[0_16px_34px_-24px_rgba(0,0,0,0.55)]">
+            <div class="absolute left-0 top-0 hidden md:flex size-10 shrink-0 items-center justify-center rounded-full border border-border/70 bg-background/85 shadow-[0_16px_34px_-24px_rgba(0,0,0,0.48)]">
               <AiPortfolioSparkIcon
                 :size="24"
                 :speed="0.8"
@@ -171,11 +171,11 @@ const isStackSection = (section: PortfolioAssistantSection) => {
             </div>
 
             <div class="mx-auto min-w-0 w-full max-w-7xl space-y-7 md:space-y-8 md:pl-14">
-              <div class="space-y-4">
-                <div class="text-xs font-semibold uppercase tracking-[0.22em] text-primary/90">
+              <div class="max-w-4xl space-y-4">
+                <div class="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/90">
                   Don Puerto
                 </div>
-                <div class="max-w-none text-[0.98rem] leading-8 text-foreground/92 md:text-[1.03rem]">
+                <div class="max-w-[46rem] text-[1rem] leading-8 text-foreground/90 md:text-[1.05rem] md:leading-[2.15rem]">
                   {{ response.answer }}
                 </div>
               </div>

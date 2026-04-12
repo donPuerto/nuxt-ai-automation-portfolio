@@ -1,7 +1,6 @@
 import type {
   AiPortfolioNavIntent,
   AiPortfolioPromptAgentOption,
-  AiPortfolioSidebarSeed,
   PortfolioAssistantAttachment,
   PortfolioAssistantRequest,
   PortfolioAssistantIntent,
@@ -9,7 +8,8 @@ import type {
   PortfolioKnowledgeProject,
 } from '@@/shared'
 import type { ChatFileWithStatus } from '@/components/chat/chat-types'
-import { aiPortfolioContent, portfolioKnowledgeProjects } from '@@/shared'
+import { useSessionStorage } from '@vueuse/core'
+import { aiPortfolioContent, buildWorkspacePortfolioResponse, portfolioKnowledgeProjects } from '@@/shared'
 
 type AssistantApiResult = {
   ok: boolean
@@ -22,20 +22,50 @@ type NavWebhookResult = {
   message: string
 }
 
+type SavedPromptApiRow = {
+  id: string
+  label: string
+  prompt: string
+  is_favorite?: boolean
+  last_used_at?: string | null
+  created_at?: string | null
+  updated_at?: string | null
+}
+
 export interface AiPortfolioHistoryEntry {
   id: string
   label: string
   icon: string
   prompt?: string
   intent?: PortfolioAssistantIntent
+  createdAt?: string | null
+  updatedAt?: string | null
+  persisted?: boolean
 }
 
-const toHistoryEntry = (item: AiPortfolioSidebarSeed): AiPortfolioHistoryEntry => ({
-  id: item.id,
-  label: item.label,
-  icon: item.icon,
-  prompt: item.prompt,
-  intent: item.intent,
+const toPromptLabel = (prompt?: string) => {
+  const trimmedPrompt = prompt?.trim() || ''
+
+  if (!trimmedPrompt) {
+    return 'New chat'
+  }
+
+  if (trimmedPrompt.length <= 72) {
+    return trimmedPrompt
+  }
+
+  return `${trimmedPrompt.slice(0, 69).trimEnd()}...`
+}
+
+const toSavedPromptHistoryEntry = (row: SavedPromptApiRow): AiPortfolioHistoryEntry => ({
+  id: row.id,
+  label: row.label || toPromptLabel(row.prompt),
+  icon: 'lucide:message-square-text',
+  prompt: row.prompt,
+  intent: 'prompt',
+  createdAt: row.created_at ?? row.last_used_at ?? null,
+  updatedAt: row.updated_at ?? row.last_used_at ?? null,
+  persisted: true,
 })
 
 export const useAiPortfolio = () => {
@@ -45,13 +75,14 @@ export const useAiPortfolio = () => {
   const response = ref<PortfolioAssistantResponse | null>(null)
   const expandedProjectSlug = ref<string | null>(null)
   const activePrompt = ref('')
+  const activeIntent = ref<AiPortfolioNavIntent | 'prompt' | ''>('')
   const selectedAgentId = useState<string>('ai-portfolio-selected-agent', () => aiPortfolioContent.selectedPromptAgentId)
   const promptAgentOptions = useState('ai-portfolio-prompt-agent-options', () => aiPortfolioContent.promptAgentOptions)
   const settings = useSupabaseConfigured() ? useUserSettings() : null
+  const supabase = useSupabaseConfigured() ? useSupabaseClient() : null
   const isAuthenticated = computed(() => Boolean(settings?.isAuthenticated.value))
-  const historyEntries = useState<AiPortfolioHistoryEntry[]>('ai-portfolio-history', () =>
-    aiPortfolioContent.sidebarSeedItems.map(toHistoryEntry),
-  )
+  const guestHistoryEntries = useSessionStorage<AiPortfolioHistoryEntry[]>('ai-portfolio-guest-history', [])
+  const historyEntries = useState<AiPortfolioHistoryEntry[]>('ai-portfolio-history', () => [])
 
   const hasResponse = computed(() => Boolean(response.value))
 
@@ -79,37 +110,129 @@ export const useAiPortfolio = () => {
     }
   }
 
+  const setHistoryEntries = (entries: AiPortfolioHistoryEntry[]) => {
+    historyEntries.value = entries
+
+    if (!isAuthenticated.value) {
+      guestHistoryEntries.value = entries
+    }
+  }
+
   const addHistoryEntry = (entry: AiPortfolioHistoryEntry) => {
-    historyEntries.value = [
+    const nextEntries = [
       entry,
-      ...historyEntries.value.filter(item => item.label !== entry.label),
-    ].slice(0, 8)
+      ...historyEntries.value.filter(item =>
+        item.id !== entry.id
+        && item.prompt !== entry.prompt
+        && item.label !== entry.label,
+      ),
+    ].slice(0, 12)
+
+    setHistoryEntries(nextEntries)
   }
 
   const buildHistoryEntry = (payload: PortfolioAssistantRequest): AiPortfolioHistoryEntry => {
     const trimmedPrompt = payload.prompt?.trim()
 
-    if (payload.intent && payload.intent !== 'prompt') {
-      const navItem = aiPortfolioContent.navItems.find(item => item.id === payload.intent)
+    return {
+      id: `prompt-${Date.now()}`,
+      label: toPromptLabel(trimmedPrompt),
+      icon: 'lucide:message-square-text',
+      prompt: trimmedPrompt,
+      intent: 'prompt',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      persisted: false,
+    }
+  }
 
-      if (navItem) {
-        return {
-          id: `${payload.intent}-${Date.now()}`,
-          label: navItem.label,
-          icon: navItem.icon,
-          prompt: navItem.prompt,
-          intent: payload.intent,
-        }
-      }
+  const getAuthHeaders = async () => {
+    if (!supabase) {
+      throw new Error('Supabase is not configured.')
+    }
+
+    const { data } = await supabase.auth.getSession()
+    const token = data.session?.access_token
+
+    if (!token) {
+      throw new Error('Please sign in to use saved prompts.')
     }
 
     return {
-      id: `prompt-${Date.now()}`,
-      label: trimmedPrompt || 'New chat',
-      icon: 'lucide:message-square-text',
-      prompt: trimmedPrompt,
-      intent: payload.intent ?? 'prompt',
+      Authorization: `Bearer ${token}`,
     }
+  }
+
+  const loadSavedPromptHistory = async () => {
+    if (!isAuthenticated.value) {
+      setHistoryEntries([...(guestHistoryEntries.value ?? [])])
+      return
+    }
+
+    try {
+      const headers = await getAuthHeaders()
+      const result = await $fetch<{ prompts: SavedPromptApiRow[] }>('/api/chat/saved-prompts', {
+        headers,
+      })
+
+      setHistoryEntries((result.prompts ?? []).map(toSavedPromptHistoryEntry))
+    }
+    catch (caughtError) {
+      console.warn('failed to load saved prompts', caughtError)
+    }
+  }
+
+  const savePromptHistory = async (entry: AiPortfolioHistoryEntry) => {
+    if (!entry.prompt?.trim()) {
+      return entry
+    }
+
+    if (!isAuthenticated.value) {
+      addHistoryEntry({
+        ...entry,
+        persisted: false,
+      })
+      return entry
+    }
+
+    try {
+      const headers = await getAuthHeaders()
+      const result = await $fetch<{ prompt: SavedPromptApiRow }>('/api/chat/saved-prompts', {
+        method: 'POST',
+        headers,
+        body: {
+          label: entry.label,
+          prompt: entry.prompt,
+        },
+      })
+
+      const persistedEntry = toSavedPromptHistoryEntry(result.prompt)
+      addHistoryEntry(persistedEntry)
+      return persistedEntry
+    }
+    catch (caughtError) {
+      console.warn('failed to save prompt history', caughtError)
+      addHistoryEntry(entry)
+      return entry
+    }
+  }
+
+  const deleteHistoryEntry = async (entry: AiPortfolioHistoryEntry) => {
+    if (isAuthenticated.value && entry.persisted) {
+      try {
+        const headers = await getAuthHeaders()
+        await $fetch(`/api/chat/saved-prompts/${entry.id}`, {
+          method: 'DELETE',
+          headers,
+        })
+      }
+      catch (caughtError) {
+        console.warn('failed to delete saved prompt', caughtError)
+        throw caughtError
+      }
+    }
+
+    setHistoryEntries(historyEntries.value.filter(item => item.id !== entry.id))
   }
 
   const toAttachments = (files: ChatFileWithStatus[]): PortfolioAssistantAttachment[] => files.map(file => ({
@@ -136,8 +259,15 @@ export const useAiPortfolio = () => {
 
       response.value = result.response
       expandedProjectSlug.value = null
-      activePrompt.value = payload.prompt?.trim() || ''
-      addHistoryEntry(buildHistoryEntry(payload))
+      activePrompt.value = payload.intent === 'prompt' ? payload.prompt?.trim() || '' : ''
+      activeIntent.value = payload.intent === 'me'
+        || payload.intent === 'projects'
+        || payload.intent === 'skills'
+        || payload.intent === 'discovery-call'
+        || payload.intent === 'prompt'
+        ? payload.intent
+        : ''
+      await savePromptHistory(buildHistoryEntry(payload))
     }
     catch (caughtError) {
       console.error('ai portfolio request failed', caughtError)
@@ -314,16 +444,20 @@ export const useAiPortfolio = () => {
   }
 
   const runNavIntent = async (intent: AiPortfolioNavIntent) => {
-    if (intent === 'me') {
-      await triggerNavWebhook(intent)
-    }
-
     const navItem = aiPortfolioContent.navItems.find(item => item.id === intent)
-
-    await fetchResponse({
+    response.value = buildWorkspacePortfolioResponse({
       intent,
       prompt: navItem?.prompt,
     })
+    error.value = ''
+    loading.value = false
+    activePrompt.value = ''
+    activeIntent.value = intent
+    expandedProjectSlug.value = null
+
+    if (intent === 'me') {
+      await triggerNavWebhook(intent)
+    }
   }
 
   const toggleExpandedProject = (slug: string) => {
@@ -345,6 +479,7 @@ export const useAiPortfolio = () => {
     error.value = ''
     response.value = null
     activePrompt.value = ''
+    activeIntent.value = ''
     expandedProjectSlug.value = null
   }
 
@@ -358,6 +493,7 @@ export const useAiPortfolio = () => {
   if (import.meta.client) {
     watch(isAuthenticated, () => {
       ensureSelectedAgentIsUsable()
+      void loadSavedPromptHistory()
     })
 
     onMounted(async () => {
@@ -367,6 +503,7 @@ export const useAiPortfolio = () => {
 
       void loadOpenRouterFreeModels()
       applyStoredAgentPreference()
+      await loadSavedPromptHistory()
     })
   }
 
@@ -377,11 +514,13 @@ export const useAiPortfolio = () => {
     response,
     hasResponse,
     activePrompt,
+    activeIntent,
     expandedProjectSlug,
     selectedAgentId,
     promptAgentOptions,
     isAuthenticated,
     historyEntries,
+    deleteHistoryEntry,
     submitPrompt,
     runNavIntent,
     toggleExpandedProject,

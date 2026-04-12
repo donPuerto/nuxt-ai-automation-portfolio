@@ -51,6 +51,8 @@ const loading = ref(false)
 const saving = ref(false)
 const deletingId = ref<string | null>(null)
 const archiveId = ref<string | null>(null)
+const selectedUploadFile = ref<File | null>(null)
+const filePickerKey = ref(0)
 
 const form = reactive({
   sourceType: 'text' as KnowledgeSourceType,
@@ -65,18 +67,18 @@ const form = reactive({
 
 const emptyStateCopy = computed(() => {
   if (activeTab.value === 'text') {
-    return 'No text knowledge has been added yet.'
+    return 'No text notes yet. Add text to give the assistant something to use.'
   }
 
   if (activeTab.value === 'files') {
-    return 'No PDF or file knowledge has been synced yet.'
+    return 'No uploaded files yet. Upload a file to index it for chat.'
   }
 
   if (activeTab.value === 'chunks') {
-    return 'No chunks are available yet. Add text knowledge or let n8n process a PDF.'
+    return 'No indexed chunks yet. Upload a file or add text first.'
   }
 
-  return 'No knowledge sources yet. Add a text note or connect your PDF pipeline.'
+  return 'Your knowledge base is empty. Upload a file or add text so the assistant has something to answer from.'
 })
 
 const publishedCount = computed(() => documents.value.filter(document => document.status === 'indexed').length)
@@ -100,6 +102,8 @@ const filteredDocuments = computed(() => {
 
 const resetForm = (sourceType: KnowledgeSourceType = 'text') => {
   editingDocumentId.value = null
+  selectedUploadFile.value = null
+  filePickerKey.value += 1
   form.sourceType = sourceType
   form.name = ''
   form.source = ''
@@ -179,7 +183,7 @@ const saveDocument = async () => {
   saving.value = true
   try {
     const headers = await getAuthHeaders()
-    const body = {
+    const payload = {
       name: form.name,
       source: form.source,
       sourceType: form.sourceType,
@@ -188,6 +192,25 @@ const saveDocument = async () => {
       storagePath: form.storagePath,
       summary: form.summary,
       content: form.content,
+    }
+
+    const usesMultipartUpload = form.sourceType === 'file' && !!selectedUploadFile.value
+    const body = usesMultipartUpload
+      ? (() => {
+          const formData = new FormData()
+          for (const [key, value] of Object.entries(payload)) {
+            if (typeof value === 'string' && value.trim()) {
+              formData.append(key, value)
+            }
+          }
+
+          formData.append('file', selectedUploadFile.value as File)
+          return formData
+        })()
+      : payload
+
+    if (form.sourceType === 'file' && !editingDocumentId.value && !selectedUploadFile.value) {
+      throw new Error('Choose a file to upload before saving.')
     }
 
     if (editingDocumentId.value) {
@@ -253,11 +276,7 @@ const archiveDocument = async (document: KnowledgeDocument) => {
   }
 }
 
-const deleteDocument = async (document: KnowledgeDocument) => {
-  if (!window.confirm(`Delete "${document.name}" from the knowledge base?`)) {
-    return
-  }
-
+const performDeleteDocument = async (document: KnowledgeDocument) => {
   deletingId.value = document.id
   try {
     const headers = await getAuthHeaders()
@@ -279,6 +298,28 @@ const deleteDocument = async (document: KnowledgeDocument) => {
   }
 }
 
+const deleteDocument = (document: KnowledgeDocument) => {
+  if (deletingId.value === document.id) {
+    return
+  }
+
+  toast('Delete knowledge source?', {
+    description: `"${document.name}" and its indexed chunks will be removed from the knowledge base.`,
+    important: true,
+    duration: 12000,
+    action: {
+      label: 'Delete',
+      onClick: () => {
+        void performDeleteDocument(document)
+      },
+    },
+    cancel: {
+      label: 'Cancel',
+      onClick: () => {},
+    },
+  })
+}
+
 const formatDate = (value: string | null) => {
   if (!value) {
     return 'Unknown'
@@ -289,6 +330,31 @@ const formatDate = (value: string | null) => {
     day: 'numeric',
     year: 'numeric',
   }).format(new Date(value))
+}
+
+const statusLabel = (status: KnowledgeStatus) => {
+  if (status === 'ready') {
+    return 'pending index'
+  }
+
+  return status
+}
+
+const handleFileSelection = (event: Event) => {
+  const input = event.target as HTMLInputElement | null
+  const file = input?.files?.[0] ?? null
+  selectedUploadFile.value = file
+
+  if (!file) {
+    return
+  }
+
+  if (!form.name.trim()) {
+    form.name = file.name.replace(/\.[^/.]+$/, '')
+  }
+
+  form.fileName = file.name
+  form.fileType = file.type || form.fileType || 'application/octet-stream'
 }
 
 const statusTone = (status: KnowledgeStatus) => {
@@ -321,24 +387,24 @@ watch(
 
 <template>
   <div class="space-y-5">
-    <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-      <div>
+    <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-6">
+      <div class="min-w-0 flex-1">
         <h2 class="text-xl font-semibold text-[#fff4e6]">
           Knowledge Base
         </h2>
         <p class="mt-1 max-w-2xl text-sm leading-6 text-[#ab9986]">
-          Manage the text and PDF sources that feed your RAG system. PDF processing can stay in n8n, while manual notes can be edited here.
+          Manage the text and file sources that feed your RAG system. Text notes and uploaded files are indexed here so chat can use them right away.
         </p>
       </div>
 
-      <div class="flex flex-wrap gap-2">
+      <div class="flex shrink-0 flex-col items-end gap-2 self-end md:self-end">
         <Button
           variant="outline"
           class="h-8 border-[#4a433d] bg-[#221f1d] px-3 text-xs text-[#f0deca] hover:bg-[#2d2926] hover:text-[#fff4e6]"
           @click="openCreateDialog('file')"
         >
           <Icon name="lucide:file-up" class="mr-1.5 size-3.5" />
-          Add PDF
+          Add file
         </Button>
         <Button
           class="h-8 bg-[#b87449] px-3 text-xs text-white hover:bg-[#c6845a]"
@@ -361,7 +427,7 @@ watch(
       </div>
       <div class="rounded-xl border border-[#4a433d]/70 bg-[#2b2724] p-3">
         <div class="text-[11px] font-medium tracking-[0.14em] text-[#8f857a] uppercase">
-          Ready
+          Pending index
         </div>
         <div class="mt-2 text-2xl font-semibold text-[#fff4e6]">
           {{ processingCount }}
@@ -452,7 +518,7 @@ watch(
                     class="rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em]"
                     :class="statusTone(document.status)"
                   >
-                    {{ document.status }}
+                    {{ statusLabel(document.status) }}
                   </span>
                 </div>
                 <p class="mt-2 line-clamp-2 text-sm leading-6 text-[#ab9986]">
@@ -550,7 +616,7 @@ watch(
                   {{ document.name }}
                 </h3>
                 <p class="mt-1 truncate text-sm text-[#ab9986]">
-                  {{ document.storage_path || document.file_name || 'Waiting for n8n file path.' }}
+                  {{ document.storage_path || document.file_name || 'No file path available yet.' }}
                 </p>
               </div>
               <Button variant="ghost" class="h-8 px-2 text-xs text-[#f0deca] hover:bg-[#221f1d]" @click="openEditDialog(document)">
@@ -569,7 +635,7 @@ watch(
             {{ editingDocumentId ? 'Edit knowledge source' : 'Add knowledge source' }}
           </DialogTitle>
           <DialogDescription class="text-[#ab9986]">
-            Add text directly or register a PDF/file that n8n will process into chunks.
+            Add text directly or upload a file. We index it during save so it is usable in chat immediately.
           </DialogDescription>
         </DialogHeader>
 
@@ -580,7 +646,7 @@ watch(
                 Text
               </TabsTrigger>
               <TabsTrigger value="file" class="h-7 px-3 text-xs">
-                PDF/File
+                File
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -602,12 +668,28 @@ watch(
 
           <div v-if="form.sourceType === 'file'" class="grid gap-3 md:grid-cols-2">
             <div class="space-y-2">
-              <Label for="knowledge-file-name">File name</Label>
-              <Input id="knowledge-file-name" v-model="form.fileName" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]" placeholder="portfolio.pdf" />
+              <Label for="knowledge-file-upload">
+                {{ editingDocumentId ? 'Replace file' : 'Upload file' }}
+              </Label>
+              <Input
+                :key="filePickerKey"
+                id="knowledge-file-upload"
+                type="file"
+                accept=".pdf,.txt,.md,.csv,.json"
+                class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6] file:mr-3 file:rounded-md file:border-0 file:bg-[#b87449] file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-white hover:file:bg-[#c6845a]"
+                @change="handleFileSelection"
+              />
+              <p class="text-xs text-[#8f857a]">
+                {{ selectedUploadFile ? `Selected: ${selectedUploadFile.name}` : (form.fileName ? `Current: ${form.fileName}` : 'PDF, TXT, MD, CSV, and JSON text files are supported.') }}
+              </p>
             </div>
             <div class="space-y-2">
+              <Label for="knowledge-file-type">Detected file type</Label>
+              <Input id="knowledge-file-type" v-model="form.fileType" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]" placeholder="application/pdf" />
+            </div>
+            <div class="space-y-2 md:col-span-2">
               <Label for="knowledge-storage-path">Storage path</Label>
-              <Input id="knowledge-storage-path" v-model="form.storagePath" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]" placeholder="knowledge/portfolio.pdf" />
+              <Input id="knowledge-storage-path" v-model="form.storagePath" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]" placeholder="Automatically generated after upload" />
             </div>
           </div>
 

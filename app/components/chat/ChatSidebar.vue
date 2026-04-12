@@ -3,10 +3,18 @@ import type { AiPortfolioHistoryEntry } from '@/composables/useAiPortfolio'
 import type { AiPortfolioNavIntent } from '@@/shared'
 import { aiPortfolioContent } from '@@/shared'
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
   SidebarGroupLabel,
+  SidebarInput,
+  SidebarMenuAction,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -24,16 +32,43 @@ const emit = defineEmits<{
   newChat: []
   navigate: [intent: AiPortfolioNavIntent]
   replay: [entry: AiPortfolioHistoryEntry]
+  deleteEntry: [entry: AiPortfolioHistoryEntry]
 }>()
 
 const activeHistoryLabel = computed(() => props.activePrompt?.trim() || '')
 const { state } = useSidebar()
 const collapsed = computed(() => state.value === 'collapsed')
+const searchQuery = ref('')
+
+const filteredHistoryEntries = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase()
+
+  if (!query) {
+    return props.historyEntries
+  }
+
+  return props.historyEntries.filter((entry) => {
+    const label = entry.label.toLowerCase()
+    const prompt = entry.prompt?.toLowerCase() ?? ''
+    return label.includes(query) || prompt.includes(query)
+  })
+})
 </script>
 
 <template>
   <SidebarContent class="gap-0 overflow-x-hidden bg-sidebar text-sidebar-foreground">
     <SidebarGroup class="border-b border-sidebar-border px-1 pt-2 pb-1">
+      <div v-if="!collapsed" class="px-1 pb-2">
+        <div class="relative">
+          <Icon name="lucide:search" class="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-sidebar-foreground/45" />
+          <SidebarInput
+            v-model="searchQuery"
+            class="h-8 rounded-lg border-sidebar-border bg-sidebar-accent/40 pl-8 text-[12.5px] text-sidebar-foreground placeholder:text-sidebar-foreground/45 focus-visible:ring-sidebar-ring/35"
+            placeholder="Search prompts"
+          />
+        </div>
+      </div>
+
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton
@@ -57,7 +92,7 @@ const collapsed = computed(() => state.value === 'collapsed')
       </SidebarGroupLabel>
       <SidebarMenu class="mt-1 gap-0.5">
         <SidebarMenuItem
-          v-for="item in aiPortfolioContent.sidebarNavItems"
+          v-for="item in aiPortfolioContent.navItems"
           :key="item.id"
         >
           <SidebarMenuButton
@@ -80,20 +115,45 @@ const collapsed = computed(() => state.value === 'collapsed')
         {{ aiPortfolioContent.sidebarHistoryLabel }}
       </SidebarGroupLabel>
 
-      <SidebarMenu v-if="historyEntries.length" class="mt-1 gap-0.5">
+      <SidebarMenu v-if="filteredHistoryEntries.length" class="mt-1 gap-0.5">
         <SidebarMenuItem
-          v-for="entry in historyEntries"
+          v-for="entry in filteredHistoryEntries"
           :key="entry.id"
+          class="group/menu-item"
         >
           <SidebarMenuButton
             :tooltip="entry.label"
-            class="h-8 rounded-lg px-2 text-[13px] font-normal text-sidebar-foreground/90 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:text-sidebar-foreground"
+            class="h-8 rounded-lg pr-8 pl-2 text-[13px] font-normal text-sidebar-foreground/90 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:text-sidebar-foreground"
             :data-active="entry.label === activeHistoryLabel"
             @click="emit('replay', entry)"
           >
             <Icon :name="entry.icon" class="size-3.5 shrink-0 text-current group-data-[collapsible=icon]:size-4" />
             <span class="group-data-[collapsible=icon]:hidden">{{ entry.label }}</span>
           </SidebarMenuButton>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <SidebarMenuAction
+                show-on-hover
+                class="text-sidebar-foreground/55 hover:text-sidebar-accent-foreground"
+              >
+                <Icon name="lucide:ellipsis" class="size-4" />
+              </SidebarMenuAction>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              side="right"
+              :side-offset="8"
+              class="w-36 rounded-lg border-sidebar-border bg-sidebar text-sidebar-foreground"
+            >
+              <DropdownMenuItem class="cursor-pointer" @click="emit('replay', entry)">
+                Replay
+              </DropdownMenuItem>
+              <DropdownMenuItem class="cursor-pointer text-red-200 focus:text-red-100" @click="emit('deleteEntry', entry)">
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
 
@@ -101,7 +161,7 @@ const collapsed = computed(() => state.value === 'collapsed')
         v-else
         class="px-2 py-2 text-[12px] text-sidebar-foreground/65 group-data-[collapsible=icon]:hidden"
       >
-        {{ aiPortfolioContent.sidebarEmptyLabel }}
+        {{ searchQuery.trim() ? 'No prompts match your search.' : aiPortfolioContent.sidebarEmptyLabel }}
       </div>
     </SidebarGroup>
   </SidebarContent>

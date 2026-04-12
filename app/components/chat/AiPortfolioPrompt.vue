@@ -67,7 +67,7 @@ const providerMenu = [
 ] as const
 
 const handleKeydown = (event: KeyboardEvent) => {
-  if (event.key !== 'Enter' || !event.altKey) {
+  if (event.key !== 'Enter' || !event.ctrlKey) {
     return
   }
 
@@ -251,9 +251,10 @@ watch(selectedAgent, (agent) => {
             type="button"
             size="icon"
             variant="default"
-            class="size-8 rounded-full bg-primary text-primary-foreground shadow-none hover:bg-primary/90"
+            class="size-8 rounded-xl bg-primary text-primary-foreground shadow-none hover:bg-primary/90"
             :class="isInputFocused ? 'ring-2 ring-primary/35 ring-offset-0' : ''"
             :disabled="loading || !hasValue"
+            title="Send (Ctrl + Enter)"
             @click="emit('submit', { files: [...attachedFiles] })"
           >
             <Icon v-if="loading" name="lucide:loader-circle" class="size-5 animate-spin" />

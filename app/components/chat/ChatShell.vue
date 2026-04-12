@@ -1,10 +1,10 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { aiPortfolioContent } from '@@/shared'
 import { AnimatePresence, motion } from 'motion-v'
 import type { ChatFileWithStatus } from './chat-types'
+import { toast } from 'vue-sonner'
 import { Sidebar, SidebarInset, SidebarProvider, SidebarRail, SidebarTrigger } from '@/components/ui/sidebar'
 import AiPortfolioPrompt from './AiPortfolioPrompt.vue'
-import AiPortfolioDescriptor from './AiPortfolioDescriptor.vue'
 import ChatSidebar from './ChatSidebar.vue'
 
 const props = withDefaults(defineProps<{
@@ -23,11 +23,13 @@ const {
   response,
   hasResponse,
   activePrompt,
+  activeIntent,
   expandedProjectSlug,
   selectedAgentId,
   promptAgentOptions,
   isAuthenticated,
   historyEntries,
+  deleteHistoryEntry,
   submitPrompt,
   runNavIntent,
   toggleExpandedProject,
@@ -69,12 +71,67 @@ const greetingLine = computed(() => {
   return `Good evening, ${displayName.value}`
 })
 
-const descriptorTexts = computed(() => aiPortfolioContent.descriptorLines.map(item => item.text))
+type HeaderNewsItem = {
+  id: string
+  title: string
+  url: string
+  sourceLabel?: string | null
+  publishedAt?: string | null
+  seeded?: boolean
+}
+
+const { data: headerNewsData } = await useFetch<{ ok: boolean, items: HeaderNewsItem[] }>('/api/news/header?limit=20', {
+  key: 'header-news-feed',
+  default: () => ({
+    ok: true,
+    items: aiPortfolioContent.newsFeedItems.map(item => ({
+      id: item.id,
+      title: item.title,
+      url: item.url,
+      seeded: true,
+    })),
+  }),
+  server: true,
+  lazy: true,
+})
+
+const newsFeedItems = computed<HeaderNewsItem[]>(() => {
+  const items = headerNewsData.value?.items
+  if (items?.length) {
+    return items
+  }
+
+  return aiPortfolioContent.newsFeedItems.map(item => ({
+    id: item.id,
+    title: item.title,
+    url: item.url,
+    seeded: true,
+  }))
+})
+const activeNewsIndex = shallowRef(0)
+const activeNewsItem = computed(() => {
+  if (!newsFeedItems.value.length) {
+    return null
+  }
+
+  return newsFeedItems.value[activeNewsIndex.value % newsFeedItems.value.length] ?? null
+})
 
 const isConversationMode = computed(() =>
   loading.value || hasResponse.value || Boolean(error.value) || Boolean(activePrompt.value),
 )
 const isPromptMode = computed(() => props.mode === 'prompt')
+const promptSurfaceClass = computed(() => {
+  if (!isPromptMode.value) {
+    return 'px-3 pb-8 pt-3 md:px-5 md:pb-10 md:pt-4'
+  }
+
+  if (isConversationMode.value) {
+    return 'px-4 pb-72 pt-6 md:px-8 md:pb-[19rem] md:pt-8'
+  }
+
+  return 'px-4 py-6 md:px-8 md:py-8'
+})
 const shouldShowWelcomeModal = computed(() =>
   isPromptMode.value
   && Boolean(settings?.initialized.value)
@@ -82,21 +139,24 @@ const shouldShowWelcomeModal = computed(() =>
   && !Boolean(settings?.preferences.value.welcomeSeen),
 )
 
-const activeSidebarIntent = computed(() => {
-  const activeEntry = historyEntries.value.find(entry => entry.label === activePrompt.value.trim())
-
-  if (activeEntry?.intent === 'me' || activeEntry?.intent === 'projects' || activeEntry?.intent === 'skills' || activeEntry?.intent === 'discovery-call') {
-    return activeEntry.intent
-  }
-
-  return activePrompt.value ? 'prompt' : ''
-})
-
 const handleReplayHistory = async (entry: (typeof historyEntries.value)[number]) => {
   if (!isPromptMode.value) {
     await router.push('/')
   }
   await replayHistoryEntry(entry)
+}
+
+const handleDeleteHistory = async (entry: (typeof historyEntries.value)[number]) => {
+  try {
+    await deleteHistoryEntry(entry)
+    toast.success('Prompt removed', {
+      description: 'It was removed from your recent prompts.',
+    })
+  }
+  catch (error) {
+    const description = error instanceof Error ? error.message : 'Unable to remove this prompt right now.'
+    toast.error('Delete failed', { description })
+  }
 }
 
 const handleNewChat = async () => {
@@ -157,6 +217,7 @@ const handleWelcomeClose = async () => {
 }
 
 let authStateSubscription: { unsubscribe: () => void } | null = null
+let newsFeedInterval: ReturnType<typeof setInterval> | null = null
 
 if (import.meta.client && settings && supabase) {
   onMounted(async () => {
@@ -175,6 +236,25 @@ if (import.meta.client && settings && supabase) {
     authStateSubscription = null
   })
 }
+
+if (import.meta.client) {
+  onMounted(() => {
+    if (newsFeedItems.value.length <= 1) {
+      return
+    }
+
+    newsFeedInterval = setInterval(() => {
+      activeNewsIndex.value = (activeNewsIndex.value + 1) % newsFeedItems.value.length
+    }, 4800)
+  })
+
+  onUnmounted(() => {
+    if (newsFeedInterval) {
+      clearInterval(newsFeedInterval)
+      newsFeedInterval = null
+    }
+  })
+}
 </script>
 
 <template>
@@ -189,20 +269,45 @@ if (import.meta.client && settings && supabase) {
         <ChatSidebar
           :history-entries="historyEntries"
           :active-prompt="activePrompt"
-          :active-intent="activeSidebarIntent"
+          :active-intent="activeIntent"
           @new-chat="handleNewChat"
           @navigate="handleSidebarNavigate"
           @replay="handleReplayHistory"
+          @delete-entry="handleDeleteHistory"
         />
         <SidebarRail />
       </Sidebar>
 
       <SidebarInset class="relative min-w-0 flex-1">
         <div class="flex h-screen min-h-screen flex-col">
-          <header class="sticky top-0 z-20 border-b border-border/80 bg-background/88 backdrop-blur">
-            <div class="flex h-11 w-full items-center justify-between px-1 md:px-1.5">
+          <header class="sticky top-0 z-20 bg-background/88 backdrop-blur">
+            <div class="relative flex h-11 w-full items-center justify-between px-1 md:px-1.5">
               <div class="flex items-center">
                 <SidebarTrigger class="size-8 text-foreground/70 shadow-none [&_svg]:size-3.5 hover:bg-accent hover:text-accent-foreground" />
+              </div>
+
+              <div class="pointer-events-none absolute inset-x-0 hidden justify-center px-20 md:flex">
+                <div class="pointer-events-auto flex items-center gap-2">
+                  <span class="text-[10px] font-semibold tracking-[0.22em] text-primary/75 [text-shadow:0_0_16px_rgba(221,119,78,0.2)]">
+                    NEWS!
+                  </span>
+                  <AnimatePresence mode="wait">
+                    <motion.a
+                      v-if="activeNewsItem"
+                      :key="activeNewsItem.id"
+                      :href="activeNewsItem.url"
+                      target="_blank"
+                      rel="noreferrer"
+                      class="block max-w-md truncate text-center text-[11px] font-medium tracking-[0.015em] text-foreground/60 transition-colors [text-shadow:0_0_18px_rgba(255,255,255,0.06)] hover:text-foreground/84"
+                      :initial="{ opacity: 0, y: 6, filter: 'blur(8px)' }"
+                      :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+                      :exit="{ opacity: 0, y: -6, filter: 'blur(8px)' }"
+                      :transition="{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }"
+                    >
+                      {{ activeNewsItem.title }}
+                    </motion.a>
+                  </AnimatePresence>
+                </div>
               </div>
 
               <div class="flex items-center">
@@ -214,9 +319,7 @@ if (import.meta.client && settings && supabase) {
           <div class="relative min-h-0 flex-1">
             <div
               class="h-full overflow-y-auto"
-              :class="isPromptMode
-                ? 'px-4 pb-72 pt-6 md:px-8 md:pb-[19rem] md:pt-8'
-                : 'px-3 pb-8 pt-3 md:px-5 md:pb-10 md:pt-4'"
+              :class="promptSurfaceClass"
             >
               <div class="mx-auto flex h-full w-full max-w-6xl flex-col">
                 <AnimatePresence v-if="isPromptMode" mode="wait">
@@ -229,13 +332,11 @@ if (import.meta.client && settings && supabase) {
                     :exit="{ opacity: 0, y: -18, filter: 'blur(10px)' }"
                     :transition="{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }"
                   >
-                    <AiPortfolioAvatar compact />
-
                     <div class="space-y-1.5">
                       <div class="relative flex justify-center">
-                        <div class="pointer-events-none absolute left-0 top-1/2 hidden -translate-y-1/2 md:-left-10 md:block">
+                        <div class="pointer-events-none absolute left-0 top-1/2 hidden -translate-y-1/2 md:-left-14 md:block">
                           <AiPortfolioSparkIcon
-                            :size="46"
+                            :size="64"
                             :speed="0.8"
                           />
                         </div>
@@ -251,11 +352,41 @@ if (import.meta.client && settings && supabase) {
                           />
                         </div>
                       </div>
-
-                      <div class="flex justify-center">
-                        <AiPortfolioDescriptor :texts="descriptorTexts" />
-                      </div>
                     </div>
+
+                    <motion.div
+                      class="w-full max-w-[54rem] pt-2"
+                      :initial="{ opacity: 0, y: 18, filter: 'blur(10px)' }"
+                      :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+                      :exit="{ opacity: 0, y: -12, filter: 'blur(8px)' }"
+                      :transition="{ duration: 0.28, ease: [0.22, 1, 0.36, 1], delay: 0.04 }"
+                    >
+                      <AiPortfolioPrompt
+                        v-model="prompt"
+                        :loading="loading"
+                        :agent-label="aiPortfolioContent.promptAgentLabel"
+                        :agent-description="aiPortfolioContent.promptAgentDescription"
+                        :agent-options="promptAgentOptions"
+                        :selected-agent-id="selectedAgentId"
+                        :is-authenticated="isAuthenticated"
+                        @submit="handlePromptSubmit"
+                        @select-agent="selectAgent"
+                        @add-agent="handleAddAgent"
+                      />
+                    </motion.div>
+
+                    <motion.div
+                      class="pt-1"
+                      :initial="{ opacity: 0, y: 12 }"
+                      :animate="{ opacity: 1, y: 0 }"
+                      :exit="{ opacity: 0, y: -8 }"
+                      :transition="{ duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: 0.08 }"
+                    >
+                      <AiPortfolioNavigator
+                        :items="aiPortfolioContent.navItems"
+                        @select="runNavIntent"
+                      />
+                    </motion.div>
                   </motion.div>
 
                   <motion.div
@@ -288,10 +419,16 @@ if (import.meta.client && settings && supabase) {
               </div>
             </div>
 
-            <div v-if="isPromptMode" class="pointer-events-none absolute inset-x-0 bottom-0 z-30 pb-4 md:pb-6">
+            <div v-if="isPromptMode && isConversationMode" class="pointer-events-none absolute inset-x-0 bottom-0 z-30 pb-4 md:pb-6">
               <div class="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-background via-background/88 to-transparent" />
 
-              <div class="pointer-events-auto relative mx-auto flex w-full max-w-6xl flex-col items-center gap-3 px-4 md:px-8">
+              <motion.div
+                class="pointer-events-auto relative mx-auto flex w-full max-w-6xl flex-col items-center gap-3 px-4 md:px-8"
+                :initial="{ opacity: 0, y: 42, filter: 'blur(12px)' }"
+                :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+                :exit="{ opacity: 0, y: 26, filter: 'blur(8px)' }"
+                :transition="{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }"
+              >
                 <div class="mx-auto w-full max-w-[54rem]">
                   <AiPortfolioPrompt
                     v-model="prompt"
@@ -311,7 +448,7 @@ if (import.meta.client && settings && supabase) {
                   :items="aiPortfolioContent.navItems"
                   @select="runNavIntent"
                 />
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -328,3 +465,4 @@ if (import.meta.client && settings && supabase) {
     </section>
   </SidebarProvider>
 </template>
+

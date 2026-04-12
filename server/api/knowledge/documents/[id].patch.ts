@@ -1,5 +1,14 @@
+import type { H3Event } from 'h3'
 import { getSupabaseAdmin } from '../../../utils/supabase-admin'
 import { requireSupabaseUser } from '../../../utils/knowledge-auth'
+import {
+  buildKnowledgeSummary,
+  extractKnowledgeFileText,
+  normalizeOptionalText,
+  removeKnowledgeFile,
+  replaceDocumentChunks,
+  uploadKnowledgeFile,
+} from '../../../utils/knowledge-indexing'
 
 type KnowledgeDocumentBody = {
   name?: string
@@ -13,8 +22,49 @@ type KnowledgeDocumentBody = {
   content?: string
 }
 
-const normalizeOptionalText = (value: unknown) => {
-  return typeof value === 'string' && value.trim() ? value.trim() : null
+const parseKnowledgeDocumentBody = async (event: H3Event) => {
+  const contentType = getHeader(event, 'content-type') || ''
+
+  if (contentType.includes('multipart/form-data')) {
+    const form = await readMultipartFormData(event)
+    const fields = new Map<string, string>()
+    let uploadedFile: { filename: string, mimeType: string, data: Buffer } | null = null
+
+    for (const part of form ?? []) {
+      if (part.filename) {
+        uploadedFile = {
+          filename: part.filename,
+          mimeType: part.type || 'application/octet-stream',
+          data: part.data,
+        }
+        continue
+      }
+
+      if (part.name) {
+        fields.set(part.name, part.data.toString('utf8'))
+      }
+    }
+
+    return {
+      body: {
+        name: fields.get('name') ?? fields.get('title'),
+        source: fields.get('source'),
+        sourceType: fields.get('sourceType') as KnowledgeDocumentBody['sourceType'],
+        fileType: fields.get('fileType'),
+        fileName: fields.get('fileName') ?? uploadedFile?.filename,
+        storagePath: fields.get('storagePath'),
+        summary: fields.get('summary'),
+        status: fields.get('status') as KnowledgeDocumentBody['status'],
+        content: fields.get('content'),
+      } satisfies KnowledgeDocumentBody,
+      uploadedFile,
+    }
+  }
+
+  return {
+    body: (await readBody<KnowledgeDocumentBody>(event)) ?? {},
+    uploadedFile: null,
+  }
 }
 
 export default defineEventHandler(async (event) => {
@@ -28,7 +78,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const body = await readBody<KnowledgeDocumentBody>(event)
+  const { body, uploadedFile } = await parseKnowledgeDocumentBody(event)
   const name = normalizeOptionalText(body.name)
   const sourceType = body.sourceType === 'file' ? 'file' : 'text'
   const content = normalizeOptionalText(body.content)
@@ -48,17 +98,66 @@ export default defineEventHandler(async (event) => {
   }
 
   const supabase = getSupabaseAdmin(event)
+  const { data: existingDocument, error: existingDocumentError } = await supabase
+    .from('documents')
+    .select('id,status,file_name,storage_path,file_type')
+    .eq('id', id)
+    .single()
+
+  if (existingDocumentError || !existingDocument) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: existingDocumentError?.message || 'Knowledge source not found.',
+    })
+  }
+
+  let extractedContent = content
+  let fileType = sourceType === 'file'
+    ? (normalizeOptionalText(body.fileType) ?? existingDocument.file_type ?? 'pdf')
+    : 'text'
+  let fileName = sourceType === 'file'
+    ? (normalizeOptionalText(body.fileName) ?? existingDocument.file_name)
+    : null
+  let storagePath = sourceType === 'file'
+    ? (normalizeOptionalText(body.storagePath) ?? existingDocument.storage_path)
+    : null
+  let nextStatus = body.status ?? existingDocument.status ?? 'indexed'
+
+  if (sourceType === 'file' && uploadedFile) {
+    const extracted = await extractKnowledgeFileText(uploadedFile)
+    extractedContent = extracted.content
+    fileType = extracted.fileType
+    fileName = uploadedFile.filename
+    const nextStoragePath = await uploadKnowledgeFile({
+      supabase,
+      documentId: id,
+      file: uploadedFile,
+    })
+    if (existingDocument.storage_path && existingDocument.storage_path !== nextStoragePath) {
+      await removeKnowledgeFile({
+        supabase,
+        storagePath: existingDocument.storage_path,
+      })
+    }
+    storagePath = nextStoragePath
+    nextStatus = 'indexed'
+  }
+
+  if (sourceType === 'text' && extractedContent) {
+    nextStatus = body.status ?? 'indexed'
+  }
+
   const { data: document, error } = await supabase
     .from('documents')
     .update({
       name,
       source: normalizeOptionalText(body.source),
       source_type: sourceType,
-      file_type: sourceType === 'file' ? (normalizeOptionalText(body.fileType) ?? 'pdf') : 'text',
-      file_name: sourceType === 'file' ? normalizeOptionalText(body.fileName) : null,
-      storage_path: sourceType === 'file' ? normalizeOptionalText(body.storagePath) : null,
-      summary: normalizeOptionalText(body.summary),
-      status: body.status ?? (sourceType === 'file' ? 'ready' : 'indexed'),
+      file_type: fileType,
+      file_name: fileName,
+      storage_path: storagePath,
+      summary: normalizeOptionalText(body.summary) ?? buildKnowledgeSummary(extractedContent ?? ''),
+      status: nextStatus,
     })
     .eq('id', id)
     .select('id,name,source,file_type,source_type,file_name,storage_path,summary,status,created_at,updated_at')
@@ -71,34 +170,25 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  if (sourceType === 'text' && content) {
-    const { error: deleteError } = await supabase
-      .from('document_chunks')
-      .delete()
-      .eq('document_id', id)
-
-    if (deleteError) {
-      throw createError({
-        statusCode: 500,
-        statusMessage: deleteError.message,
+  if (extractedContent) {
+    try {
+      await replaceDocumentChunks({
+        supabase,
+        documentId: id,
+        content: extractedContent,
+        sourceType,
+        fileName,
       })
     }
+    catch (chunkError) {
+      await supabase
+        .from('documents')
+        .update({ status: 'failed' })
+        .eq('id', id)
 
-    const { error: insertError } = await supabase
-      .from('document_chunks')
-      .insert({
-        document_id: id,
-        content,
-        chunk_index: 0,
-        metadata: {
-          source: 'manual',
-        },
-      })
-
-    if (insertError) {
       throw createError({
         statusCode: 500,
-        statusMessage: insertError.message,
+        statusMessage: chunkError instanceof Error ? chunkError.message : 'Unable to re-index knowledge source.',
       })
     }
   }

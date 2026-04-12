@@ -1,5 +1,6 @@
 import { getSupabaseAdmin } from '../../../utils/supabase-admin'
 import { requireSupabaseUser } from '../../../utils/knowledge-auth'
+import { removeKnowledgeFile } from '../../../utils/knowledge-indexing'
 
 export default defineEventHandler(async (event) => {
   await requireSupabaseUser(event)
@@ -13,6 +14,24 @@ export default defineEventHandler(async (event) => {
   }
 
   const supabase = getSupabaseAdmin(event)
+  const { data: existingDocument, error: existingDocumentError } = await supabase
+    .from('documents')
+    .select('id,storage_path')
+    .eq('id', id)
+    .single()
+
+  if (existingDocumentError || !existingDocument) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: existingDocumentError?.message || 'Knowledge source not found.',
+    })
+  }
+
+  await removeKnowledgeFile({
+    supabase,
+    storagePath: existingDocument.storage_path,
+  })
+
   const { error } = await supabase
     .from('documents')
     .delete()
