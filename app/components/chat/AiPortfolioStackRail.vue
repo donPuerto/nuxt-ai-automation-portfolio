@@ -71,7 +71,12 @@ const toggleCard = (cardKey: string) => {
       <article
         v-for="(card, index) in duplicatedCards"
         :key="`${card.id}-${index}`"
-        class="flex min-h-[12rem] w-[15rem] shrink-0 flex-col justify-between rounded-[1.2rem] border border-border/60 bg-background/78 p-4 text-left shadow-[0_18px_34px_-28px_rgba(0,0,0,0.55)] backdrop-blur-sm transition-[border-color,transform,background-color] hover:-translate-y-0.5 hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        :class="[
+          'flex min-h-[12rem] w-[15rem] shrink-0 flex-col justify-between rounded-[1.2rem] border bg-background/78 p-4 text-left shadow-[0_18px_34px_-28px_rgba(0,0,0,0.55)] backdrop-blur-sm transition-[border-color,transform,background-color,box-shadow] duration-300 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
+          expandedCardKey === `${card.id}-${index}`
+            ? 'border-primary/35 bg-background/88 shadow-[0_22px_42px_-28px_rgba(201,124,82,0.38)]'
+            : 'border-border/60 hover:border-primary/30',
+        ]"
       >
         <div class="flex h-full flex-col justify-between">
           <a
@@ -100,25 +105,27 @@ const toggleCard = (cardKey: string) => {
             </p>
           </a>
 
-          <div
-            v-if="expandedCardKey === `${card.id}-${index}`"
-            class="mt-4 space-y-2 border-t border-border/50 pt-3"
-          >
-            <p
-              v-for="detail in card.details"
-              :key="detail"
-              class="text-[0.82rem] leading-6 text-foreground/68"
+          <Transition name="stack-card-details">
+            <div
+              v-if="expandedCardKey === `${card.id}-${index}`"
+              class="mt-4 space-y-2 border-t border-border/50 pt-3"
             >
-              {{ detail }}
-            </p>
-          </div>
+              <p
+                v-for="detail in card.details"
+                :key="detail"
+                class="text-[0.82rem] leading-6 text-foreground/68"
+              >
+                {{ detail }}
+              </p>
+            </div>
+          </Transition>
 
           <button
             type="button"
             class="mt-4 self-start text-[0.68rem] font-medium uppercase tracking-[0.16em] text-primary/70 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
             @click.stop="toggleCard(`${card.id}-${index}`)"
           >
-            {{ expandedCardKey === `${card.id}-${index}` ? 'Click to collapse' : 'Click to expand' }}
+            {{ expandedCardKey === `${card.id}-${index}` ? 'Hide details' : 'More details' }}
           </button>
         </div>
       </article>
@@ -143,6 +150,26 @@ const toggleCard = (cardKey: string) => {
   to {
     transform: translateX(-50%);
   }
+}
+
+.stack-card-details-enter-active,
+.stack-card-details-leave-active {
+  transition: opacity 220ms ease, transform 220ms ease, max-height 220ms ease;
+  overflow: hidden;
+}
+
+.stack-card-details-enter-from,
+.stack-card-details-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+  max-height: 0;
+}
+
+.stack-card-details-enter-to,
+.stack-card-details-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 12rem;
 }
 </style>
 

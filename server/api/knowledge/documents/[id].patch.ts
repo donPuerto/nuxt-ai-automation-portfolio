@@ -16,7 +16,6 @@ type KnowledgeDocumentBody = {
   sourceType?: 'text' | 'file'
   fileType?: string
   fileName?: string
-  storagePath?: string
   summary?: string
   status?: 'draft' | 'ready' | 'indexed' | 'failed'
   content?: string
@@ -52,7 +51,6 @@ const parseKnowledgeDocumentBody = async (event: H3Event) => {
         sourceType: fields.get('sourceType') as KnowledgeDocumentBody['sourceType'],
         fileType: fields.get('fileType'),
         fileName: fields.get('fileName') ?? uploadedFile?.filename,
-        storagePath: fields.get('storagePath'),
         summary: fields.get('summary'),
         status: fields.get('status') as KnowledgeDocumentBody['status'],
         content: fields.get('content'),
@@ -119,7 +117,7 @@ export default defineEventHandler(async (event) => {
     ? (normalizeOptionalText(body.fileName) ?? existingDocument.file_name)
     : null
   let storagePath = sourceType === 'file'
-    ? (normalizeOptionalText(body.storagePath) ?? existingDocument.storage_path)
+    ? existingDocument.storage_path
     : null
   let nextStatus = body.status ?? existingDocument.status ?? 'indexed'
 

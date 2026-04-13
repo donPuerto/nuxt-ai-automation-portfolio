@@ -65,6 +65,14 @@ const buildFontStyles = (fonts: FontSelection) => {
       --font-sans: ${fonts.sans} !important;
       --font-serif: ${fonts.serif} !important;
       --font-mono: ${fonts.mono} !important;
+      --font-family-sans: ${fonts.sans} !important;
+      --font-family-serif: ${fonts.serif} !important;
+      --font-family-mono: ${fonts.mono} !important;
+    }
+
+    html,
+    body {
+      font-family: var(--font-sans) !important;
     }
   `
 }
@@ -213,6 +221,14 @@ export const useThemeManager = () => {
     }
 
     styleElement.textContent = buildFontStyles(nextFonts)
+    document.documentElement.style.setProperty('--font-sans', nextFonts.sans)
+    document.documentElement.style.setProperty('--font-serif', nextFonts.serif)
+    document.documentElement.style.setProperty('--font-mono', nextFonts.mono)
+    document.documentElement.style.setProperty('--font-family-sans', nextFonts.sans)
+    document.documentElement.style.setProperty('--font-family-serif', nextFonts.serif)
+    document.documentElement.style.setProperty('--font-family-mono', nextFonts.mono)
+    document.documentElement.style.fontFamily = nextFonts.sans
+    document.body.style.fontFamily = nextFonts.sans
     sessionStorage.setItem('selected-fonts', JSON.stringify(nextFonts))
     currentFonts.value = nextFonts
   }
@@ -222,6 +238,14 @@ export const useThemeManager = () => {
 
     const defaults = getDefaultFonts()
     document.getElementById(FONT_STYLE_ID)?.remove()
+    document.documentElement.style.setProperty('--font-sans', defaults.sans)
+    document.documentElement.style.setProperty('--font-serif', defaults.serif)
+    document.documentElement.style.setProperty('--font-mono', defaults.mono)
+    document.documentElement.style.setProperty('--font-family-sans', defaults.sans)
+    document.documentElement.style.setProperty('--font-family-serif', defaults.serif)
+    document.documentElement.style.setProperty('--font-family-mono', defaults.mono)
+    document.documentElement.style.fontFamily = defaults.sans
+    document.body.style.fontFamily = defaults.sans
     sessionStorage.removeItem('selected-fonts')
     sessionStorage.removeItem('custom-fonts')
     currentFonts.value = defaults

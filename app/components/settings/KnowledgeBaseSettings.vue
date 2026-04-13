@@ -189,7 +189,6 @@ const saveDocument = async () => {
       sourceType: form.sourceType,
       fileType: form.fileType,
       fileName: form.fileName,
-      storagePath: form.storagePath,
       summary: form.summary,
       content: form.content,
     }
@@ -256,7 +255,6 @@ const archiveDocument = async (document: KnowledgeDocument) => {
         sourceType: document.source_type,
         fileType: document.file_type,
         fileName: document.file_name,
-        storagePath: document.storage_path,
         summary: document.summary,
         content: document.preview,
         status: 'draft',
@@ -332,6 +330,16 @@ const formatDate = (value: string | null) => {
   }).format(new Date(value))
 }
 
+const formatChunkLabel = (value: number | null) => {
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return 'Chunk -'
+  }
+
+  // UI should be human-friendly (1-based), while DB stays 0-based.
+  return `Chunk ${parsed + 1}`
+}
+
 const statusLabel = (status: KnowledgeStatus) => {
   if (status === 'ready') {
     return 'pending index'
@@ -355,6 +363,7 @@ const handleFileSelection = (event: Event) => {
 
   form.fileName = file.name
   form.fileType = file.type || form.fileType || 'application/octet-stream'
+  form.storagePath = ''
 }
 
 const statusTone = (status: KnowledgeStatus) => {
@@ -446,7 +455,7 @@ watch(
           Chunks
         </div>
         <div class="mt-2 text-2xl font-semibold text-[#fff4e6]">
-          {{ chunkCount }}
+          {{ chunkCount.toLocaleString() }}
         </div>
       </div>
     </div>
@@ -460,7 +469,7 @@ watch(
           Text
         </TabsTrigger>
         <TabsTrigger value="files" class="h-7 px-3 text-xs">
-          PDFs
+          Files
         </TabsTrigger>
         <TabsTrigger value="chunks" class="h-7 px-3 text-xs">
           Chunks
@@ -481,7 +490,7 @@ watch(
             class="rounded-xl border border-[#4a433d]/70 bg-[#2b2724] p-3"
           >
             <div class="flex items-center justify-between gap-3 text-[11px] text-[#8f857a]">
-              <span>Chunk {{ chunk.chunk_index ?? 0 }}</span>
+              <span>{{ formatChunkLabel(chunk.chunk_index) }}</span>
               <span>{{ formatDate(chunk.created_at) }}</span>
             </div>
             <p class="mt-2 line-clamp-3 text-sm leading-6 text-[#f0deca]">
@@ -635,7 +644,7 @@ watch(
             {{ editingDocumentId ? 'Edit knowledge source' : 'Add knowledge source' }}
           </DialogTitle>
           <DialogDescription class="text-[#ab9986]">
-            Add text directly or upload a file. We index it during save so it is usable in chat immediately.
+            Add text directly or upload a file. Files are extracted and indexed during save so chat can use them right away.
           </DialogDescription>
         </DialogHeader>
 
@@ -658,11 +667,14 @@ watch(
             </div>
             <div class="space-y-2">
               <Label for="knowledge-source">Source</Label>
-              <Input id="knowledge-source" v-model="form.source" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]" placeholder="manual, Google Drive, n8n..." />
+              <Input id="knowledge-source" v-model="form.source" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]" placeholder="Optional: manual, Google Drive, n8n..." />
             </div>
             <div class="space-y-2">
               <Label for="knowledge-summary">Short summary</Label>
               <Input id="knowledge-summary" v-model="form.summary" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]" placeholder="What this knowledge is for" />
+              <p class="text-xs text-[#8f857a]">
+                Optional. If blank, we generate a summary from indexed content.
+              </p>
             </div>
           </div>
 
@@ -685,11 +697,26 @@ watch(
             </div>
             <div class="space-y-2">
               <Label for="knowledge-file-type">Detected file type</Label>
-              <Input id="knowledge-file-type" v-model="form.fileType" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]" placeholder="application/pdf" />
+              <Input
+                id="knowledge-file-type"
+                v-model="form.fileType"
+                readonly
+                class="border-[#4a433d] bg-[#1f1c1a] text-[#d7c8b7] opacity-90"
+                placeholder="Auto-detected from uploaded file"
+              />
             </div>
-            <div class="space-y-2 md:col-span-2">
-              <Label for="knowledge-storage-path">Storage path</Label>
-              <Input id="knowledge-storage-path" v-model="form.storagePath" class="border-[#4a433d] bg-[#221f1d] text-[#fff4e6]" placeholder="Automatically generated after upload" />
+            <div v-if="editingDocumentId" class="space-y-2 md:col-span-2">
+              <Label for="knowledge-storage-path">Supabase storage path</Label>
+              <Input
+                id="knowledge-storage-path"
+                v-model="form.storagePath"
+                readonly
+                class="border-[#4a433d] bg-[#1f1c1a] text-[#d7c8b7] opacity-90"
+                placeholder="Generated by server after upload"
+              />
+              <p class="text-xs text-[#8f857a]">
+                This path is managed by the server and storage bucket.
+              </p>
             </div>
           </div>
 

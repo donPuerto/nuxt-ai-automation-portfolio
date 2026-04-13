@@ -8,6 +8,29 @@ A skill is a set of local instructions stored in a `SKILL.md` file. Use the proj
 - `cloudflare-portfolio-release`: Prepare, verify, and deploy this Nuxt app to Cloudflare with the repo's Nitro configuration and release checks. (file: ./.codex/skills/cloudflare-portfolio-release/SKILL.md)
 - `figma-to-nuxt-ui`: Implement or refine designs coming from Figma MCP while mapping them onto this project's existing Nuxt, Tailwind, shadcn-nuxt, and theme conventions. (file: ./.codex/skills/figma-to-nuxt-ui/SKILL.md)
 
+### Required framework skill policy (this project)
+- Settings bootstrap rendering rule:`r`n  - For profile/settings screens that load user data on mount, gate content with `loading || !initialized` and show skeleton first.`r`n  - Do not render editable settings forms before initialization completes, to avoid blank/flicker states.`r`n
+- Workspace Settings navigation reliability rule:
+  - For Settings links in workspace chat surfaces (sidebar, prompt nav strip, profile dropdown), use direct anchor navigation to `/settings?section=general` unless router-based navigation has been explicitly re-verified for first-click reliability.
+  - Treat URL-only change without view update as a regression; fix before closing the task.
+  - Verification for any Settings-nav change must include first-click checks from all three entry points (sidebar, prompt nav, profile dropdown).
+- Chat UI recurring standards (Claude-like):
+  - Keep conversation thread compact; avoid large vertical gaps between turns.
+  - During loading, keep previous turns visible and append loading state below the latest turn. Do not replace the whole thread with a loading row.
+  - Assistant per-message action bar (`copy`, `thumbs-up`, `thumbs-down`, `retry`) must appear on hover only.
+  - Message content should wrap naturally (`break-words` / `overflow-wrap:anywhere`) and must not introduce horizontal scrolling for normal text messages.
+  - User prompt chips should use tight rounded-rectangle styling (not oversized circular pills for short text).
+  - Assistant mark should use the lightweight icon treatment (no heavy bordered avatar circle unless explicitly requested).
+  - Sonner toasts must follow project Claude theme tokens in both light and dark mode.
+  - Do not enable Sonner `rich-colors` in this project.
+- For every Vue file change, apply `vue-best-practices`.
+- For every Nuxt feature/change, apply `nuxt` in addition to `vue-best-practices`.
+- For store/state work, prefer `pinia` (and `vue-pinia-best-practices` where applicable).
+- For route/navigation work, apply `vue-router-best-practices`.
+- For Vue/Nuxt tests, apply `vue-testing-best-practices` (and `vitest` for unit/component tests).
+- For composables and reactive utilities, apply `vueuse-functions` and `vueuse-best-practices` aliases when relevant.
+- Use the smallest skill set that fully covers the task, but do not omit `vue-best-practices` for Vue code in this repo.
+
 ### How to use project skills
 - Open the `SKILL.md` only when the task needs that skill.
 - Prefer the smallest set of skills that fully covers the task.
@@ -38,3 +61,5 @@ codex mcp add figma --url https://mcp.figma.com/mcp
 ```
 
 Then approve the Figma login flow when prompted.
+
+

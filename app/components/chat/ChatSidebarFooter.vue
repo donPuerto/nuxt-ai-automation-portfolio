@@ -6,6 +6,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { toast } from 'vue-sonner'
@@ -15,13 +18,13 @@ const props = defineProps<{
 }>()
 
 const router = useRouter()
-const route = useRoute()
 const supabaseConfigured = useSupabaseConfigured()
 const settings = supabaseConfigured ? useUserSettings() : null
 const supabase = supabaseConfigured ? useSupabaseClient() : null
 
 const menuOpen = ref(false)
 const authUser = ref<User | null>(null)
+const selectedLanguageId = ref<'language-en' | 'language-fil' | 'language-ceb'>('language-en')
 let authSubscription: { unsubscribe: () => void } | null = null
 
 const isAuthenticated = computed(() => Boolean(authUser.value))
@@ -83,48 +86,28 @@ const menuItems = computed(() => {
     ]
   }
 
-  return aiPortfolioContent.sidebarProfileMenuItems
+  return aiPortfolioContent.sidebarProfileMenuItems.map((item) => {
+    if (item.id !== 'language' || item.type !== 'submenu' || !item.children) {
+      return item
+    }
+
+    return {
+      ...item,
+      children: item.children.map(child => ({
+        ...child,
+        checked: child.id === selectedLanguageId.value,
+      })),
+    }
+  })
 })
 
 const setAuthUserFromSession = (session: Session | null) => {
   authUser.value = session?.user ?? null
 }
 
-const handleSettingsNavigation = async () => {
-  menuOpen.value = false
-  await nextTick()
-
-  if (!isAuthenticated.value) {
-    await router.push('/login')
-    return
-  }
-
-  if (route.path === '/settings' && route.query.section === 'general') {
-    return
-  }
-
-  await router.push({
-    path: '/settings',
-    query: {
-      ...route.query,
-      section: 'general',
-    },
-  })
-}
-
 const handleMenuAction = async (id: string) => {
-  menuOpen.value = false
-  await nextTick()
-
   if (id === 'login') {
     await router.push('/login')
-    return
-  }
-
-  if (id === 'language') {
-    toast.message('Language', {
-      description: 'Default language is English for now.',
-    })
     return
   }
 
@@ -180,7 +163,42 @@ const handleMenuAction = async (id: string) => {
   }
 }
 
+const handleLanguageSelect = (id: 'language-en' | 'language-fil' | 'language-ceb') => {
+  if (id !== 'language-en') {
+    toast.message('Language', {
+      description: 'Filipino and Cebuano are visible but not available yet.',
+    })
+    return
+  }
+
+  selectedLanguageId.value = id
+  if (import.meta.client) {
+    window.localStorage.setItem('dp-preferred-language', id)
+  }
+
+  const languageLabelMap = {
+    'language-en': 'English',
+    'language-fil': 'Filipino',
+    'language-ceb': 'Cebuano',
+  } as const
+
+  toast.message('Language updated', {
+    description: `${languageLabelMap[id]} is now selected.`,
+  })
+}
+
 onMounted(() => {
+  if (import.meta.client) {
+    const persistedLanguage = window.localStorage.getItem('dp-preferred-language')
+    if (persistedLanguage === 'language-en') {
+      selectedLanguageId.value = persistedLanguage
+    }
+    else if (persistedLanguage === 'language-fil' || persistedLanguage === 'language-ceb') {
+      selectedLanguageId.value = 'language-en'
+      window.localStorage.setItem('dp-preferred-language', 'language-en')
+    }
+  }
+
   if (!supabase) {
     authUser.value = null
     return
@@ -239,7 +257,7 @@ onBeforeUnmount(() => {
       side="right"
       align="end"
       :side-offset="8"
-      class="w-[13.5rem] rounded-xl border-sidebar-border bg-sidebar p-0 text-sidebar-foreground shadow-2xl"
+      class="w-[12.25rem] rounded-xl border-sidebar-border bg-sidebar p-0 text-sidebar-foreground shadow-2xl"
     >
       <div class="flex items-center gap-2 px-2.5 py-2.5">
         <div
@@ -268,16 +286,42 @@ onBeforeUnmount(() => {
 
         <DropdownMenuItem
           v-else-if="item.id === 'settings'"
-          class="gap-2 rounded-none px-2.5 py-2 text-[13px] text-sidebar-foreground focus:bg-sidebar-accent focus:text-sidebar-accent-foreground"
-          @select.prevent="handleSettingsNavigation"
+          as-child
+          class="gap-2 rounded-none px-2.5 py-1.5 text-[12.5px] text-sidebar-foreground/95 focus:bg-sidebar-accent focus:text-sidebar-accent-foreground"
         >
-          <Icon v-if="item.icon" :name="item.icon" class="size-4 text-current" />
-          <span>{{ item.label }}</span>
+          <a href="/settings?section=general">
+            <Icon v-if="item.icon" :name="item.icon" class="size-4 text-current" />
+            <span>{{ item.label }}</span>
+          </a>
         </DropdownMenuItem>
+
+        <DropdownMenuSub v-else-if="item.type === 'submenu' && item.children?.length">
+          <DropdownMenuSubTrigger
+            class="gap-2 rounded-none px-2.5 py-1.5 text-[12.5px] text-sidebar-foreground/95 focus:bg-sidebar-accent focus:text-sidebar-accent-foreground"
+          >
+            <Icon v-if="item.icon" :name="item.icon" class="size-4 text-current" />
+            <span>{{ item.label }}</span>
+          </DropdownMenuSubTrigger>
+
+          <DropdownMenuSubContent
+            class="min-w-[11rem] rounded-lg border-sidebar-border bg-sidebar p-1 text-sidebar-foreground"
+          >
+            <DropdownMenuItem
+              v-for="child in item.children"
+              :key="child.id"
+              class="flex items-center justify-between rounded-md px-2 py-1.5 text-[12px] text-sidebar-foreground/90 focus:bg-sidebar-accent focus:text-sidebar-accent-foreground"
+              :disabled="child.disabled"
+              @select="handleLanguageSelect(child.id as 'language-en' | 'language-fil' | 'language-ceb')"
+            >
+              <span>{{ child.label }}</span>
+              <Icon v-if="child.checked" name="lucide:check" class="size-3.5 text-current" />
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
 
         <DropdownMenuItem
           v-else
-          class="gap-2 rounded-none px-2.5 py-2 text-[13px] text-sidebar-foreground focus:bg-sidebar-accent focus:text-sidebar-accent-foreground"
+          class="gap-2 rounded-none px-2.5 py-1.5 text-[12.5px] text-sidebar-foreground/95 focus:bg-sidebar-accent focus:text-sidebar-accent-foreground"
           @select="handleMenuAction(item.id)"
         >
           <Icon v-if="item.icon" :name="item.icon" class="size-4 text-current" />

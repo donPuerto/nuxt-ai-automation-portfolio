@@ -1,4 +1,5 @@
 export type AiPortfolioNavIntent =
+  | 'settings'
   | 'me'
   | 'projects'
   | 'skills'
@@ -67,17 +68,21 @@ export interface AiPortfolioSidebarSeed {
   prompt?: string
 }
 
-export type AiPortfolioSidebarProfileMenuItemType = 'item' | 'separator'
+export type AiPortfolioSidebarProfileMenuItemType = 'item' | 'separator' | 'submenu'
 
 export interface AiPortfolioSidebarProfileMenuItem {
   id: string
   label: string
   icon?: string
   type?: AiPortfolioSidebarProfileMenuItemType
+  checked?: boolean
+  disabled?: boolean
+  children?: AiPortfolioSidebarProfileMenuItem[]
 }
 
 export type PortfolioAssistantIntent =
   | 'prompt'
+  | 'settings'
   | 'me'
   | 'projects'
   | 'skills'
@@ -446,8 +451,8 @@ export const aiPortfolioContent = {
   sidebarTitle: 'Claude workspace',
   sidebarDescription: 'Portfolio chat',
   sidebarNewChatLabel: 'New chat',
-  sidebarHistoryLabel: 'Recent prompts',
-  sidebarEmptyLabel: 'Your recent prompts will appear here. Sign in to sync them across devices.',
+  sidebarHistoryLabel: 'Recent conversations',
+  sidebarEmptyLabel: 'Your recent conversations will appear here. Sign in to sync them across devices.',
   sidebarProfileName: 'Don Puerto',
   sidebarProfileEmail: 'm@example.com',
   sidebarProfilePlan: 'Pro plan',
@@ -461,8 +466,26 @@ export const aiPortfolioContent = {
     },
     {
       id: 'language',
-      label: 'Language (English)',
+      label: 'Language',
       icon: 'lucide:languages',
+      type: 'submenu',
+      children: [
+        {
+          id: 'language-en',
+          label: 'English (Default)',
+          checked: true,
+        },
+        {
+          id: 'language-fil',
+          label: 'Filipino',
+          disabled: true,
+        },
+        {
+          id: 'language-ceb',
+          label: 'Cebuano',
+          disabled: true,
+        },
+      ],
     },
     {
       id: 'get-help',

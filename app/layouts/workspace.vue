@@ -1,9 +1,13 @@
 <script setup lang="ts">
 const route = useRoute()
 
-const shellMode = computed<'prompt' | 'settings'>(() =>
-  route.meta.workspaceMode === 'prompt' ? 'prompt' : 'settings',
-)
+const shellMode = computed<'prompt' | 'settings'>(() => {
+  if (route.path.startsWith('/settings')) {
+    return 'settings'
+  }
+
+  return 'prompt'
+})
 
 useLayoutManager()
 </script>

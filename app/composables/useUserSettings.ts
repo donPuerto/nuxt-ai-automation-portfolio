@@ -23,6 +23,8 @@ export interface UserPreferencesForm {
   agentModel: string
 }
 
+const DEFAULT_CLAUDE_SANS_FONT = '"Anthropic Sans", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+
 const createDefaultProfile = (): UserProfileForm => ({
   firstName: '',
   lastName: '',
@@ -39,10 +41,29 @@ const createDefaultPreferences = (): UserPreferencesForm => ({
   notifyDispatchMessages: false,
   welcomeSeen: false,
   colorMode: 'system',
-  fontFamily: '"Anthropic Sans", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+  fontFamily: DEFAULT_CLAUDE_SANS_FONT,
   agentProvider: 'openrouter',
   agentModel: 'openrouter-free',
 })
+
+const normalizeFontFamily = (value: unknown): string => {
+  const normalized = String(value ?? '').trim()
+  if (!normalized) {
+    return DEFAULT_CLAUDE_SANS_FONT
+  }
+
+  const lower = normalized.toLowerCase()
+  if (
+    lower === 'sans'
+    || lower === 'var(--font-sans)'
+    || lower === '--font-sans'
+    || lower === 'font-sans'
+  ) {
+    return DEFAULT_CLAUDE_SANS_FONT
+  }
+
+  return normalized
+}
 
 const normalizeNullableText = (value: string): string | null => {
   const normalized = value.trim()
@@ -163,7 +184,7 @@ export const useUserSettings = () => {
       notifyDispatchMessages: Boolean(row.notify_dispatch_messages ?? false),
       welcomeSeen: Boolean(row.welcome_seen ?? false),
       colorMode: normalizedColorMode,
-      fontFamily: String(row.font_family ?? createDefaultPreferences().fontFamily),
+      fontFamily: normalizeFontFamily(row.font_family ?? createDefaultPreferences().fontFamily),
       agentProvider: normalizedAgentProvider,
       agentModel: String(row.agent_model ?? createDefaultPreferences().agentModel),
     }

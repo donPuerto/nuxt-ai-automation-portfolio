@@ -17,6 +17,22 @@ export const aboutKnowledge = {
     'That operational experience shaped how I build automation. I understand the business problems from the inside, not just the technology stack around them.',
     'When I moved into automation and development, I brought that operational mindset with me. I focus on where workflows break, where errors happen, and what actually needs to be automated.',
   ],
+  education: [
+    'Bachelor of Science in Computer Engineering, University of the Immaculate Conception, Davao City, batch 2003.',
+  ],
+  workExperience: [
+    'Technical Virtual Assistant for Automation and AI Integration / Web Developer at Catalyst Management Solutions Pty Ltd, Australia-based, from April 30, 2014 to present.',
+    'Plant Supervisor at Colorsteel Systems Corporation in Davao City from August 23, 2012 to April 30, 2014.',
+    'Toolroom Incharge at Sumifru (Philippines) Corporation in Davao City from May 10, 2012 to August 26, 2012.',
+    'Warehouse Supervisor at Sagrex Food Incorporated in Davao City from May 4, 2011 to May 15, 2012.',
+    'Production Supervisor at Franklin Baker Company of the Philippines in Santa Cruz, Davao del Sur from December 18, 2005 to May 4, 2011.',
+  ],
+  trainings: [
+    'Leadership Development using 7 Habits of Highly Effective People concepts, completed February 2013.',
+    'Basic Training for Colorsteel Roofing Consultants, completed August 2012.',
+    'HACCP, food safety, calibration, chemical handling, blanching, metal detection, and root cause analysis training across 2007 to 2011.',
+    'Construction Safety and Health course for site safety officers, completed May 2010.',
+  ],
   workStyle: [
     'I work directly with clients as an independent freelancer from start to finish, not as part of an agency handoff.',
     'I stay focused on measurable outcomes: less manual work, faster processes, fewer errors, and systems that scale cleanly.',
@@ -49,6 +65,7 @@ export const aboutKnowledge = {
   ],
   resumeHighlights: [
     'Freelance developer and automation specialist with 10+ years of practical business and systems experience.',
+    'Computer Engineering graduate with a foundation in technical systems and structured problem-solving.',
     'Builds automation, AI integrations, and platform workflows that reduce manual work and increase operational scale.',
     'Combines operations insight, business thinking, and production-ready engineering in one delivery path.',
   ],

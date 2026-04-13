@@ -14,6 +14,7 @@ const props = withDefaults(defineProps<{
 })
 
 const router = useRouter()
+const route = useRoute()
 const supabaseConfigured = useSupabaseConfigured()
 
 const {
@@ -21,6 +22,7 @@ const {
   loading,
   error,
   response,
+  conversationTurns,
   hasResponse,
   activePrompt,
   activeIntent,
@@ -120,14 +122,20 @@ const activeNewsItem = computed(() => {
 const isConversationMode = computed(() =>
   loading.value || hasResponse.value || Boolean(error.value) || Boolean(activePrompt.value),
 )
-const isPromptMode = computed(() => props.mode === 'prompt')
+const isPromptMode = computed(() => {
+  if (route.path.startsWith('/settings')) {
+    return false
+  }
+
+  return props.mode === 'prompt'
+})
 const promptSurfaceClass = computed(() => {
   if (!isPromptMode.value) {
     return 'px-3 pb-8 pt-3 md:px-5 md:pb-10 md:pt-4'
   }
 
   if (isConversationMode.value) {
-    return 'px-4 pb-72 pt-6 md:px-8 md:pb-[19rem] md:pt-8'
+    return 'px-4 pb-44 pt-4 md:px-8 md:pb-[10.5rem] md:pt-5'
   }
 
   return 'px-4 py-6 md:px-8 md:py-8'
@@ -166,7 +174,15 @@ const handleNewChat = async () => {
   resetConversation()
 }
 
-const handleSidebarNavigate = async (intent: 'me' | 'projects' | 'skills' | 'discovery-call') => {
+const handleSidebarNavigate = async (intent: 'settings' | 'me' | 'projects' | 'skills' | 'discovery-call') => {
+  if (intent === 'settings') {
+    await navigateTo({
+      path: '/settings',
+      query: { section: 'general' },
+    })
+    return
+  }
+
   if (!isPromptMode.value) {
     await router.push('/')
   }
@@ -177,8 +193,22 @@ const handlePromptSubmit = async (payload: { files: ChatFileWithStatus[] }) => {
   await submitPrompt(payload.files)
 }
 
+const handleRetryTurn = async (promptText: string) => {
+  const normalizedPrompt = promptText.trim()
+  if (!normalizedPrompt) {
+    return
+  }
+
+  prompt.value = normalizedPrompt
+  await submitPrompt([])
+}
+
 const handleAddAgent = async () => {
-  await router.push('/settings?section=general#appearance-settings')
+  await navigateTo({
+    path: '/settings',
+    query: { section: 'general' },
+    hash: '#appearance-settings',
+  })
 }
 
 const handleWelcomeClose = async () => {
@@ -384,7 +414,7 @@ if (import.meta.client) {
                     >
                       <AiPortfolioNavigator
                         :items="aiPortfolioContent.navItems"
-                        @select="runNavIntent"
+                        @select="handleSidebarNavigate"
                       />
                     </motion.div>
                   </motion.div>
@@ -392,13 +422,14 @@ if (import.meta.client) {
                   <motion.div
                     v-else
                     key="conversation-state"
-                    class="mx-auto w-full max-w-6xl pt-1 md:pt-2 2xl:max-w-7xl"
+                    class="mx-auto w-full max-w-6xl pt-0 2xl:max-w-7xl"
                     :initial="{ opacity: 0, y: 24, filter: 'blur(12px)' }"
                     :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
                     :exit="{ opacity: 0, y: -16, filter: 'blur(8px)' }"
                     :transition="{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }"
                   >
                     <AiPortfolioCanvas
+                      :conversation-turns="conversationTurns"
                       :response="response"
                       :active-prompt="activePrompt"
                       :error="error"
@@ -406,6 +437,7 @@ if (import.meta.client) {
                       :expanded-project-slug="expandedProjectSlug"
                       :get-project-by-slug="getProjectBySlug"
                       @toggle-project="toggleExpandedProject"
+                      @retry-turn="handleRetryTurn"
                     />
                   </motion.div>
                 </AnimatePresence>
@@ -446,7 +478,7 @@ if (import.meta.client) {
 
                 <AiPortfolioNavigator
                   :items="aiPortfolioContent.navItems"
-                  @select="runNavIntent"
+                  @select="handleSidebarNavigate"
                 />
               </motion.div>
             </div>
