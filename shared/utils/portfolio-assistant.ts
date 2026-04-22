@@ -109,6 +109,11 @@ const isExperiencePrompt = (prompt: string) => {
   return ['experience', 'work experience', 'career', 'resume', 'background', 'job', 'worked'].some(term => normalizedPrompt.includes(term))
 }
 
+const isAgePrompt = (prompt: string) => {
+  const normalizedPrompt = prompt.toLowerCase()
+  return ['age', 'old', 'birthday', 'birth year', 'how old', 'born'].some(term => normalizedPrompt.includes(term))
+}
+
 const buildAboutMeResponse = (): PortfolioAssistantResponse => {
   return {
     answer: `${aboutKnowledge.firstPersonIntro} I focus on building automation systems that remove repetitive work, connect the right platforms, and make AI genuinely useful inside real business operations.`,
@@ -247,6 +252,19 @@ export const buildWorkspacePortfolioResponse = (
         getHighlightsSection('Work experience', aboutKnowledge.workExperience),
         getHighlightsSection('Operational background', aboutKnowledge.background),
         getHighlightsSection('Training and certifications', aboutKnowledge.trainings),
+      ],
+    }
+  }
+
+  if (isAgePrompt(prompt)) {
+    return {
+      answer: 'I do not have my exact age recorded in the knowledge base, so I cannot answer that precisely. If you want, I can share my education and work history instead.',
+      sections: [
+        getHighlightsSection('What I can confirm', [
+          'Computer Engineering graduate from the University of the Immaculate Conception in Davao City.',
+          'Over 10 years of automation and development experience.',
+          'Background in operations, production, and inventory-led work before moving into automation.',
+        ]),
       ],
     }
   }

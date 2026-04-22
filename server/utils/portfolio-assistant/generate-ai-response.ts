@@ -1,5 +1,6 @@
 import type { PortfolioAssistantResponse } from './types'
 import { aboutKnowledge } from '@@/shared'
+import { normalizeAssistantText } from './response-format'
 
 type AiProvider = 'openrouter' | 'claude' | 'openai'
 
@@ -7,11 +8,6 @@ type GenerateAiResponseParams = {
   config: ReturnType<typeof useRuntimeConfig>
   prompt: string
   agentId?: string | null
-}
-
-type JsonResponseShape = {
-  answer?: string
-  sections?: PortfolioAssistantResponse['sections']
 }
 
 type ProviderAttempt = {
@@ -57,64 +53,18 @@ const buildSystemPrompt = () => {
   return [
     'You are Don Puerto AI Assistant.',
     'Answer as a premium, helpful assistant representing Don Puerto.',
-    'Use the profile facts below as first-class knowledge even if no RAG documents are available.',
+    'Use only the profile facts below as your source of truth.',
+    'Do not use outside facts, assumptions, or general model memory.',
     'For greetings, answer briefly and warmly. Do not overshare unless asked.',
-    'If asked about background, school, education, resume, work experience, stack, or services, answer confidently from the profile facts below.',
-    'Do not say knowledge is missing unless the user is explicitly asking about a document that is unavailable.',
+    'If asked about background, school, education, resume, work experience, stack, or services, answer only from the profile facts below.',
+    'If the user asks about age, birthday, or birth year and it is not explicitly listed in the profile facts, do not guess, estimate, or infer it from graduation years or other hints.',
+    'If the exact age is not recorded in the profile facts, say that it is not recorded in the knowledge base.',
+    'If the answer is not present in the profile facts, say that you do not have that in the knowledge base yet.',
     'Return valid JSON only with this shape: {"answer":"string","sections":[]}. Keep sections as an empty array unless you are very confident structured sections help.',
     '',
     'PROFILE FACTS',
     profileFacts,
   ].join('\n')
-}
-
-const parseJsonResponse = (content: string): PortfolioAssistantResponse => {
-  try {
-    const parsed = JSON.parse(content) as JsonResponseShape
-    if (typeof parsed.answer === 'string') {
-      return {
-        answer: parsed.answer.trim(),
-        sections: Array.isArray(parsed.sections) ? parsed.sections : [],
-      }
-    }
-  }
-  catch {
-    // fall through to plain text response
-  }
-
-  return {
-    answer: content.trim(),
-    sections: [],
-  }
-}
-
-const normalizePrompt = (prompt: string) => prompt.trim().toLowerCase()
-
-const isGreetingPrompt = (prompt: string) => {
-  const normalized = normalizePrompt(prompt)
-
-  return [
-    'hi',
-    'hello',
-    'hey',
-    'good morning',
-    'good afternoon',
-    'good evening',
-  ].includes(normalized)
-}
-
-const buildLocalFallbackResponse = (prompt: string): PortfolioAssistantResponse => {
-  if (isGreetingPrompt(prompt)) {
-    return {
-      answer: `Hi, I'm Don Puerto's AI assistant. I can help you explore Don's background, automation work, projects, stack, and services.`,
-      sections: [],
-    }
-  }
-
-  return {
-    answer: `I'm Don Puerto's AI assistant. I can help with Don's background, experience, projects, automation stack, services, and knowledge base content. Ask me something specific and I'll keep it focused.`,
-    sections: [],
-  }
 }
 
 const resolveProvider = (agentId?: string | null): { provider: AiProvider, model: string } => {
@@ -227,7 +177,7 @@ const callOpenRouter = async (config: ReturnType<typeof useRuntimeConfig>, model
     throw new Error('OpenRouter returned an empty response.')
   }
 
-  return parseJsonResponse(content)
+  return normalizeAssistantText(content)
 }
 
 const callAnthropic = async (config: ReturnType<typeof useRuntimeConfig>, model: string, prompt: string) => {
@@ -264,7 +214,7 @@ const callAnthropic = async (config: ReturnType<typeof useRuntimeConfig>, model:
     throw new Error('Anthropic returned an empty response.')
   }
 
-  return parseJsonResponse(content)
+  return normalizeAssistantText(content)
 }
 
 const callOpenAI = async (config: ReturnType<typeof useRuntimeConfig>, model: string, prompt: string) => {
@@ -305,7 +255,7 @@ const callOpenAI = async (config: ReturnType<typeof useRuntimeConfig>, model: st
     throw new Error('OpenAI returned an empty response.')
   }
 
-  return parseJsonResponse(content)
+  return normalizeAssistantText(content)
 }
 
 export const generatePortfolioAiResponse = async ({
@@ -334,8 +284,9 @@ export const generatePortfolioAiResponse = async ({
   }
 
   if (lastError) {
-    console.warn('all AI provider attempts failed, using local portfolio fallback', lastError)
+    console.warn('all AI provider attempts failed', lastError)
+    throw lastError
   }
 
-  return buildLocalFallbackResponse(prompt)
+  throw new Error('No configured AI provider is available for the portfolio assistant.')
 }

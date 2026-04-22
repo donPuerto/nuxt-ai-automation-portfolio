@@ -2,6 +2,7 @@ import type { PortfolioAssistantResponse, PortfolioAssistantRequest } from '../.
 import { aboutKnowledge } from '@@/shared'
 import { getSupabaseAdmin } from '../../utils/supabase-admin'
 import { generatePortfolioAiResponse } from '../../utils/portfolio-assistant/generate-ai-response'
+import { normalizeAssistantResponse } from '../../utils/portfolio-assistant/response-format'
 
 type AssistantApiResult = {
   ok?: boolean
@@ -36,28 +37,45 @@ const toMessage = (error: unknown) => {
 
 const normalizeResponse = (payload: AssistantApiResult): PortfolioAssistantResponse | null => {
   if (payload.response?.answer && Array.isArray(payload.response.sections)) {
-    return payload.response
+    return normalizeAssistantResponse(payload.response)
   }
 
   if (payload.data?.response?.answer && Array.isArray(payload.data.response.sections)) {
-    return payload.data.response
+    return normalizeAssistantResponse(payload.data.response)
   }
 
   if (payload.answer && Array.isArray(payload.sections)) {
-    return {
+    return normalizeAssistantResponse({
       answer: payload.answer,
       sections: payload.sections,
-    }
+    })
   }
 
   if (payload.data?.answer && Array.isArray(payload.data.sections)) {
-    return {
+    return normalizeAssistantResponse({
       answer: payload.data.answer,
       sections: payload.data.sections,
-    }
+    })
   }
 
   return null
+}
+
+const tryGenerateDirectAiResponse = async (
+  config: ReturnType<typeof useRuntimeConfig>,
+  body: PortfolioAssistantRequest,
+) => {
+  try {
+    return await generatePortfolioAiResponse({
+      config,
+      prompt: body.prompt ?? '',
+      agentId: body.agentId,
+    })
+  }
+  catch (error) {
+    console.error('direct portfolio AI generation failed', error)
+    return null
+  }
 }
 
 const isEmptyKnowledgeReply = (response: PortfolioAssistantResponse | null) => {
@@ -94,9 +112,11 @@ const buildPortfolioContext = () => {
     contact: aboutKnowledge.contact,
     responseRules: [
       'Answer naturally as Don Puerto in a conversational first-person tone.',
-      'Use the profile context below even if document retrieval is empty.',
+      'Use only the profile context below and the indexed knowledge context above.',
+      'Do not use outside facts, assumptions, or general model memory.',
       'For greetings, respond briefly and warmly. Do not overshare unless the user asks.',
       'When the user asks about education, school, resume, or work experience, use the profile context first before saying information is missing.',
+      'If the answer is not in the provided context, say that you do not have that in the knowledge base yet.',
       'Only mention the knowledge base or uploads when the user is explicitly asking about documents, indexing, or missing source material.',
     ],
   }
@@ -154,14 +174,18 @@ const buildKnowledgeContext = async (event: Parameters<typeof getSupabaseAdmin>[
 export default defineEventHandler(async (event) => {
   const body = (await readBody<PortfolioAssistantRequest>(event)) ?? {}
   const config = useRuntimeConfig(event)
+
   const knowledgeContext = await buildKnowledgeContext(event)
 
   if (!config.n8nAskDonWebhookUrl) {
-    const directResponse = await generatePortfolioAiResponse({
-      config,
-      prompt: body.prompt ?? '',
-      agentId: body.agentId,
-    })
+    const directResponse = await tryGenerateDirectAiResponse(config, body)
+
+    if (!directResponse) {
+      return {
+        ok: false,
+        message: 'The portfolio assistant is not available right now because no AI workflow or direct AI provider is ready.',
+      }
+    }
 
     return {
       ok: true,
@@ -192,10 +216,13 @@ export default defineEventHandler(async (event) => {
         systemPrompt: [
           'You are Don Puerto AI Assistant.',
           'Answer naturally, warmly, and concisely.',
-          'Use portfolioContext as trusted primary profile knowledge.',
+          'Use only portfolioContext and knowledgeContext as your sources.',
+          'Do not use outside facts, assumptions, or general model memory.',
           'Use knowledgeContext as live proof of what is already indexed in the knowledge base.',
           'If knowledgeContext.available is true, do not say there is no indexed knowledge available.',
-          'Do not claim missing knowledge for background, education, work experience, or stack when portfolioContext already contains it.',
+          'If the user asks about age, birthday, or birth year and it is not explicitly listed in portfolioContext or knowledgeContext, do not guess, estimate, or infer it from graduation years or other hints.',
+          'If the exact age is not recorded in the provided context, say that it is not recorded in the knowledge base.',
+          'If the answer is not present in the provided context, say that you do not have that in the knowledge base yet.',
           'For greetings, answer briefly and do not overshare.',
           'Return JSON with shape {"answer":"string","sections":[]}.',
         ].join('\n'),
@@ -209,11 +236,14 @@ export default defineEventHandler(async (event) => {
       const upstreamError = typeof upstream._data?.message === 'string'
         ? upstream._data.message
         : `Ask Don webhook returned ${upstream.status}.`
-      const directResponse = await generatePortfolioAiResponse({
-        config,
-        prompt: body.prompt ?? '',
-        agentId: body.agentId,
-      })
+      const directResponse = await tryGenerateDirectAiResponse(config, body)
+
+      if (!directResponse) {
+        return {
+          ok: false,
+          message: upstreamError || 'The portfolio assistant is not available right now.',
+        }
+      }
 
       return {
         ok: true,
@@ -225,11 +255,14 @@ export default defineEventHandler(async (event) => {
 
     const normalized = normalizeResponse(upstream._data ?? {})
     if (!normalized) {
-      const directResponse = await generatePortfolioAiResponse({
-        config,
-        prompt: body.prompt ?? '',
-        agentId: body.agentId,
-      })
+      const directResponse = await tryGenerateDirectAiResponse(config, body)
+
+      if (!directResponse) {
+        return {
+          ok: false,
+          message: 'Ask Don webhook returned an invalid response shape and no direct AI provider could recover the request.',
+        }
+      }
 
       return {
         ok: true,
@@ -240,11 +273,14 @@ export default defineEventHandler(async (event) => {
     }
 
     if (isEmptyKnowledgeReply(normalized)) {
-      const directResponse = await generatePortfolioAiResponse({
-        config,
-        prompt: body.prompt ?? '',
-        agentId: body.agentId,
-      })
+      const directResponse = await tryGenerateDirectAiResponse(config, body)
+
+      if (!directResponse) {
+        return {
+          ok: false,
+          message: 'Ask Don webhook returned an empty knowledge response and no direct AI provider could recover the request.',
+        }
+      }
 
       return {
         ok: true,
@@ -263,11 +299,14 @@ export default defineEventHandler(async (event) => {
   }
   catch (error) {
     console.error('ask-don webhook failed', error)
-    const directResponse = await generatePortfolioAiResponse({
-      config,
-      prompt: body.prompt ?? '',
-      agentId: body.agentId,
-    })
+    const directResponse = await tryGenerateDirectAiResponse(config, body)
+
+    if (!directResponse) {
+      return {
+        ok: false,
+        message: toMessage(error) || 'The portfolio assistant is not available right now.',
+      }
+    }
 
     return {
       ok: true,

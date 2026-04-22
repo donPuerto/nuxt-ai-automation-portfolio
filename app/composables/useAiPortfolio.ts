@@ -9,17 +9,12 @@ import type {
 } from '@@/shared'
 import type { ChatFileWithStatus } from '@/components/chat/chat-types'
 import { useLocalStorage, useSessionStorage } from '@vueuse/core'
-import { aiPortfolioContent, buildWorkspacePortfolioResponse, portfolioKnowledgeProjects } from '@@/shared'
+import { aiPortfolioContent, portfolioKnowledgeProjects } from '@@/shared'
 
 type AssistantApiResult = {
   ok: boolean
   message: string
   response?: PortfolioAssistantResponse
-}
-
-type NavWebhookResult = {
-  ok: boolean
-  message: string
 }
 
 type ConversationApiRow = {
@@ -607,59 +602,14 @@ export const useAiPortfolio = () => {
     }
   }
 
-  const triggerNavWebhook = async (intent: AiPortfolioNavIntent) => {
-    const navItem = aiPortfolioContent.navItems.find(item => item.id === intent)
-
-    if (!navItem) {
-      return
-    }
-
-    try {
-      const result = await $fetch<NavWebhookResult>('/api/portfolio-assistant/me-webhook', {
-        method: 'POST',
-        body: {
-          intent,
-          label: navItem.label,
-          prompt: navItem.prompt,
-          path: import.meta.client ? window.location.pathname : '/',
-        },
-      })
-
-      if (!result.ok) {
-        console.warn('portfolio nav webhook unavailable', result.message)
-      }
-    }
-    catch (caughtError) {
-      console.warn('portfolio nav webhook skipped', caughtError)
-    }
-  }
-
   const runNavIntent = async (intent: AiPortfolioNavIntent) => {
     const navItem = aiPortfolioContent.navItems.find(item => item.id === intent)
-    const builtResponse = buildWorkspacePortfolioResponse({
+
+    await fetchResponse({
+      prompt: navItem?.prompt ?? '',
       intent,
-      prompt: navItem?.prompt,
+      agentId: selectedAgentId.value,
     })
-
-    response.value = builtResponse
-    error.value = ''
-    loading.value = false
-    activePrompt.value = ''
-    activeIntent.value = intent
-    expandedProjectSlug.value = null
-    setConversationTurns([
-      {
-        id: `nav-${intent}`,
-        prompt: navItem?.prompt ?? '',
-        response: builtResponse,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    ])
-
-    if (intent === 'me') {
-      await triggerNavWebhook(intent)
-    }
   }
 
   const toggleExpandedProject = (slug: string) => {

@@ -1,6 +1,11 @@
 {
   "version": 1,
   "skills": {
+    "airtable-automation": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "8b918201d0878030b6d095a8b93a8c3579a327d04367da9e01538629e1bdd478"
+    },
     "find-skills": {
       "source": "vercel-labs/skills",
       "sourceType": "github",
