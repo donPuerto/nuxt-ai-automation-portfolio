@@ -14,6 +14,8 @@ export interface VideoToTextJobRecord {
   createdAt: string
   updatedAt: string
   transcription?: string
+  summary?: string
+  highlights?: string[]
   wordCount?: number
   error?: string
 }

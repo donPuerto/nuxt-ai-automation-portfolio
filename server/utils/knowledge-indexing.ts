@@ -2,6 +2,11 @@ import { PDFParse } from 'pdf-parse'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 type KnowledgeSourceType = 'text' | 'file'
+type EmbeddingStatus = 'indexed' | 'skipped' | 'failed' | 'unsupported'
+
+type ReplaceDocumentChunksOptions = {
+  openaiApiKey?: string | null
+}
 
 export type KnowledgeDocumentPayload = {
   id?: string
@@ -23,6 +28,8 @@ export type UploadedKnowledgeFile = {
 }
 
 export const KNOWLEDGE_BUCKET = 'knowledge-base'
+const KNOWLEDGE_EMBEDDING_MODEL = 'text-embedding-3-small'
+const EMBEDDING_BATCH_SIZE = 16
 
 export const normalizeOptionalText = (value: unknown) => {
   return typeof value === 'string' && value.trim() ? value.trim() : null
@@ -176,12 +183,14 @@ export const replaceDocumentChunks = async ({
   content,
   sourceType,
   fileName,
+  options,
 }: {
   supabase: SupabaseClient
   documentId: string
   content: string
   sourceType: KnowledgeSourceType
   fileName?: string | null
+  options?: ReplaceDocumentChunksOptions
 }) => {
   const { error: deleteError } = await supabase
     .from('document_chunks')
@@ -197,9 +206,57 @@ export const replaceDocumentChunks = async ({
     throw new Error('No chunkable content was produced for this source.')
   }
 
+  const openaiApiKey = options?.openaiApiKey
+    || process.env.OPENAI_API_KEY
+    || process.env.NUXT_OPENAI_API_KEY
+
+  let embeddingStatus: EmbeddingStatus = 'skipped'
+  let embeddingError: string | null = null
+  let embeddingModel: string | null = null
+  let embeddingVectors: Array<string | null> = chunks.map(() => null)
+
+  if (openaiApiKey) {
+    try {
+      const vectors = await generateChunkEmbeddings(chunks.map(chunk => chunk.content), openaiApiKey)
+      embeddingVectors = vectors.map(toVectorLiteral)
+      embeddingStatus = 'indexed'
+      embeddingModel = KNOWLEDGE_EMBEDDING_MODEL
+    }
+    catch (error) {
+      embeddingStatus = 'failed'
+      embeddingError = error instanceof Error ? error.message : 'Embedding request failed.'
+    }
+  }
+
+  const rowsWithEmbedding = chunks.map((chunk, index) => ({
+    document_id: documentId,
+    content: chunk.content,
+    chunk_index: chunk.chunk_index,
+    embedding: embeddingVectors[index],
+    metadata: {
+      source: sourceType === 'file' ? 'upload' : 'manual',
+      file_name: fileName ?? null,
+      source_type: sourceType,
+      embedding_status: embeddingStatus,
+      embedding_model: embeddingModel,
+      embedding_error: embeddingError,
+    },
+  }))
+
   const { error: insertError } = await supabase
     .from('document_chunks')
-    .insert(chunks.map(chunk => ({
+    .insert(rowsWithEmbedding)
+
+  if (insertError) {
+    const lowered = insertError.message.toLowerCase()
+    const shouldRetryWithoutEmbeddingColumn = lowered.includes("column 'embedding' does not exist")
+      || lowered.includes('could not find the \'embedding\' column')
+
+    if (!shouldRetryWithoutEmbeddingColumn) {
+      throw new Error(insertError.message)
+    }
+
+    const rowsWithoutEmbedding = chunks.map(chunk => ({
       document_id: documentId,
       content: chunk.content,
       chunk_index: chunk.chunk_index,
@@ -207,12 +264,60 @@ export const replaceDocumentChunks = async ({
         source: sourceType === 'file' ? 'upload' : 'manual',
         file_name: fileName ?? null,
         source_type: sourceType,
+        embedding_status: 'unsupported' as EmbeddingStatus,
+        embedding_model: null,
+        embedding_error: 'The embedding column is not available in document_chunks.',
       },
-    })))
+    }))
 
-  if (insertError) {
-    throw new Error(insertError.message)
+    const { error: retryError } = await supabase
+      .from('document_chunks')
+      .insert(rowsWithoutEmbedding)
+
+    if (retryError) {
+      throw new Error(retryError.message)
+    }
   }
 
   return chunks.length
+}
+
+const toVectorLiteral = (values: number[]) => `[${values.join(',')}]`
+
+const generateChunkEmbeddings = async (inputs: string[], apiKey: string) => {
+  const vectors: Array<number[] | null> = inputs.map(() => null)
+
+  for (let start = 0; start < inputs.length; start += EMBEDDING_BATCH_SIZE) {
+    const batch = inputs.slice(start, start + EMBEDDING_BATCH_SIZE)
+    const response = await $fetch<{
+      data?: Array<{ index: number, embedding: number[] }>
+    }>('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: {
+        model: KNOWLEDGE_EMBEDDING_MODEL,
+        input: batch,
+      },
+    })
+
+    const items = response.data ?? []
+    if (items.length !== batch.length) {
+      throw new Error('Embedding response did not return all chunk vectors.')
+    }
+
+    for (const item of items) {
+      const targetIndex = start + item.index
+      vectors[targetIndex] = item.embedding
+    }
+  }
+
+  const missingVector = vectors.findIndex(vector => !Array.isArray(vector) || vector.length === 0)
+  if (missingVector !== -1) {
+    throw new Error('One or more chunk embeddings were missing from the provider response.')
+  }
+
+  return vectors as number[][]
 }

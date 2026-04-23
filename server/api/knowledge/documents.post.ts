@@ -66,6 +66,7 @@ const parseKnowledgeDocumentBody = async (event: H3Event) => {
 
 export default defineEventHandler(async (event) => {
   await requireSupabaseUser(event)
+  const config = useRuntimeConfig(event)
 
   const { body, uploadedFile } = await parseKnowledgeDocumentBody(event)
   const name = normalizeOptionalText(body.name)
@@ -146,6 +147,9 @@ export default defineEventHandler(async (event) => {
         content: extractedContent,
         sourceType,
         fileName,
+        options: {
+          openaiApiKey: config.openaiApiKey,
+        },
       })
     }
     catch (chunkError) {

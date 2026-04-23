@@ -67,6 +67,7 @@ const parseKnowledgeDocumentBody = async (event: H3Event) => {
 
 export default defineEventHandler(async (event) => {
   await requireSupabaseUser(event)
+  const config = useRuntimeConfig(event)
 
   const id = getRouterParam(event, 'id')
   if (!id) {
@@ -176,6 +177,9 @@ export default defineEventHandler(async (event) => {
         content: extractedContent,
         sourceType,
         fileName,
+        options: {
+          openaiApiKey: config.openaiApiKey,
+        },
       })
     }
     catch (chunkError) {

@@ -1,4 +1,38 @@
+import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
+
+const loadLocalEnvFile = (fileName: string, override = false) => {
+  const filePath = resolve(process.cwd(), fileName)
+  if (!existsSync(filePath)) {
+    return
+  }
+
+  const lines = readFileSync(filePath, 'utf8').split(/\r?\n/)
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) {
+      continue
+    }
+
+    const separatorIndex = trimmed.indexOf('=')
+    if (separatorIndex === -1) {
+      continue
+    }
+
+    const key = trimmed.slice(0, separatorIndex).trim()
+    const rawValue = trimmed.slice(separatorIndex + 1).trim()
+    const value = rawValue.replace(/^(['"])(.*)\1$/, '$2')
+
+    if (override || !process.env[key]) {
+      process.env[key] = value
+    }
+  }
+}
+
+loadLocalEnvFile('.env')
+loadLocalEnvFile('.env.local', true)
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -208,6 +242,9 @@ export default defineNuxtConfig({
     videoToTextWebhookUrl: '',
     videoToTextApiKey: '',
     videoToTextCallbackUrl: '',
+    videoToTextUploadWebhookUrl: '',
+    videoToTextDeleteWebhookUrl: '',
+    videoToTextDriveFolderId: '',
     public: {
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL ?? '',
       supabaseKey: process.env.NUXT_PUBLIC_SUPABASE_KEY ?? process.env.SUPABASE_KEY ?? '',

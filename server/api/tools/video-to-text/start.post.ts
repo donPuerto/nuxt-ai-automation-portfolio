@@ -29,6 +29,33 @@ const detectSource = (url: string) => {
   return 'social'
 }
 
+const isValidVideoUrlForTranscription = (rawUrl: string) => {
+  try {
+    const url = new URL(rawUrl)
+    const hostname = url.hostname.toLowerCase()
+    const pathname = url.pathname.toLowerCase()
+
+    if (hostname.includes('youtube.com')) {
+      const videoIdParam = [...url.searchParams.entries()]
+        .find(([key, value]) => key.toLowerCase() === 'v' && value.trim())?.[1]
+      const hasVideoIdQuery = Boolean(videoIdParam)
+      const hasEmbedOrShortsPath = pathname.startsWith('/embed/')
+        || pathname.startsWith('/shorts/')
+        || pathname.startsWith('/live/')
+      return hasVideoIdQuery || hasEmbedOrShortsPath
+    }
+
+    if (hostname.includes('youtu.be')) {
+      return pathname.length > 1
+    }
+
+    return true
+  }
+  catch {
+    return false
+  }
+}
+
 const buildConfiguredCallbackUrl = (callbackBaseUrl: string, jobId: string) => {
   try {
     const url = new URL(callbackBaseUrl)
@@ -53,6 +80,13 @@ export default defineEventHandler(async (event) => {
       ok: false,
       message: 'A video URL is required.',
     }
+  }
+
+  if (!isValidVideoUrlForTranscription(trimmedUrl)) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Please provide a valid video URL. For YouTube, paste the full link with a specific video id.',
+    })
   }
 
   if (!config.videoToTextWebhookUrl || !config.videoToTextApiKey) {

@@ -6,10 +6,14 @@ type TranscriptPayload = Record<string, unknown> & {
   transcription?: string
   transcript?: string
   text?: string
+  summary?: string
+  highlights?: string[]
   output?: {
     transcription?: string
     transcript?: string
     text?: string
+    summary?: string
+    highlights?: string[]
     segments?: TranscriptSegment[]
     utterances?: TranscriptSegment[]
   }
@@ -17,6 +21,8 @@ type TranscriptPayload = Record<string, unknown> & {
     transcription?: string
     transcript?: string
     text?: string
+    summary?: string
+    highlights?: string[]
     segments?: TranscriptSegment[]
     utterances?: TranscriptSegment[]
   }
@@ -54,4 +60,41 @@ export const extractTranscriptFromPayload = (payload?: TranscriptPayload) => {
     || joinSegments(payload.output?.utterances)
     || joinSegments(payload.data?.segments)
     || joinSegments(payload.data?.utterances)
+}
+
+export const extractSummaryFromPayload = (payload?: TranscriptPayload) => {
+  if (!payload) {
+    return undefined
+  }
+
+  const summary = payload.summary
+    || payload.output?.summary
+    || payload.data?.summary
+
+  if (typeof summary !== 'string') {
+    return undefined
+  }
+
+  const normalizedSummary = summary.trim()
+  return normalizedSummary || undefined
+}
+
+export const extractHighlightsFromPayload = (payload?: TranscriptPayload) => {
+  if (!payload) {
+    return undefined
+  }
+
+  const highlightsCandidate = payload.highlights
+    || payload.output?.highlights
+    || payload.data?.highlights
+
+  if (!Array.isArray(highlightsCandidate)) {
+    return undefined
+  }
+
+  const highlights = highlightsCandidate
+    .map(item => typeof item === 'string' ? item.trim() : '')
+    .filter(Boolean)
+
+  return highlights.length ? highlights : undefined
 }

@@ -10,13 +10,24 @@ type StartTranscriptionResult = {
   callbackUrl?: string
 }
 
+type ApiErrorLike = {
+  data?: {
+    message?: string
+    statusMessage?: string
+  }
+  statusMessage?: string
+  message?: string
+}
+
 type VideoToTextTranscriber = 'assemblyai' | 'deepgram' | 'whisper'
 
 type VideoToTextJob = {
   id: string
-  status: 'processing' | 'completed' | 'failed'
+  status: 'processing' | 'completed' | 'failed' | 'cancelled'
   sourceUrl: string
   transcription?: string
+  summary?: string
+  highlights?: string[]
   transcriber: string
   source: string
   wordCount?: number
@@ -30,15 +41,50 @@ type VideoToTextStatusResult = {
   job?: VideoToTextJob
 }
 
+type UploadedTranscriptionFile = {
+  id: string
+  file_name: string
+  mime_type: string | null
+  file_size_bytes: number | null
+  source_url: string | null
+  drive_file_id: string | null
+  drive_web_view_link: string | null
+  status: 'uploaded' | 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'deleted'
+  transcriber: VideoToTextTranscriber
+  transcription: string | null
+  summary: string | null
+  highlights: string[]
+  error_message: string | null
+  metadata: Record<string, unknown> | null
+  created_at: string | null
+}
+
+type UploadFileResult = {
+  file: UploadedTranscriptionFile | null
+  jobId?: string
+  message?: string
+}
+
+type UploadedFilesResult = {
+  files: UploadedTranscriptionFile[]
+}
+
 const props = defineProps<{
   project: PortfolioKnowledgeProject
 }>()
 
+const supabaseConfigured = useSupabaseConfigured()
+const supabase = supabaseConfigured ? useSupabaseClient() : null
+
 const sourceUrl = ref('')
 const loading = ref(false)
 const jobId = ref('')
-const status = ref<'idle' | 'processing' | 'completed' | 'failed'>('idle')
+const status = ref<'idle' | 'processing' | 'completed' | 'failed' | 'cancelled'>('idle')
 const transcript = ref('')
+const transcriptSummary = ref('')
+const summaryHighlights = ref<string[]>([])
+const summaryDialogOpen = ref(false)
+const summaryLoading = ref(false)
 const statusMessage = ref('Paste a YouTube or supported video URL to start transcription.')
 const errorMessage = ref('')
 const callbackReachable = ref(true)
@@ -46,6 +92,11 @@ const callbackUrl = ref('')
 const transcriber = ref<VideoToTextTranscriber>('assemblyai')
 const pollAttempts = ref(0)
 const callbackPending = ref(false)
+const selectedUploadFile = ref<File | null>(null)
+const uploadingFile = ref(false)
+const filesLoading = ref(false)
+const transcriptionFiles = ref<UploadedTranscriptionFile[]>([])
+const deletingFileId = ref('')
 let pollTimer: ReturnType<typeof setTimeout> | null = null
 
 const transcriberOptions = [
@@ -68,6 +119,10 @@ const transcriberOptions = [
 
 const canSubmit = computed(() => sourceUrl.value.trim().length > 0 && !loading.value)
 const canCopyTranscript = computed(() => transcript.value.trim().length > 0)
+const hasSummaryContent = computed(() => transcriptSummary.value.trim().length > 0 || summaryHighlights.value.length > 0)
+const canCopySummary = computed(() => transcriptSummary.value.trim().length > 0 || summaryHighlights.value.length > 0)
+const canStopTranscription = computed(() => status.value === 'processing' && (!!jobId.value || loading.value || callbackPending.value))
+const canUploadFile = computed(() => !!selectedUploadFile.value && !uploadingFile.value)
 const formattedTranscriptParagraphs = computed(() => {
   const normalizedTranscript = transcript.value
     .replace(/\r\n/g, '\n')
@@ -128,6 +183,20 @@ const callbackNotice = computed(() => {
     ? `Still waiting for n8n to POST the finished transcript back to ${callbackUrl.value}.`
     : 'Still waiting for n8n to POST the finished transcript back to the app.'
 })
+const formattedSummaryParagraphs = computed(() => {
+  const normalizedSummary = transcriptSummary.value
+    .replace(/\r\n/g, '\n')
+    .trim()
+
+  if (!normalizedSummary) {
+    return []
+  }
+
+  return normalizedSummary
+    .split(/\n{2,}/)
+    .map(paragraph => paragraph.trim())
+    .filter(Boolean)
+})
 
 const getMaxPollAttempts = (provider: VideoToTextTranscriber) => {
   if (provider === 'deepgram') {
@@ -153,6 +222,74 @@ const clearPolling = () => {
   if (pollTimer) {
     clearTimeout(pollTimer)
     pollTimer = null
+  }
+}
+
+const getApiErrorMessage = (error: unknown) => {
+  const candidate = error as ApiErrorLike | null
+
+  return candidate?.data?.message
+    || candidate?.data?.statusMessage
+    || candidate?.statusMessage
+    || candidate?.message
+    || 'We could not start the transcription workflow right now.'
+}
+
+const getAuthHeaders = async () => {
+  if (!supabase) {
+    throw new Error('Please sign in to manage uploaded files.')
+  }
+
+  const { data } = await supabase.auth.getSession()
+  const token = data.session?.access_token
+
+  if (!token) {
+    throw new Error('Please sign in to manage uploaded files.')
+  }
+
+  return {
+    Authorization: `Bearer ${token}`,
+  }
+}
+
+const formatUploadedFileSize = (bytes: number | null) => {
+  if (!bytes || bytes <= 0) {
+    return 'Unknown size'
+  }
+
+  if (bytes < 1024) {
+    return `${bytes} B`
+  }
+
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+const normalizeUploadedFile = (file: UploadedTranscriptionFile) => ({
+  ...file,
+  highlights: Array.isArray(file.highlights)
+    ? file.highlights
+      .map(item => typeof item === 'string' ? item.trim() : '')
+      .filter(Boolean)
+    : [],
+})
+
+const loadUploadedFiles = async () => {
+  filesLoading.value = true
+  try {
+    const headers = await getAuthHeaders()
+    const result = await $fetch<UploadedFilesResult>('/api/tools/video-to-text/files', { headers })
+    transcriptionFiles.value = (result.files ?? []).map(normalizeUploadedFile)
+  }
+  catch (error) {
+    console.warn('video-to-text files load skipped', error)
+    transcriptionFiles.value = []
+  }
+  finally {
+    filesLoading.value = false
   }
 }
 
@@ -197,11 +334,18 @@ const pollStatus = async () => {
 
     if (result.job.status === 'completed') {
       transcript.value = result.job.transcription || ''
+      transcriptSummary.value = typeof result.job.summary === 'string' ? result.job.summary.trim() : ''
+      summaryHighlights.value = Array.isArray(result.job.highlights)
+        ? result.job.highlights
+          .map(item => typeof item === 'string' ? item.trim() : '')
+          .filter(Boolean)
+        : []
       statusMessage.value = `Transcript ready via ${result.job.transcriber}.`
       loading.value = false
       callbackPending.value = false
       toast.success('Transcript is ready.')
       clearPolling()
+      void loadUploadedFiles()
       return
     }
 
@@ -245,6 +389,9 @@ const submitForTranscription = async () => {
   loading.value = true
   errorMessage.value = ''
   transcript.value = ''
+  transcriptSummary.value = ''
+  summaryHighlights.value = []
+  summaryDialogOpen.value = false
   status.value = 'processing'
   callbackPending.value = false
   callbackUrl.value = ''
@@ -261,7 +408,12 @@ const submitForTranscription = async () => {
     })
 
     if (!result.ok || !result.jobId) {
-      throw new Error(result.message || 'The transcription workflow could not be started.')
+      loading.value = false
+      status.value = 'failed'
+      errorMessage.value = result.message || 'The transcription workflow could not be started.'
+      statusMessage.value = 'Transcription could not be started.'
+      toast.error(errorMessage.value)
+      return
     }
 
     jobId.value = result.jobId
@@ -281,9 +433,7 @@ const submitForTranscription = async () => {
     console.error('video-to-text submit failed', error)
     loading.value = false
     status.value = 'failed'
-    errorMessage.value = error instanceof Error
-      ? error.message
-      : 'We could not start the transcription workflow right now.'
+    errorMessage.value = getApiErrorMessage(error)
     statusMessage.value = 'Transcription could not be started.'
     toast.error(errorMessage.value)
   }
@@ -299,6 +449,138 @@ const refreshStatus = async () => {
   pollAttempts.value = 0
   statusMessage.value = 'Checking for the latest transcript status...'
   await pollStatus()
+}
+
+const handleFileSelection = (event: Event) => {
+  const input = event.target as HTMLInputElement | null
+  selectedUploadFile.value = input?.files?.[0] ?? null
+}
+
+const uploadAndTranscribeFile = async () => {
+  if (!selectedUploadFile.value) {
+    toast.error('Choose a file before uploading.')
+    return
+  }
+
+  uploadingFile.value = true
+  errorMessage.value = ''
+
+  try {
+    const headers = await getAuthHeaders()
+    const formData = new FormData()
+    formData.append('file', selectedUploadFile.value)
+    formData.append('transcriber', transcriber.value)
+    formData.append('autoTranscribe', 'true')
+
+    const result = await $fetch<UploadFileResult>('/api/tools/video-to-text/files/upload', {
+      method: 'POST',
+      headers,
+      body: formData,
+    })
+
+    if (result.jobId) {
+      jobId.value = result.jobId
+      status.value = 'processing'
+      loading.value = true
+      pollAttempts.value = 0
+      callbackPending.value = false
+      statusMessage.value = result.message || 'File uploaded and transcription started.'
+      scheduleNextPoll(2500)
+    }
+
+    selectedUploadFile.value = null
+    await loadUploadedFiles()
+    toast.success(result.message || 'File uploaded to Google Drive.')
+  }
+  catch (error) {
+    const message = getApiErrorMessage(error)
+    errorMessage.value = message
+    toast.error(message)
+  }
+  finally {
+    uploadingFile.value = false
+  }
+}
+
+const transcribeUploadedFile = async (fileId: string) => {
+  loading.value = true
+  errorMessage.value = ''
+  transcript.value = ''
+  transcriptSummary.value = ''
+  summaryHighlights.value = []
+  status.value = 'processing'
+  callbackPending.value = false
+  pollAttempts.value = 0
+
+  try {
+    const headers = await getAuthHeaders()
+    const result = await $fetch<StartTranscriptionResult>('/api/tools/video-to-text/files/' + fileId + '/transcribe', {
+      method: 'POST',
+      headers,
+      body: {
+        transcriber: transcriber.value,
+      },
+    })
+
+    if (!result.ok || !result.jobId) {
+      throw new Error(result.message || 'Could not start file transcription.')
+    }
+
+    jobId.value = result.jobId
+    callbackReachable.value = result.callbackReachable ?? true
+    callbackUrl.value = result.callbackUrl ?? ''
+    statusMessage.value = result.message
+    scheduleNextPoll(2500)
+    await loadUploadedFiles()
+  }
+  catch (error) {
+    loading.value = false
+    status.value = 'failed'
+    const message = getApiErrorMessage(error)
+    errorMessage.value = message
+    statusMessage.value = 'Transcription could not be started.'
+    toast.error(message)
+  }
+}
+
+const deleteUploadedFile = async (file: UploadedTranscriptionFile) => {
+  if (deletingFileId.value) {
+    return
+  }
+
+  deletingFileId.value = file.id
+  try {
+    const headers = await getAuthHeaders()
+    const result = await $fetch<{ success: boolean, driveDeleteError?: string | null }>('/api/tools/video-to-text/files/' + file.id, {
+      method: 'DELETE',
+      headers,
+    })
+
+    await loadUploadedFiles()
+    if (result.driveDeleteError) {
+      toast('File removed locally, but Drive deletion reported an issue.')
+      return
+    }
+
+    toast.success('Uploaded file deleted.')
+  }
+  catch (error) {
+    toast.error(getApiErrorMessage(error))
+  }
+  finally {
+    deletingFileId.value = ''
+  }
+}
+
+const stopTranscription = () => {
+  clearPolling()
+  loading.value = false
+  callbackPending.value = false
+  status.value = 'cancelled'
+  statusMessage.value = 'Transcription stopped.'
+  errorMessage.value = 'You stopped this transcription run.'
+  jobId.value = ''
+  toast('Transcription stopped.')
 }
 
 const copyTranscript = async () => {
@@ -322,6 +604,76 @@ const copyTranscript = async () => {
   }
 }
 
+const openSummary = async () => {
+  if (!transcript.value.trim()) {
+    toast.error('Transcript is required before generating a summary.')
+    return
+  }
+
+  if (hasSummaryContent.value) {
+    summaryDialogOpen.value = true
+    return
+  }
+
+  summaryLoading.value = true
+
+  try {
+    const result = await $fetch<{ ok: boolean, summary: string, highlights: string[] }>('/api/tools/video-to-text/summary', {
+      method: 'POST',
+      body: {
+        transcript: transcript.value,
+        sourceUrl: sourceUrl.value.trim(),
+      },
+    })
+
+    if (!result.ok) {
+      throw new Error('Summary generation failed.')
+    }
+
+    transcriptSummary.value = result.summary.trim()
+    summaryHighlights.value = Array.isArray(result.highlights)
+      ? result.highlights
+        .map(item => typeof item === 'string' ? item.trim() : '')
+        .filter(Boolean)
+      : []
+
+    summaryDialogOpen.value = true
+  }
+  catch (error) {
+    console.error('video-to-text summary failed', error)
+    toast.error('We could not generate a summary right now.')
+  }
+  finally {
+    summaryLoading.value = false
+  }
+}
+
+const copySummary = async () => {
+  if (!canCopySummary.value) {
+    toast.error('There is no summary to copy yet.')
+    return
+  }
+
+  if (!import.meta.client || !navigator.clipboard) {
+    toast.error('Clipboard access is not available in this browser.')
+    return
+  }
+
+  const summaryText = transcriptSummary.value.trim()
+  const highlightsText = summaryHighlights.value.length
+    ? `\n\nHighlights:\n${summaryHighlights.value.map(item => `- ${item}`).join('\n')}`
+    : ''
+
+  try {
+    await navigator.clipboard.writeText(`${summaryText}${highlightsText}`.trim())
+    toast.success('Summary copied to clipboard.')
+  }
+  catch (error) {
+    console.error('video-to-text summary copy failed', error)
+    toast.error('We could not copy the summary right now.')
+  }
+}
+
 onBeforeUnmount(() => {
   clearPolling()
 })
@@ -336,6 +688,8 @@ onMounted(() => {
   if (storedTranscriber && ['assemblyai', 'deepgram', 'whisper'].includes(storedTranscriber)) {
     transcriber.value = storedTranscriber as VideoToTextTranscriber
   }
+
+  void loadUploadedFiles()
 })
 
 watch(transcriber, (value) => {
@@ -406,6 +760,42 @@ watch(transcriber, (value) => {
             />
             <span>{{ loading ? 'Transcribing...' : 'Transcribe' }}</span>
           </Button>
+
+          <Button
+            v-if="canStopTranscription"
+            type="button"
+            class="h-12 rounded-full bg-red-600 px-6 text-white hover:bg-red-500 md:px-7"
+            @click="stopTranscription"
+          >
+            Stop
+          </Button>
+        </div>
+
+        <div class="rounded-2xl border border-border/70 bg-background/70 p-3">
+          <p class="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-primary/85">
+            Upload file
+          </p>
+          <div class="flex flex-col gap-3 md:flex-row md:items-center">
+            <Input
+              type="file"
+              accept="audio/*,video/*,.mp3,.mp4,.wav,.m4a,.mov,.webm"
+              class="h-11 border-border/70 bg-background/90 file:mr-3 file:rounded-md file:border-0 file:bg-primary/20 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-foreground hover:file:bg-primary/30"
+              @change="handleFileSelection"
+            />
+            <Button
+              type="button"
+              class="h-11 rounded-full px-5"
+              :disabled="!canUploadFile"
+              @click="uploadAndTranscribeFile"
+            >
+              <Icon
+                v-if="uploadingFile"
+                name="lucide:loader-circle"
+                class="mr-2 size-4 animate-spin"
+              />
+              {{ uploadingFile ? 'Uploading...' : 'Upload & Transcribe' }}
+            </Button>
+          </div>
         </div>
 
       <div class="mt-4 flex flex-col gap-2 text-sm text-muted-foreground">
@@ -433,6 +823,83 @@ watch(transcriber, (value) => {
           </Button>
         </div>
       </div>
+
+      <div class="mt-2 rounded-2xl border border-border/70 bg-background/70 p-3">
+        <div class="mb-2 flex items-center justify-between gap-3">
+          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary/85">
+            Uploaded files
+          </p>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            class="h-7 rounded-full px-3 text-xs"
+            :disabled="filesLoading"
+            @click="loadUploadedFiles"
+          >
+            Refresh
+          </Button>
+        </div>
+
+        <div v-if="filesLoading" class="text-sm text-muted-foreground">
+          Loading files...
+        </div>
+        <div v-else-if="transcriptionFiles.length === 0" class="text-sm text-muted-foreground">
+          No uploaded files yet.
+        </div>
+        <div v-else class="space-y-2">
+          <div
+            v-for="file in transcriptionFiles"
+            :key="file.id"
+            class="rounded-xl border border-border/70 bg-card/70 p-3"
+          >
+            <div class="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+              <div class="min-w-0">
+                <p class="truncate text-sm font-medium text-foreground">
+                  {{ file.file_name }}
+                </p>
+                <p class="text-xs text-muted-foreground">
+                  {{ formatUploadedFileSize(file.file_size_bytes) }} · {{ file.status }}
+                </p>
+                <p v-if="file.error_message" class="mt-1 text-xs text-destructive">
+                  {{ file.error_message }}
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  class="rounded-full"
+                  :disabled="loading || ['processing', 'queued'].includes(file.status)"
+                  @click="transcribeUploadedFile(file.id)"
+                >
+                  Transcribe
+                </Button>
+                <Button
+                  v-if="file.drive_web_view_link"
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  class="rounded-full"
+                  as-child
+                >
+                  <a :href="file.drive_web_view_link" target="_blank" rel="noreferrer">Open</a>
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  class="rounded-full bg-red-600 px-4 text-white hover:bg-red-500"
+                  :disabled="deletingFileId === file.id"
+                  @click="deleteUploadedFile(file)"
+                >
+                  {{ deletingFileId === file.id ? 'Deleting...' : 'Delete' }}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       </CardContent>
     </Card>
 
@@ -458,6 +925,27 @@ watch(transcriber, (value) => {
           >
             <Icon name="lucide:copy" class="mr-2 size-4" />
             Copy text
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            class="rounded-full"
+            :disabled="!canCopyTranscript || summaryLoading"
+            @click="openSummary"
+          >
+            <Icon
+              v-if="summaryLoading"
+              name="lucide:loader-circle"
+              class="mr-2 size-4 animate-spin"
+            />
+            <Icon
+              v-else
+              name="lucide:sparkles"
+              class="mr-2 size-4"
+            />
+            Summary
           </Button>
 
           <span class="inline-flex rounded-full border border-border/70 px-3 py-1 text-[0.7rem] uppercase tracking-[0.18em] text-muted-foreground dark:border-white/10 dark:text-[#d1ccc4]/78">
@@ -492,5 +980,64 @@ watch(transcriber, (value) => {
         </div>
       </CardContent>
     </Card>
+
+    <Dialog v-model:open="summaryDialogOpen">
+      <DialogContent
+        class="border-[#4a433d] bg-[#2b2724]/95 text-[#f0deca] sm:max-w-2xl [&>[data-slot=dialog-close]]:text-[#ab9986] [&>[data-slot=dialog-close]]:hover:bg-[#221f1d] [&>[data-slot=dialog-close]]:hover:text-[#fff4e6] [&>[data-slot=dialog-close]]:data-[state=open]:bg-[#221f1d] [&>[data-slot=dialog-close]]:data-[state=open]:text-[#fff4e6]"
+      >
+        <DialogHeader class="space-y-3">
+          <div class="flex items-center justify-between gap-3 pr-8">
+            <DialogTitle class="text-[#fff4e6]">
+              Transcript summary
+            </DialogTitle>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              class="h-8 rounded-full border-[#4a433d] bg-[#221f1d] px-3 text-xs text-[#f0deca] hover:bg-[#2d2926] hover:text-[#fff4e6]"
+              :disabled="!canCopySummary"
+              @click="copySummary"
+            >
+              <Icon name="lucide:copy" class="mr-1.5 size-3.5" />
+              Copy summary
+            </Button>
+          </div>
+          <DialogDescription class="text-[#ab9986]">
+            Quick overview and key highlights generated from the completed transcript.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div class="space-y-5 py-1">
+          <div v-if="formattedSummaryParagraphs.length" class="space-y-3 text-sm leading-7 text-[#f0deca]">
+            <p
+              v-for="(paragraph, index) in formattedSummaryParagraphs"
+              :key="`summary-${index}-${paragraph.slice(0, 24)}`"
+              class="whitespace-pre-wrap text-pretty"
+            >
+              {{ paragraph }}
+            </p>
+          </div>
+
+          <p v-else class="text-sm text-[#ab9986]">
+            No summary was returned yet.
+          </p>
+
+          <div v-if="summaryHighlights.length" class="space-y-2">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#d47f55]">
+              Highlights
+            </p>
+            <ul class="space-y-2 text-sm leading-6 text-[#f0deca]">
+              <li
+                v-for="(highlight, index) in summaryHighlights"
+                :key="`highlight-${index}-${highlight.slice(0, 20)}`"
+                class="rounded-xl border border-[#4a433d]/70 bg-[#221f1d] px-3 py-2"
+              >
+                {{ highlight }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   </section>
 </template>

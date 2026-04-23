@@ -4,6 +4,7 @@ import { toast } from 'vue-sonner'
 type KnowledgeStatus = 'draft' | 'ready' | 'indexed' | 'failed'
 type KnowledgeSourceType = 'text' | 'file'
 type KnowledgeTab = 'all' | 'text' | 'files' | 'chunks'
+type KnowledgeEmbeddingStatus = 'indexed' | 'partial' | 'skipped' | 'failed' | 'unsupported'
 
 type KnowledgeDocument = {
   id: string
@@ -18,6 +19,8 @@ type KnowledgeDocument = {
   created_at: string | null
   updated_at: string | null
   chunk_count: number
+  embedded_chunk_count: number
+  embedding_status: KnowledgeEmbeddingStatus
   preview: string
 }
 
@@ -28,6 +31,9 @@ type KnowledgeChunk = {
   chunk_index: number | null
   metadata: Record<string, unknown> | null
   created_at: string | null
+  embedding_status: KnowledgeEmbeddingStatus
+  embedding_model: string | null
+  embedding_error: string | null
 }
 
 type KnowledgeResponse = {
@@ -87,6 +93,7 @@ const failedCount = computed(() => documents.value.filter(document => document.s
 const textCount = computed(() => documents.value.filter(document => document.source_type === 'text').length)
 const fileCount = computed(() => documents.value.filter(document => document.source_type === 'file').length)
 const chunkCount = computed(() => chunks.value.length)
+const embeddedChunkCount = computed(() => chunks.value.filter(chunk => chunk.embedding_status === 'indexed').length)
 
 const filteredDocuments = computed(() => {
   if (activeTab.value === 'text') {
@@ -382,6 +389,46 @@ const statusTone = (status: KnowledgeStatus) => {
   return 'border-[#4a433d] bg-[#221f1d] text-[#ab9986]'
 }
 
+const embeddingStatusLabel = (status: KnowledgeEmbeddingStatus) => {
+  if (status === 'indexed') {
+    return 'embedded'
+  }
+
+  if (status === 'partial') {
+    return 'partial embed'
+  }
+
+  if (status === 'unsupported') {
+    return 'no vector column'
+  }
+
+  if (status === 'failed') {
+    return 'embed failed'
+  }
+
+  return 'not embedded'
+}
+
+const embeddingStatusTone = (status: KnowledgeEmbeddingStatus) => {
+  if (status === 'indexed') {
+    return 'border-emerald-500/20 bg-emerald-500/10 text-emerald-200'
+  }
+
+  if (status === 'partial') {
+    return 'border-amber-400/20 bg-amber-400/10 text-amber-100'
+  }
+
+  if (status === 'failed') {
+    return 'border-red-400/20 bg-red-400/10 text-red-200'
+  }
+
+  if (status === 'unsupported') {
+    return 'border-violet-400/20 bg-violet-400/10 text-violet-100'
+  }
+
+  return 'border-[#4a433d] bg-[#221f1d] text-[#ab9986]'
+}
+
 onMounted(() => {
   void loadKnowledge()
 })
@@ -425,7 +472,7 @@ watch(
       </div>
     </div>
 
-    <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
       <div class="rounded-xl border border-[#4a433d]/70 bg-[#2b2724] p-3">
         <div class="text-[11px] font-medium tracking-[0.14em] text-[#8f857a] uppercase">
           Indexed
@@ -456,6 +503,14 @@ watch(
         </div>
         <div class="mt-2 text-2xl font-semibold text-[#fff4e6]">
           {{ chunkCount.toLocaleString() }}
+        </div>
+      </div>
+      <div class="rounded-xl border border-[#4a433d]/70 bg-[#2b2724] p-3">
+        <div class="text-[11px] font-medium tracking-[0.14em] text-[#8f857a] uppercase">
+          Embedded
+        </div>
+        <div class="mt-2 text-2xl font-semibold text-[#fff4e6]">
+          {{ embeddedChunkCount.toLocaleString() }}
         </div>
       </div>
     </div>
@@ -490,11 +545,22 @@ watch(
             class="rounded-xl border border-[#4a433d]/70 bg-[#2b2724] p-3"
           >
             <div class="flex items-center justify-between gap-3 text-[11px] text-[#8f857a]">
-              <span>{{ formatChunkLabel(chunk.chunk_index) }}</span>
+              <span class="inline-flex items-center gap-2">
+                <span>{{ formatChunkLabel(chunk.chunk_index) }}</span>
+                <span
+                  class="rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em]"
+                  :class="embeddingStatusTone(chunk.embedding_status)"
+                >
+                  {{ embeddingStatusLabel(chunk.embedding_status) }}
+                </span>
+              </span>
               <span>{{ formatDate(chunk.created_at) }}</span>
             </div>
             <p class="mt-2 line-clamp-3 text-sm leading-6 text-[#f0deca]">
               {{ chunk.content }}
+            </p>
+            <p v-if="chunk.embedding_error" class="mt-2 text-xs text-red-200/90">
+              {{ chunk.embedding_error }}
             </p>
           </div>
         </div>
@@ -529,6 +595,12 @@ watch(
                   >
                     {{ statusLabel(document.status) }}
                   </span>
+                  <span
+                    class="rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em]"
+                    :class="embeddingStatusTone(document.embedding_status)"
+                  >
+                    {{ embeddingStatusLabel(document.embedding_status) }}
+                  </span>
                 </div>
                 <p class="mt-2 line-clamp-2 text-sm leading-6 text-[#ab9986]">
                   {{ document.summary || document.preview || 'No summary yet.' }}
@@ -536,6 +608,7 @@ watch(
                 <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[#8f857a]">
                   <span>{{ document.source_type === 'file' ? (document.file_type || 'file').toUpperCase() : 'TEXT' }}</span>
                   <span>{{ document.chunk_count }} chunks</span>
+                  <span>{{ document.embedded_chunk_count }} embedded</span>
                   <span>Updated {{ formatDate(document.updated_at) }}</span>
                   <span v-if="document.file_name">{{ document.file_name }}</span>
                 </div>
@@ -627,6 +700,17 @@ watch(
                 <p class="mt-1 truncate text-sm text-[#ab9986]">
                   {{ document.storage_path || document.file_name || 'No file path available yet.' }}
                 </p>
+                <div class="mt-2 flex flex-wrap items-center gap-2">
+                  <span
+                    class="rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em]"
+                    :class="embeddingStatusTone(document.embedding_status)"
+                  >
+                    {{ embeddingStatusLabel(document.embedding_status) }}
+                  </span>
+                  <span class="text-[11px] text-[#8f857a]">
+                    {{ document.embedded_chunk_count }} / {{ document.chunk_count }} chunks embedded
+                  </span>
+                </div>
               </div>
               <Button variant="ghost" class="h-8 px-2 text-xs text-[#f0deca] hover:bg-[#221f1d]" @click="openEditDialog(document)">
                 Edit
@@ -644,7 +728,7 @@ watch(
             {{ editingDocumentId ? 'Edit knowledge source' : 'Add knowledge source' }}
           </DialogTitle>
           <DialogDescription class="text-[#ab9986]">
-            Add text directly or upload a file. Files are extracted and indexed during save so chat can use them right away.
+            Add text directly or upload a file. Sources are extracted, chunked, and embedded during save so chat can use them right away.
           </DialogDescription>
         </DialogHeader>
 
