@@ -135,7 +135,7 @@ const promptSurfaceClass = computed(() => {
   }
 
   if (isConversationMode.value) {
-    return 'px-4 pb-44 pt-4 md:px-8 md:pb-[10.5rem] md:pt-5'
+    return 'px-4 pb-72 pt-4 md:px-8 md:pb-80 md:pt-5'
   }
 
   return 'px-4 py-6 md:px-8 md:py-8'

@@ -160,21 +160,22 @@ export const buildWorkspacePortfolioResponse = (
 
   if (intent === 'discovery-call') {
     return {
-      answer: 'The discovery call is an AI booking consultation powered by Retell, designed to quickly scope your workflow and decide the best build path.',
+      answer: 'The discovery call starts as a Retell-powered AI voice call. The caller can ask questions, explain what they need, and answer a few discovery prompts before being guided toward the right booking or next step.',
       sections: [
-        getHighlightsSection('What happens on the call', [
-          'We clarify the workflow, bottlenecks, tools, and business outcome you actually need.',
-          'I map where automation, AI, integrations, or a productized workflow can remove manual work fastest.',
-          'You leave with a clearer implementation direction, not just a vague conversation.',
+        getHighlightsSection('How the Retell call works', [
+          'The visitor starts the AI booking call directly from the canvas.',
+          'Retell handles the live voice conversation and asks focused discovery questions.',
+          'The call captures the workflow, business need, tools involved, and urgency before recommending the next step.',
         ]),
-        getHighlightsSection('Good fit for', [
-          'Teams with broken or fragile automations that need to be fixed or rebuilt.',
-          'Businesses that want AI integrated into operations without adding unnecessary complexity.',
-          'Founders and operators who need a clear scope before committing to a full build.',
+        getHighlightsSection('What the AI asks', [
+          'What workflow, process, or customer journey needs help.',
+          'Which tools are already involved, such as CRM, forms, email, calendar, n8n, or other systems.',
+          'What outcome the caller wants: faster booking, cleaner handoff, fewer manual steps, or a custom automation build.',
         ]),
-        getHighlightsSection('After the call', [
-          'If the work is straightforward, I can point you toward the right product or next implementation step.',
-          'If it needs custom engineering, I can recommend the best build path, scope, and delivery approach.',
+        getHighlightsSection('How booking happens', [
+          'If the request looks like a fit, the AI call leads the caller toward booking the next consultation or implementation step.',
+          'If the caller only needs a quick workflow product, the call can point them toward the right project or offer.',
+          'If it needs custom engineering, the call helps qualify the scope before a deeper follow-up.',
         ]),
         getDiscoveryCta(),
       ],
