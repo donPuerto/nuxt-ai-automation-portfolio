@@ -431,6 +431,7 @@ if (import.meta.client) {
                     <AiPortfolioCanvas
                       :conversation-turns="conversationTurns"
                       :response="response"
+                      :active-intent="activeIntent"
                       :active-prompt="activePrompt"
                       :error="error"
                       :loading="loading"

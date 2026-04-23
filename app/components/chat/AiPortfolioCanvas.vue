@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type {
+  AiPortfolioNavIntent,
   PortfolioAssistantResponse,
   PortfolioAssistantSection,
   PortfolioAssistantSectionLayout,
@@ -17,6 +18,7 @@ const props = defineProps<{
     error?: string
   }[]
   response: PortfolioAssistantResponse | null
+  activeIntent?: AiPortfolioNavIntent | 'prompt' | ''
   activePrompt?: string
   error?: string
   loading?: boolean
@@ -122,6 +124,20 @@ const isStackSection = (section: PortfolioAssistantSection) => {
 
   const title = section.title.toLowerCase()
   return title.includes('stack')
+}
+
+const isNavigatorCanvasView = computed(() => {
+  return props.activeIntent === 'me'
+    || props.activeIntent === 'projects'
+    || props.activeIntent === 'skills'
+    || props.activeIntent === 'discovery-call'
+})
+
+const isLastSection = (
+  sections: PortfolioAssistantSection[] | undefined,
+  index: number,
+) => {
+  return index === (sections?.length ?? 0) - 1
 }
 
 const renderedTurns = computed(() => {
@@ -240,7 +256,11 @@ const renderedTurns = computed(() => {
                   <template v-for="(section, index) in turn.response?.sections ?? []" :key="`${turn.id}-${section.type}-${section.title}`">
                     <motion.section
                       class="space-y-3"
-                      :class="[sectionWidthClass(section.layout), sectionAlignClass(section.layout)]"
+                      :class="[
+                        sectionWidthClass(section.layout),
+                        sectionAlignClass(section.layout),
+                        isNavigatorCanvasView && isLastSection(turn.response?.sections, index) ? 'pb-56 md:pb-64' : '',
+                      ]"
                       :initial="{ opacity: 0, y: 16 }"
                       :animate="{ opacity: 1, y: 0 }"
                       :transition="{ duration: 0.24, delay: 0.1 + index * 0.04 }"
@@ -282,7 +302,10 @@ const renderedTurns = computed(() => {
                         />
                       </div>
 
-                      <div v-else-if="section.type === 'cta'" class="flex justify-start">
+                      <div
+                        v-else-if="section.type === 'cta'"
+                        class="flex justify-start"
+                      >
                         <DiscoveryCallButton
                           :label="section.label"
                           variant="outline"
