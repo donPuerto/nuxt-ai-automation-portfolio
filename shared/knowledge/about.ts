@@ -60,7 +60,8 @@ export const aboutKnowledge = {
   contact: [
     `Email: ${personalInfo.email}`,
     `Mobile / WhatsApp: ${personalInfo.phone}`,
-    'Resume: View Resume',
+    'Resume available in this workspace view.',
+    `LinkedIn: ${personalInfo.social.linkedin}`,
     `GitHub: ${personalInfo.social.github}`,
   ],
   resumeHighlights: [

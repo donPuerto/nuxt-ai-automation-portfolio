@@ -139,6 +139,14 @@ const buildProviderAttempts = (agentId: string | null | undefined, config: Retur
   })
 }
 
+export const hasConfiguredPortfolioAiProvider = (config: ReturnType<typeof useRuntimeConfig>) => {
+  return Boolean(
+    resolveOpenRouterKey(config)
+    || resolveAnthropicKey(config)
+    || resolveOpenAiKey(config),
+  )
+}
+
 const callOpenRouter = async (config: ReturnType<typeof useRuntimeConfig>, model: string, prompt: string) => {
   const openrouterApiKey = resolveOpenRouterKey(config)
   if (!openrouterApiKey) {

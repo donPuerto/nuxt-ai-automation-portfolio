@@ -118,12 +118,14 @@ const buildAboutMeResponse = (): PortfolioAssistantResponse => {
   return {
     answer: `${aboutKnowledge.firstPersonIntro} I focus on building automation systems that remove repetitive work, connect the right platforms, and make AI genuinely useful inside real business operations.`,
     sections: [
-      getHighlightsSection('About me', aboutKnowledge.resumeHighlights),
+      getHighlightsSection('Profile summary', aboutKnowledge.resumeHighlights),
       getHighlightsSection('What I do', aboutKnowledge.whatIDo),
+      getHighlightsSection('Work experience', aboutKnowledge.workExperience),
+      getHighlightsSection('Education', aboutKnowledge.education),
+      getHighlightsSection('Training', aboutKnowledge.trainings),
       getHighlightsSection('My background', aboutKnowledge.background),
       getHighlightsSection('How I work', aboutKnowledge.workStyle),
       getHighlightsSection('What makes me different', aboutKnowledge.differentiators),
-      getHighlightsSection('Tech stack', aboutKnowledge.techStack),
       getHighlightsSection('Availability and contact', [...aboutKnowledge.availability, ...aboutKnowledge.contact]),
     ],
   }

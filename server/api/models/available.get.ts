@@ -1,5 +1,5 @@
 import { aiPortfolioContent } from '@@/shared'
-import { getSupabaseAdmin } from '../../utils/supabase-admin'
+import { getSupabaseAdmin, hasSupabaseAdminConfig } from '../../utils/supabase-admin'
 import {
   getAnthropicPromptOptions,
   getOpenAIPromptOptions,
@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
   const freeOnly = query.freeOnly === 'true' || query.freeOnly === '1'
   const autoSync = query.autoSync === 'true' || query.autoSync === '1'
   const config = useRuntimeConfig(event)
+  const hasAdminConfig = hasSupabaseAdminConfig(event)
 
   // Provider-first live fallback keeps dropdown usable even if DB catalog tables are not migrated yet.
   if (provider === 'claude') {
@@ -59,6 +60,13 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    if (!hasAdminConfig) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Supabase admin credentials are not configured.',
+      })
+    }
+
     const supabase = getSupabaseAdmin(event)
 
     if (autoSync) {
@@ -164,7 +172,9 @@ export default defineEventHandler(async (event) => {
     }
   }
   catch (error) {
-    console.warn('model catalog read failed, using fallback', error)
+    if (hasAdminConfig) {
+      console.warn('model catalog read failed, using fallback', error)
+    }
 
     if (provider === 'openrouter') {
       try {

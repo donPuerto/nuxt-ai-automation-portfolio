@@ -1,7 +1,8 @@
 import type { PortfolioAssistantResponse, PortfolioAssistantRequest } from '../../utils/portfolio-assistant/types'
 import { aboutKnowledge } from '@@/shared'
 import { getSupabaseAdmin } from '../../utils/supabase-admin'
-import { generatePortfolioAiResponse } from '../../utils/portfolio-assistant/generate-ai-response'
+import { buildPortfolioAssistantResponse } from '../../utils/portfolio-assistant/build-response'
+import { generatePortfolioAiResponse, hasConfiguredPortfolioAiProvider } from '../../utils/portfolio-assistant/generate-ai-response'
 import { normalizeAssistantResponse } from '../../utils/portfolio-assistant/response-format'
 
 type AssistantApiResult = {
@@ -65,6 +66,10 @@ const tryGenerateDirectAiResponse = async (
   config: ReturnType<typeof useRuntimeConfig>,
   body: PortfolioAssistantRequest,
 ) => {
+  if (!hasConfiguredPortfolioAiProvider(config)) {
+    return null
+  }
+
   try {
     return await generatePortfolioAiResponse({
       config,
@@ -174,6 +179,18 @@ const buildKnowledgeContext = async (event: Parameters<typeof getSupabaseAdmin>[
 export default defineEventHandler(async (event) => {
   const body = (await readBody<PortfolioAssistantRequest>(event)) ?? {}
   const config = useRuntimeConfig(event)
+  const intent = body.intent ?? 'prompt'
+
+  // Navigator-driven canvas views should render from the app's own structured
+  // portfolio data rather than depending on the generic n8n prompt workflow.
+  if (intent !== 'prompt') {
+    return {
+      ok: true,
+      message: 'Portfolio assistant response ready.',
+      response: buildPortfolioAssistantResponse(body),
+      provider: 'workspace',
+    }
+  }
 
   const knowledgeContext = await buildKnowledgeContext(event)
 

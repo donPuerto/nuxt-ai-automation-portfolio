@@ -448,7 +448,15 @@ export const useAiPortfolio = () => {
         || payload.intent === 'prompt'
         ? payload.intent
         : ''
-      await saveConversationTurn(payload, result.response)
+
+      if (payload.intent === 'prompt') {
+        await saveConversationTurn(payload, result.response)
+      }
+      else {
+        // Navigator views are single-canvas workspace pages, not appended chat turns.
+        setConversationTurns([])
+      }
+
       return true
     }
     catch (caughtError) {

@@ -14,6 +14,11 @@ A skill is a set of local instructions stored in a `SKILL.md` file. Use the proj
   - For Settings links in workspace chat surfaces (sidebar, prompt nav strip, profile dropdown), use direct anchor navigation to `/settings?section=general` unless router-based navigation has been explicitly re-verified for first-click reliability.
   - Treat URL-only change without view update as a regression; fix before closing the task.
   - Verification for any Settings-nav change must include first-click checks from all three entry points (sidebar, prompt nav, profile dropdown).
+- Workspace canvas navigator rule:
+  - Navigation prompt clicks (`me`, `projects`, `skills`, `discovery-call`, `settings`, and category views) are workspace canvas views, not chat messages.
+  - Navigator clicks must render from code/local structured data in the same canvas and must not create recent-chat entries, saved conversation rows, or visible chat turns.
+  - Only real free-text prompt submissions with `intent: 'prompt'` may append to conversation turns or create recent-chat history.
+  - Treat a navigator click that displays previous navigator views, mixed sections, or chat history as a regression; fix before closing the task.
 - Chat UI recurring standards (Claude-like):
   - Keep conversation thread compact; avoid large vertical gaps between turns.
   - During loading, keep previous turns visible and append loading state below the latest turn. Do not replace the whole thread with a loading row.
