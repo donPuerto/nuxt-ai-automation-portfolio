@@ -92,13 +92,13 @@ export default defineEventHandler(async (event) => {
   const requestOrigin = getRequestURL(event).origin
   const siteUrl = config.public.siteUrl?.trim() || requestOrigin
   const jobId = crypto.randomUUID()
-  const configuredCallbackUrl = config.videoToTextCallbackUrl?.trim()
-    ? buildConfiguredCallbackUrl(config.videoToTextCallbackUrl.trim(), jobId)
-    : ''
   const fallbackCallbackUrl = isPublicOrigin(siteUrl)
     ? `${siteUrl.replace(/\/$/, '')}/api/tools/video-to-text/callback/${jobId}`
     : ''
-  const callbackUrl = configuredCallbackUrl || fallbackCallbackUrl
+  const configuredCallbackUrl = config.videoToTextCallbackUrl?.trim()
+    ? buildConfiguredCallbackUrl(config.videoToTextCallbackUrl.trim(), jobId)
+    : ''
+  const callbackUrl = fallbackCallbackUrl || configuredCallbackUrl
   const callbackReachable = Boolean(callbackUrl)
   const now = new Date().toISOString()
   const relayOrigin = isPublicOrigin(siteUrl) ? siteUrl : requestOrigin
