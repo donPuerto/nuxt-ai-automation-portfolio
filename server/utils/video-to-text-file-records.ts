@@ -48,7 +48,7 @@ export type TranscriptionRunRow = {
   updated_at: string | null
 }
 
-export const transcriptionFileSelect = 'id,file_name,mime_type,file_size_bytes,source_type,source_url,drive_file_id,drive_web_view_link,drive_download_link,drive_folder_id,status,transcriber,transcription,summary,highlights,error_message,metadata,created_at,updated_at,deleted_at'
+export const transcriptionFileSelect = 'id,user_id,file_name,mime_type,file_size_bytes,source_type,source_url,drive_file_id,drive_web_view_link,drive_download_link,drive_folder_id,status,transcriber,transcription,summary,highlights,error_message,metadata,created_at,updated_at,deleted_at'
 
 export const mapHighlights = (value: unknown) => {
   if (!Array.isArray(value)) {

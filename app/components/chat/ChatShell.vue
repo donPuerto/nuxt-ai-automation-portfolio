@@ -129,6 +129,13 @@ const isPromptMode = computed(() => {
 
   return props.mode === 'prompt'
 })
+const shouldShowConversationPromptComposer = computed(() => {
+  if (!isPromptMode.value || !isConversationMode.value) {
+    return false
+  }
+
+  return !activeIntent.value || activeIntent.value === 'prompt'
+})
 const promptSurfaceClass = computed(() => {
   if (!isPromptMode.value) {
     return 'px-3 pb-8 pt-3 md:px-5 md:pb-10 md:pt-4'
@@ -462,7 +469,7 @@ if (import.meta.client) {
                 :exit="{ opacity: 0, y: 26, filter: 'blur(8px)' }"
                 :transition="{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }"
               >
-                <div class="mx-auto w-full max-w-[54rem]">
+                <div v-if="shouldShowConversationPromptComposer" class="mx-auto w-full max-w-[54rem]">
                   <AiPortfolioPrompt
                     v-model="prompt"
                     :loading="loading"

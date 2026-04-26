@@ -8,6 +8,7 @@ type UploadWebhookResult = {
   drive_file_id?: string
   drive_web_view_link?: string
   drive_download_link?: string
+  drive_folder_id?: string
   source_url?: string
 }
 
@@ -75,8 +76,14 @@ const extractUploadWebhookResult = (payload: unknown): UploadWebhookResult => {
     drive_file_id: getString(candidate.drive_file_id) || getString(nested?.drive_file_id),
     drive_web_view_link: getString(candidate.drive_web_view_link) || getString(nested?.drive_web_view_link),
     drive_download_link: getString(candidate.drive_download_link) || getString(nested?.drive_download_link),
+    drive_folder_id: getString(candidate.drive_folder_id) || getString(nested?.drive_folder_id) || getString(candidate.folder_id) || getString(nested?.folder_id),
     source_url: getString(candidate.source_url) || getString(nested?.source_url),
   }
+}
+
+const buildDriveWebViewLink = (driveFileId: string | null) => {
+  const normalizedId = typeof driveFileId === 'string' ? driveFileId.trim() : ''
+  return normalizedId ? `https://drive.google.com/file/d/${normalizedId}/view` : null
 }
 
 export default defineEventHandler(async (event) => {
@@ -185,17 +192,19 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const sourceUrl = uploadResult.drive_web_view_link || uploadResult.source_url || null
   const driveFileId = uploadResult.drive_file_id || null
+  const driveWebViewLink = uploadResult.drive_web_view_link || buildDriveWebViewLink(driveFileId)
+  const sourceUrl = driveWebViewLink || uploadResult.source_url || null
+  const driveFolderId = uploadResult.drive_folder_id || config.videoToTextDriveFolderId || null
 
   const { data: uploadedFileRecord, error: uploadedFileError } = await supabase
     .from('transcription_files')
     .update({
       source_url: sourceUrl,
       drive_file_id: driveFileId,
-      drive_web_view_link: uploadResult.drive_web_view_link || null,
+      drive_web_view_link: driveWebViewLink,
       drive_download_link: uploadResult.drive_download_link || null,
-      drive_folder_id: config.videoToTextDriveFolderId || null,
+      drive_folder_id: driveFolderId,
       status: autoTranscribe ? 'queued' : 'uploaded',
       error_message: null,
     })

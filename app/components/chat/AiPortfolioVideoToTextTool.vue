@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PortfolioKnowledgeProject } from '@@/shared'
+import VidstackPreview from '@/components/ui/media/VidstackPreview.vue'
 import { toast } from 'vue-sonner'
 
 type StartTranscriptionResult = {
@@ -20,6 +21,7 @@ type ApiErrorLike = {
 }
 
 type VideoToTextTranscriber = 'assemblyai' | 'deepgram' | 'whisper'
+type VideoToTextSourceTab = 'url' | 'file'
 
 type VideoToTextJob = {
   id: string
@@ -49,6 +51,7 @@ type UploadedTranscriptionFile = {
   source_url: string | null
   drive_file_id: string | null
   drive_web_view_link: string | null
+  drive_folder_id?: string | null
   status: 'uploaded' | 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'deleted'
   transcriber: VideoToTextTranscriber
   transcription: string | null
@@ -69,6 +72,8 @@ type UploadedFilesResult = {
   files: UploadedTranscriptionFile[]
 }
 
+type UploadedFilesSortOption = 'newest' | 'oldest'
+
 const props = defineProps<{
   project: PortfolioKnowledgeProject
 }>()
@@ -77,6 +82,7 @@ const supabaseConfigured = useSupabaseConfigured()
 const supabase = supabaseConfigured ? useSupabaseClient() : null
 
 const sourceUrl = ref('')
+const sourceTab = ref<VideoToTextSourceTab>('url')
 const loading = ref(false)
 const jobId = ref('')
 const status = ref<'idle' | 'processing' | 'completed' | 'failed' | 'cancelled'>('idle')
@@ -85,18 +91,25 @@ const transcriptSummary = ref('')
 const summaryHighlights = ref<string[]>([])
 const summaryDialogOpen = ref(false)
 const summaryLoading = ref(false)
-const statusMessage = ref('Paste a YouTube or supported video URL to start transcription.')
+const statusMessage = ref('')
 const errorMessage = ref('')
 const callbackReachable = ref(true)
 const callbackUrl = ref('')
 const transcriber = ref<VideoToTextTranscriber>('assemblyai')
 const pollAttempts = ref(0)
 const callbackPending = ref(false)
+const statusSourceTab = ref<VideoToTextSourceTab | null>(null)
+const activeJobSourceTab = ref<VideoToTextSourceTab | null>(null)
+const lastCompletedSourceTab = ref<VideoToTextSourceTab | null>(null)
 const selectedUploadFile = ref<File | null>(null)
 const uploadingFile = ref(false)
 const filesLoading = ref(false)
 const transcriptionFiles = ref<UploadedTranscriptionFile[]>([])
 const deletingFileId = ref('')
+const uploadedFilesSearch = ref('')
+const uploadedFilesSort = ref<UploadedFilesSortOption>('newest')
+const filesDialogOpen = ref(false)
+const expandedFileId = ref('')
 let pollTimer: ReturnType<typeof setTimeout> | null = null
 
 const transcriberOptions = [
@@ -117,12 +130,101 @@ const transcriberOptions = [
   },
 ] as const
 
-const canSubmit = computed(() => sourceUrl.value.trim().length > 0 && !loading.value)
+const uploadedFilesSortOptions = [
+  { value: 'newest', label: 'Newest first' },
+  { value: 'oldest', label: 'Oldest first' },
+] as const
+
+const canTranscribe = computed(() => {
+  if (loading.value) {
+    return false
+  }
+
+  if (sourceTab.value === 'file') {
+    return !!selectedUploadFile.value && !uploadingFile.value
+  }
+
+  return sourceUrl.value.trim().length > 0
+})
 const canCopyTranscript = computed(() => transcript.value.trim().length > 0)
 const hasSummaryContent = computed(() => transcriptSummary.value.trim().length > 0 || summaryHighlights.value.length > 0)
 const canCopySummary = computed(() => transcriptSummary.value.trim().length > 0 || summaryHighlights.value.length > 0)
-const canStopTranscription = computed(() => status.value === 'processing' && (!!jobId.value || loading.value || callbackPending.value))
-const canUploadFile = computed(() => !!selectedUploadFile.value && !uploadingFile.value)
+const isCurrentTabStatus = computed(() => statusSourceTab.value === sourceTab.value)
+const displayStatus = computed(() => {
+  return isCurrentTabStatus.value ? status.value : 'idle'
+})
+const canStopTranscription = computed(() => isCurrentTabStatus.value && status.value === 'processing' && (!!jobId.value || loading.value || callbackPending.value))
+const driveFolderId = computed(() => {
+  for (const file of transcriptionFiles.value) {
+    const folderId = typeof file.drive_folder_id === 'string' ? file.drive_folder_id.trim() : ''
+    if (folderId) {
+      return folderId
+    }
+  }
+
+  return ''
+})
+const driveFolderUrl = computed(() => {
+  return driveFolderId.value
+    ? `https://drive.google.com/drive/folders/${driveFolderId.value}`
+    : ''
+})
+const shouldShowTranscriptCard = computed(() => {
+  return status.value === 'completed'
+    && transcript.value.trim().length > 0
+    && lastCompletedSourceTab.value === sourceTab.value
+})
+const filteredTranscriptionFiles = computed(() => {
+  const query = uploadedFilesSearch.value.trim().toLowerCase()
+  const files = query
+    ? transcriptionFiles.value.filter((file) => {
+        const haystack = [
+          file.file_name,
+          file.status,
+          file.transcriber,
+          file.mime_type ?? '',
+          formatUploadedFileTimestamp(file.created_at),
+        ]
+          .join(' ')
+          .toLowerCase()
+
+        return haystack.includes(query)
+      })
+    : [...transcriptionFiles.value]
+
+  files.sort((left, right) => {
+    const leftTime = left.created_at ? new Date(left.created_at).getTime() : 0
+    const rightTime = right.created_at ? new Date(right.created_at).getTime() : 0
+
+    return uploadedFilesSort.value === 'oldest'
+      ? leftTime - rightTime
+      : rightTime - leftTime
+  })
+
+  return files
+})
+const uploadedFilesSortLabel = computed(() => {
+  return uploadedFilesSort.value === 'oldest' ? 'Oldest first' : 'Newest first'
+})
+const statusBadgeClass = computed(() => {
+  if (displayStatus.value === 'completed') {
+    return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200'
+  }
+
+  if (displayStatus.value === 'processing') {
+    return 'border-amber-400/30 bg-amber-400/10 text-amber-100'
+  }
+
+  if (displayStatus.value === 'failed') {
+    return 'border-red-400/30 bg-red-400/10 text-red-200'
+  }
+
+  if (displayStatus.value === 'cancelled') {
+    return 'border-zinc-400/30 bg-zinc-500/10 text-zinc-200'
+  }
+
+  return 'border-sky-400/30 bg-sky-500/10 text-sky-100'
+})
 const formattedTranscriptParagraphs = computed(() => {
   const normalizedTranscript = transcript.value
     .replace(/\r\n/g, '\n')
@@ -175,7 +277,7 @@ const formattedTranscriptParagraphs = computed(() => {
   return paragraphs
 })
 const callbackNotice = computed(() => {
-  if (!callbackPending.value) {
+  if (!callbackPending.value || !isCurrentTabStatus.value) {
     return ''
   }
 
@@ -183,6 +285,14 @@ const callbackNotice = computed(() => {
     ? `Still waiting for n8n to POST the finished transcript back to ${callbackUrl.value}.`
     : 'Still waiting for n8n to POST the finished transcript back to the app.'
 })
+const sourceDescription = computed(() => {
+  if (sourceTab.value === 'file') {
+    return 'Upload an audio or video file, then start transcription with your selected transcriber.'
+  }
+
+  return 'Paste a YouTube or supported video URL, then start transcription.'
+})
+const shouldShowStatusMessage = computed(() => isCurrentTabStatus.value && statusMessage.value.trim().length > 0)
 const formattedSummaryParagraphs = computed(() => {
   const normalizedSummary = transcriptSummary.value
     .replace(/\r\n/g, '\n')
@@ -268,6 +378,107 @@ const formatUploadedFileSize = (bytes: number | null) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
+const formatUploadedFileTimestamp = (value: string | null) => {
+  if (!value) {
+    return 'Unknown upload time'
+  }
+
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Unknown upload time'
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date)
+}
+
+const getUploadedFileOpenUrl = (file: UploadedTranscriptionFile) => {
+  if (file.drive_web_view_link?.trim()) {
+    return file.drive_web_view_link
+  }
+
+  if (file.drive_file_id?.trim()) {
+    return `https://drive.google.com/file/d/${file.drive_file_id}/view`
+  }
+
+  return file.source_url?.trim() ?? ''
+}
+
+const getUploadedFileMediaKind = (file: UploadedTranscriptionFile) => {
+  const mimeType = file.mime_type?.toLowerCase() ?? ''
+
+  if (mimeType.startsWith('video/')) {
+    return 'video'
+  }
+
+  return 'audio'
+}
+
+const getUploadedFileDrivePreviewUrl = (file: UploadedTranscriptionFile) => {
+  if (!file.drive_file_id?.trim()) {
+    return ''
+  }
+
+  return `https://drive.google.com/file/d/${file.drive_file_id}/preview`
+}
+
+const isGoogleDriveMediaUrl = (value: string) => {
+  return value.includes('drive.google.com') || value.includes('drive.usercontent.google.com')
+}
+
+const getUploadedFileMediaUrl = (file: UploadedTranscriptionFile) => {
+  if (file.drive_download_link?.trim()) {
+    return file.drive_download_link
+  }
+
+  if (file.drive_file_id?.trim()) {
+    return `https://drive.google.com/uc?export=download&id=${file.drive_file_id}`
+  }
+
+  const sourceUrl = file.source_url?.trim() ?? ''
+  if (!sourceUrl) {
+    return ''
+  }
+
+  if (sourceUrl.includes('/file/d/') || sourceUrl.includes('drive.google.com/file/d/')) {
+    return ''
+  }
+
+  return sourceUrl
+}
+
+const getUploadedFilePreviewMode = (file: UploadedTranscriptionFile) => {
+  const drivePreviewUrl = getUploadedFileDrivePreviewUrl(file)
+  if (drivePreviewUrl) {
+    return 'iframe' as const
+  }
+
+  const mediaUrl = getUploadedFileMediaUrl(file)
+  if (mediaUrl && !isGoogleDriveMediaUrl(mediaUrl)) {
+    return 'player' as const
+  }
+
+  return 'none' as const
+}
+
+const canPreviewUploadedFile = (file: UploadedTranscriptionFile) => {
+  return getUploadedFilePreviewMode(file) !== 'none'
+}
+
+const openFilesDialog = (fileId?: string) => {
+  filesDialogOpen.value = true
+  if (fileId) {
+    expandedFileId.value = fileId
+  }
+}
+
+const openUploadedFileDetails = (file: UploadedTranscriptionFile) => {
+  openFilesDialog(file.id)
+}
+
 const normalizeUploadedFile = (file: UploadedTranscriptionFile) => ({
   ...file,
   highlights: Array.isArray(file.highlights)
@@ -281,7 +492,12 @@ const loadUploadedFiles = async () => {
   filesLoading.value = true
   try {
     const headers = await getAuthHeaders()
-    const result = await $fetch<UploadedFilesResult>('/api/tools/video-to-text/files', { headers })
+    const result = await $fetch<UploadedFilesResult>('/api/tools/video-to-text/files', {
+      headers,
+      query: {
+        t: Date.now(),
+      },
+    })
     transcriptionFiles.value = (result.files ?? []).map(normalizeUploadedFile)
   }
   catch (error) {
@@ -291,6 +507,10 @@ const loadUploadedFiles = async () => {
   finally {
     filesLoading.value = false
   }
+}
+
+const toggleUploadedFilesSort = () => {
+  uploadedFilesSort.value = uploadedFilesSort.value === 'newest' ? 'oldest' : 'newest'
 }
 
 const scheduleNextPoll = (delay = 3000) => {
@@ -331,6 +551,7 @@ const pollStatus = async () => {
     }
 
     status.value = result.job.status
+    statusSourceTab.value = activeJobSourceTab.value ?? statusSourceTab.value ?? sourceTab.value
 
     if (result.job.status === 'completed') {
       transcript.value = result.job.transcription || ''
@@ -343,6 +564,7 @@ const pollStatus = async () => {
       statusMessage.value = `Transcript ready via ${result.job.transcriber}.`
       loading.value = false
       callbackPending.value = false
+      lastCompletedSourceTab.value = statusSourceTab.value
       toast.success('Transcript is ready.')
       clearPolling()
       void loadUploadedFiles()
@@ -393,6 +615,8 @@ const submitForTranscription = async () => {
   summaryHighlights.value = []
   summaryDialogOpen.value = false
   status.value = 'processing'
+  statusSourceTab.value = 'url'
+  activeJobSourceTab.value = 'url'
   callbackPending.value = false
   callbackUrl.value = ''
   pollAttempts.value = 0
@@ -439,6 +663,15 @@ const submitForTranscription = async () => {
   }
 }
 
+const runTranscription = async () => {
+  if (sourceTab.value === 'file') {
+    await uploadAndTranscribeFile()
+    return
+  }
+
+  await submitForTranscription()
+}
+
 const refreshStatus = async () => {
   if (!jobId.value) {
     return
@@ -481,6 +714,8 @@ const uploadAndTranscribeFile = async () => {
     if (result.jobId) {
       jobId.value = result.jobId
       status.value = 'processing'
+      statusSourceTab.value = 'file'
+      activeJobSourceTab.value = 'file'
       loading.value = true
       pollAttempts.value = 0
       callbackPending.value = false
@@ -509,6 +744,8 @@ const transcribeUploadedFile = async (fileId: string) => {
   transcriptSummary.value = ''
   summaryHighlights.value = []
   status.value = 'processing'
+  statusSourceTab.value = 'file'
+  activeJobSourceTab.value = 'file'
   callbackPending.value = false
   pollAttempts.value = 0
 
@@ -555,6 +792,10 @@ const deleteUploadedFile = async (file: UploadedTranscriptionFile) => {
       method: 'DELETE',
       headers,
     })
+
+    if (expandedFileId.value === file.id) {
+      expandedFileId.value = ''
+    }
 
     await loadUploadedFiles()
     if (result.driveDeleteError) {
@@ -699,6 +940,12 @@ watch(transcriber, (value) => {
 
   window.localStorage.setItem('video-to-text-transcriber', value)
 })
+
+watch(filesDialogOpen, (open) => {
+  if (!open) {
+    expandedFileId.value = ''
+  }
+})
 </script>
 
 <template>
@@ -711,108 +958,126 @@ watch(transcriber, (value) => {
         {{ props.project.title }}
       </h3>
       <p class="mx-auto max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
-        Paste a YouTube or supported video URL, launch the workflow, and read the transcript below once n8n finishes processing.
+        Paste a YouTube URL or upload a file, start transcription, and review the completed transcript below as soon as n8n returns the result.
       </p>
     </div>
 
     <Card class="rounded-[2rem] border-border/60 bg-card/92 p-5 shadow-[0_28px_70px_-40px_rgba(0,0,0,0.6)] md:p-6">
       <CardContent class="space-y-3 p-0">
-        <div class="flex flex-col gap-3 md:flex-row md:items-center">
-          <div class="relative flex-1">
+        <Tabs v-model="sourceTab" class="w-full">
+          <TabsList>
+            <TabsTrigger value="url">
+              URL
+            </TabsTrigger>
+            <TabsTrigger value="file">
+              File
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="url" class="mt-3">
             <Input
               v-model="sourceUrl"
               type="url"
               placeholder="Paste a YouTube URL here..."
-              class="h-12 rounded-full border-border/70 bg-background/90 pl-5 pr-[11.5rem] text-base shadow-none"
-              @keydown.enter.prevent="submitForTranscription"
+              class="h-11 rounded-full"
+              @keydown.enter.prevent="runTranscription"
             />
+          </TabsContent>
 
-            <div class="pointer-events-none absolute inset-y-0 right-[8.75rem] my-2 w-px bg-border/60" />
-
-            <div class="absolute inset-y-0 right-3 flex items-center">
-              <Select v-model="transcriber">
-                <SelectTrigger class="h-9 min-w-[7.75rem] border-0 bg-transparent px-3 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground shadow-none ring-0 focus:ring-0 focus:ring-offset-0">
-                  <SelectValue placeholder="Transcriber" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem
-                    v-for="option in transcriberOptions"
-                    :key="option.value"
-                    :value="option.value"
-                  >
-                    {{ option.label }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <Button
-            type="button"
-            class="h-12 rounded-full px-6 md:px-7"
-            :disabled="!canSubmit"
-            @click="submitForTranscription"
-          >
-            <Icon
-              v-if="loading"
-              name="lucide:loader-circle"
-              class="mr-2 size-4 animate-spin"
-            />
-            <span>{{ loading ? 'Transcribing...' : 'Transcribe' }}</span>
-          </Button>
-
-          <Button
-            v-if="canStopTranscription"
-            type="button"
-            class="h-12 rounded-full bg-red-600 px-6 text-white hover:bg-red-500 md:px-7"
-            @click="stopTranscription"
-          >
-            Stop
-          </Button>
-        </div>
-
-        <div class="rounded-2xl border border-border/70 bg-background/70 p-3">
-          <p class="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-primary/85">
-            Upload file
-          </p>
-          <div class="flex flex-col gap-3 md:flex-row md:items-center">
+          <TabsContent value="file" class="mt-3">
             <Input
               type="file"
               accept="audio/*,video/*,.mp3,.mp4,.wav,.m4a,.mov,.webm"
               class="h-11 border-border/70 bg-background/90 file:mr-3 file:rounded-md file:border-0 file:bg-primary/20 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-foreground hover:file:bg-primary/30"
               @change="handleFileSelection"
             />
-            <Button
-              type="button"
-              class="h-11 rounded-full px-5"
-              :disabled="!canUploadFile"
-              @click="uploadAndTranscribeFile"
-            >
-              <Icon
-                v-if="uploadingFile"
-                name="lucide:loader-circle"
-                class="mr-2 size-4 animate-spin"
-              />
-              {{ uploadingFile ? 'Uploading...' : 'Upload & Transcribe' }}
-            </Button>
-          </div>
+            <p class="mt-2 text-xs text-muted-foreground">
+              Supported formats: `.mp3`, `.wav`, `.m4a`, `.mp4`, `.mov`, `.webm` (plus most `audio/*` and `video/*` files).
+            </p>
+          </TabsContent>
+        </Tabs>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <Select v-model="transcriber">
+            <SelectTrigger class="h-10 min-w-[9.5rem] rounded-lg px-3">
+              <SelectValue placeholder="Transcriber" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                v-for="option in transcriberOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Button
+            type="button"
+            variant="outline"
+            class="h-10 rounded-lg px-5"
+            :disabled="!canTranscribe"
+            @click="runTranscription"
+          >
+            <Icon
+              v-if="loading || uploadingFile"
+              name="lucide:loader-circle"
+              class="mr-2 size-4 animate-spin"
+            />
+            <span>{{ loading || uploadingFile ? 'Transcribing...' : 'Transcribe' }}</span>
+          </Button>
+
+          <Button
+            v-if="canStopTranscription"
+            type="button"
+            variant="destructive"
+            size="icon"
+            class="size-10 rounded-md"
+            @click="stopTranscription"
+          >
+            <Icon name="lucide:square" class="size-4 fill-current" />
+            <span class="sr-only">Stop transcription</span>
+          </Button>
+
+          <Tooltip v-if="sourceTab === 'file'">
+            <TooltipTrigger as-child>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                class="ml-auto size-10 rounded-md"
+                @click="openFilesDialog()"
+              >
+                <Icon name="lucide:folder-search-2" class="size-4" />
+                <span class="sr-only">Manage uploaded files</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              Manage uploaded files
+            </TooltipContent>
+          </Tooltip>
         </div>
 
       <div class="mt-4 flex flex-col gap-2 text-sm text-muted-foreground">
-        <p>{{ statusMessage }}</p>
-        <p>
+        <p v-if="shouldShowStatusMessage">{{ statusMessage }}</p>
+        <p>{{ sourceDescription }}</p>
+        <p v-if="sourceTab === 'url'">
           Request body uses your selected transcriber, the video URL, and the env-backed callback URL.
+        </p>
+        <p v-else>
+          Upload request sends file metadata to your configured upload webhook, then starts transcription with Drive-backed source details.
         </p>
         <p v-if="callbackNotice" class="text-amber-500">
           {{ callbackNotice }}
         </p>
-        <p v-if="!callbackReachable" class="text-amber-500">
+        <p v-if="isCurrentTabStatus && !callbackReachable" class="text-amber-500">
           Callback delivery needs a public callback URL. Set `NUXT_VIDEO_TO_TEXT_CALLBACK_URL` if you are testing through a tunnel or external endpoint.
         </p>
         <p v-if="errorMessage" class="text-destructive">
           {{ errorMessage }}
         </p>
-        <div v-if="callbackPending" class="pt-1">
+        <div v-if="isCurrentTabStatus && callbackPending" class="pt-1">
           <Button
             type="button"
             variant="outline"
@@ -824,48 +1089,131 @@ watch(transcriber, (value) => {
         </div>
       </div>
 
-      <div class="mt-2 rounded-2xl border border-border/70 bg-background/70 p-3">
-        <div class="mb-2 flex items-center justify-between gap-3">
-          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary/85">
-            Uploaded files
+      <div class="mt-3">
+        <span
+          class="inline-flex rounded-full border px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.18em]"
+          :class="statusBadgeClass"
+        >
+          {{ displayStatus }}
+        </span>
+      </div>
+
+      <div v-if="false && sourceTab === 'file'" class="mt-2 rounded-2xl border border-border/70 bg-background/70 p-3">
+        <div class="mb-3 space-y-3">
+          <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div class="space-y-1">
+            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary/85">
+              Uploaded files
+            </p>
+            <p v-if="driveFolderUrl" class="text-xs text-muted-foreground">
+              Google Drive folder:
+              <a
+                :href="driveFolderUrl"
+                target="_blank"
+                rel="noreferrer"
+                class="ml-1 underline underline-offset-4 hover:text-foreground"
+              >
+                Open location
+              </a>
+            </p>
+            <p v-else class="text-xs text-muted-foreground">
+              Google Drive folder location will appear after the first successful upload.
+            </p>
+            </div>
+
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div class="relative min-w-0 flex-1 sm:min-w-[15rem]">
+                <Icon
+                  name="lucide:search"
+                  class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                  v-model="uploadedFilesSearch"
+                  type="search"
+                  placeholder="Search uploaded files..."
+                  class="h-9 rounded-full pl-9"
+                />
+              </div>
+
+              <Select v-model="uploadedFilesSort">
+                <SelectTrigger class="h-9 min-w-[11rem] rounded-full">
+                  <SelectValue placeholder="Sort files" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem
+                    v-for="option in uploadedFilesSortOptions"
+                    :key="option.value"
+                    :value="option.value"
+                  >
+                    {{ option.label }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                class="h-9 rounded-full px-3 text-xs"
+                :disabled="filesLoading"
+                @click="loadUploadedFiles"
+              >
+                Refresh
+              </Button>
+            </div>
+          </div>
+
+          <p class="text-xs text-muted-foreground">
+            Search by file name, status, transcriber, or upload date. Preview opens inside the canvas, and audio or video files can be played through Google Drive preview when available.
           </p>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            class="h-7 rounded-full px-3 text-xs"
-            :disabled="filesLoading"
-            @click="loadUploadedFiles"
-          >
-            Refresh
-          </Button>
         </div>
 
         <div v-if="filesLoading" class="text-sm text-muted-foreground">
           Loading files...
         </div>
-        <div v-else-if="transcriptionFiles.length === 0" class="text-sm text-muted-foreground">
-          No uploaded files yet.
+        <div v-else-if="filteredTranscriptionFiles.length === 0" class="text-sm text-muted-foreground">
+          {{ transcriptionFiles.length ? 'No uploaded files match your search.' : 'No uploaded files yet.' }}
         </div>
         <div v-else class="space-y-2">
           <div
-            v-for="file in transcriptionFiles"
+            v-for="file in filteredTranscriptionFiles"
             :key="file.id"
             class="rounded-xl border border-border/70 bg-card/70 p-3"
           >
-            <div class="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-              <div class="min-w-0">
-                <p class="truncate text-sm font-medium text-foreground">
-                  {{ file.file_name }}
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div class="min-w-0 space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2">
+                  <p class="truncate text-sm font-medium text-foreground">
+                    {{ file.file_name }}
+                  </p>
+                  <span class="inline-flex rounded-full border border-border/70 bg-background/70 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    {{ file.status }}
+                  </span>
+                </div>
+                <p class="hidden text-xs text-muted-foreground">
+                  {{ formatUploadedFileSize(file.file_size_bytes) }} · {{ file.status }}
+                </p>
+                <p class="hidden text-xs text-muted-foreground">
+                  {{ formatUploadedFileSize(file.file_size_bytes) }} · {{ file.transcriber }} · {{ formatUploadedFileTimestamp(file.created_at) }}
+                </p>
+                <p class="hidden text-xs text-muted-foreground">
+                  {{ formatUploadedFileSize(file.file_size_bytes) }}
+                  <span aria-hidden="true"> · </span>
+                  {{ file.transcriber }}
+                  <span aria-hidden="true"> · </span>
+                  {{ formatUploadedFileTimestamp(file.created_at) }}
                 </p>
                 <p class="text-xs text-muted-foreground">
-                  {{ formatUploadedFileSize(file.file_size_bytes) }} · {{ file.status }}
+                  {{ formatUploadedFileSize(file.file_size_bytes) }} / {{ file.transcriber }} / {{ formatUploadedFileTimestamp(file.created_at) }}
+                </p>
+                <p v-if="file.mime_type" class="text-xs text-muted-foreground">
+                  {{ file.mime_type }}
                 </p>
                 <p v-if="file.error_message" class="mt-1 text-xs text-destructive">
                   {{ file.error_message }}
                 </p>
               </div>
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2 lg:justify-end">
                 <Button
                   type="button"
                   variant="outline"
@@ -877,14 +1225,24 @@ watch(transcriber, (value) => {
                   Transcribe
                 </Button>
                 <Button
-                  v-if="file.drive_web_view_link"
                   type="button"
                   variant="outline"
                   size="sm"
                   class="rounded-full"
+                  :disabled="!canPreviewUploadedFile(file)"
+                  @click="openUploadedFileDetails(file)"
+                >
+                  Preview
+                </Button>
+                <Button
+                  v-if="getUploadedFileOpenUrl(file)"
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  class="rounded-full"
                   as-child
                 >
-                  <a :href="file.drive_web_view_link" target="_blank" rel="noreferrer">Open</a>
+                  <a :href="getUploadedFileOpenUrl(file)" target="_blank" rel="noreferrer">Open</a>
                 </Button>
                 <Button
                   type="button"
@@ -903,8 +1261,8 @@ watch(transcriber, (value) => {
       </CardContent>
     </Card>
 
-    <Card class="rounded-[2rem] border-border/60 bg-background/80 p-5 shadow-[0_24px_60px_-42px_rgba(0,0,0,0.6)] md:p-6">
-      <CardHeader class="mb-4 flex-row items-center justify-between gap-3 p-0">
+    <Card v-if="shouldShowTranscriptCard" class="rounded-[2rem] border-border/60 bg-background/80 p-5 shadow-[0_24px_60px_-42px_rgba(0,0,0,0.6)] md:p-6">
+      <CardHeader class="mb-1 p-0">
         <div class="space-y-1">
           <CardTitle class="text-xs font-semibold uppercase tracking-[0.22em] text-primary/85">
             Transcript
@@ -913,48 +1271,58 @@ watch(transcriber, (value) => {
             The finished transcription appears here after the callback completes.
           </CardDescription>
         </div>
-
-        <div class="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            class="rounded-full"
-            :disabled="!canCopyTranscript"
-            @click="copyTranscript"
-          >
-            <Icon name="lucide:copy" class="mr-2 size-4" />
-            Copy text
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            class="rounded-full"
-            :disabled="!canCopyTranscript || summaryLoading"
-            @click="openSummary"
-          >
-            <Icon
-              v-if="summaryLoading"
-              name="lucide:loader-circle"
-              class="mr-2 size-4 animate-spin"
-            />
-            <Icon
-              v-else
-              name="lucide:sparkles"
-              class="mr-2 size-4"
-            />
-            Summary
-          </Button>
-
-          <span class="inline-flex rounded-full border border-border/70 px-3 py-1 text-[0.7rem] uppercase tracking-[0.18em] text-muted-foreground dark:border-white/10 dark:text-[#d1ccc4]/78">
-            {{ status }}
-          </span>
-        </div>
       </CardHeader>
 
       <CardContent class="p-0">
+        <div class="mb-0.5 flex items-center justify-end gap-1">
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                class="rounded-md"
+                :disabled="!canCopyTranscript"
+                @click="copyTranscript"
+              >
+                <Icon name="lucide:copy" class="size-4" />
+                <span class="sr-only">Copy transcript</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              Copy transcript
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                class="rounded-md"
+                :disabled="!canCopyTranscript || summaryLoading"
+                @click="openSummary"
+              >
+                <Icon
+                  v-if="summaryLoading"
+                  name="lucide:loader-circle"
+                  class="size-4 animate-spin"
+                />
+                <Icon
+                  v-else
+                  name="lucide:sparkles"
+                  class="size-4"
+                />
+                <span class="sr-only">Open summary</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              Summary
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
         <div class="overflow-hidden rounded-[1.5rem] border border-border/70 bg-card/90">
           <ScrollArea class="h-[22rem] rounded-[1.5rem] md:h-[28rem]">
             <div
@@ -1039,5 +1407,303 @@ watch(transcriber, (value) => {
         </div>
       </DialogContent>
     </Dialog>
+
+    <Dialog v-model:open="filesDialogOpen">
+      <DialogContent class="overflow-hidden rounded-[1.75rem] border-border/70 bg-background/95 p-0 text-foreground shadow-[0_30px_80px_-42px_rgba(0,0,0,0.7)] sm:max-w-5xl">
+        <DialogHeader class="border-b border-border/60 px-5 py-4 md:px-6">
+          <div class="pr-8">
+            <DialogTitle class="text-base font-semibold text-foreground">
+              Uploaded files
+            </DialogTitle>
+            <DialogDescription class="mt-1 text-sm text-muted-foreground">
+              Browse, search, sort, preview, and manage your uploaded media files in one canvas modal.
+            </DialogDescription>
+          </div>
+          <div class="mt-4 space-y-3">
+            <div class="flex w-full items-center gap-2">
+              <div class="relative min-w-0 flex-1">
+                <Icon
+                  name="lucide:search"
+                  class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                  v-model="uploadedFilesSearch"
+                  type="search"
+                  placeholder="Search uploaded files..."
+                  class="h-10 rounded-lg pl-9"
+                />
+              </div>
+
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    class="size-10 rounded-md"
+                    @click="toggleUploadedFilesSort"
+                  >
+                    <Icon name="lucide:arrow-up-down" class="size-4" />
+                    <span class="sr-only">Toggle uploaded files date sort</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  Sort by date: {{ uploadedFilesSortLabel }}
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    class="size-10 rounded-md"
+                    :disabled="filesLoading"
+                    @click="loadUploadedFiles"
+                  >
+                    <Icon
+                      name="lucide:refresh-cw"
+                      class="size-4"
+                      :class="filesLoading ? 'animate-spin' : ''"
+                    />
+                    <span class="sr-only">Refresh uploaded files</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  Refresh files
+                </TooltipContent>
+              </Tooltip>
+            </div>
+
+            <div class="space-y-1">
+              <p v-if="driveFolderUrl" class="text-xs text-muted-foreground">
+                Google Drive folder:
+                <a
+                  :href="driveFolderUrl"
+                  target="_blank"
+                  rel="noreferrer"
+                  class="ml-1 underline underline-offset-4 hover:text-foreground"
+                >
+                  Open location
+                </a>
+              </p>
+              <p v-else class="text-xs text-muted-foreground">
+                Google Drive folder location will appear after the first successful upload.
+              </p>
+            </div>
+          </div>
+        </DialogHeader>
+
+        <div class="px-5 py-4 md:px-6 md:py-5">
+          <div v-if="filesLoading" class="text-sm text-muted-foreground">
+            Loading files...
+          </div>
+          <div v-else-if="filteredTranscriptionFiles.length === 0" class="text-sm text-muted-foreground">
+            {{ transcriptionFiles.length ? 'No uploaded files match your search.' : 'No uploaded files yet.' }}
+          </div>
+          <Accordion
+            v-else
+            v-model="expandedFileId"
+            type="single"
+            collapsible
+            class="space-y-3"
+          >
+            <AccordionItem
+              v-for="file in filteredTranscriptionFiles"
+              :key="file.id"
+              :value="file.id"
+              class="rounded-2xl border border-border/70 bg-card/70 px-4"
+            >
+              <div class="flex items-start gap-3">
+                <AccordionTrigger class="flex-1 py-4 hover:no-underline">
+                  <div class="min-w-0 space-y-1 text-left">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <p class="truncate text-sm font-medium text-foreground">
+                        {{ file.file_name }}
+                      </p>
+                      <span class="inline-flex rounded-full border border-border/70 bg-background/70 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                        {{ file.status }}
+                      </span>
+                    </div>
+                    <p class="text-xs text-muted-foreground">
+                      {{ formatUploadedFileSize(file.file_size_bytes) }} / {{ file.transcriber }} / {{ formatUploadedFileTimestamp(file.created_at) }}
+                    </p>
+                  </div>
+                </AccordionTrigger>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger as-child>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      class="mt-3 rounded-md"
+                    >
+                      <Icon name="lucide:ellipsis" class="size-4" />
+                      <span class="sr-only">Open file actions</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" class="w-44">
+                    <DropdownMenuItem
+                      :disabled="!canPreviewUploadedFile(file)"
+                      @select="openUploadedFileDetails(file)"
+                    >
+                      <Icon name="lucide:play-square" class="size-4" />
+                      Preview
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      v-if="getUploadedFileOpenUrl(file)"
+                      as-child
+                    >
+                      <a :href="getUploadedFileOpenUrl(file)" target="_blank" rel="noreferrer">
+                        <Icon name="lucide:external-link" class="size-4" />
+                        Open in Drive
+                      </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      :disabled="deletingFileId === file.id"
+                      @select="deleteUploadedFile(file)"
+                    >
+                      <Icon name="lucide:trash-2" class="size-4" />
+                      {{ deletingFileId === file.id ? 'Deleting...' : 'Delete' }}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              <AccordionContent class="pb-4">
+                <div class="space-y-4">
+                  <ul class="grid gap-2 text-sm text-muted-foreground md:grid-cols-2">
+                    <li class="rounded-xl border border-border/60 bg-background/60 px-3 py-2">
+                      <span class="block text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary/80">Uploaded</span>
+                      <span>{{ formatUploadedFileTimestamp(file.created_at) }}</span>
+                    </li>
+                    <li class="rounded-xl border border-border/60 bg-background/60 px-3 py-2">
+                      <span class="block text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary/80">Size</span>
+                      <span>{{ formatUploadedFileSize(file.file_size_bytes) }}</span>
+                    </li>
+                    <li class="rounded-xl border border-border/60 bg-background/60 px-3 py-2">
+                      <span class="block text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary/80">Transcriber</span>
+                      <span>{{ file.transcriber }}</span>
+                    </li>
+                    <li class="rounded-xl border border-border/60 bg-background/60 px-3 py-2">
+                      <span class="block text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary/80">Format</span>
+                      <span>{{ file.mime_type || 'Unknown format' }}</span>
+                    </li>
+                  </ul>
+
+                  <div class="flex flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      class="rounded-full"
+                      :disabled="loading || ['processing', 'queued'].includes(file.status)"
+                      @click="transcribeUploadedFile(file.id)"
+                    >
+                      Transcribe
+                    </Button>
+                    <Button
+                      v-if="getUploadedFileOpenUrl(file)"
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      class="rounded-full"
+                      as-child
+                    >
+                      <a :href="getUploadedFileOpenUrl(file)" target="_blank" rel="noreferrer">Open</a>
+                    </Button>
+                  </div>
+
+                  <div class="overflow-hidden rounded-[1.5rem] border border-border/70 bg-card/70">
+                    <iframe
+                      v-if="getUploadedFilePreviewMode(file) === 'iframe'"
+                      :src="getUploadedFileDrivePreviewUrl(file)"
+                      class="h-[20rem] w-full bg-background md:h-[26rem]"
+                      allow="autoplay"
+                    />
+                    <VidstackPreview
+                      v-else-if="getUploadedFilePreviewMode(file) === 'player'"
+                      :title="file.file_name"
+                      :src="getUploadedFileMediaUrl(file)"
+                      :media-kind="getUploadedFileMediaKind(file)"
+                    />
+                    <div
+                      v-else
+                      class="flex h-[16rem] items-center justify-center px-6 text-center text-sm text-muted-foreground"
+                    >
+                      Preview is not available for this file yet. Use Open in Drive to view it in a new tab.
+                    </div>
+                  </div>
+
+                  <p v-if="file.error_message" class="text-sm text-destructive">
+                    {{ file.error_message }}
+                  </p>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </DialogContent>
+    </Dialog>
+
+          <!-- legacy preview modal block removed
+          <div class="border-b border-border/60 px-5 py-4 md:px-6">
+            <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div class="min-w-0 space-y-1">
+                <DialogTitle class="truncate text-base font-semibold text-foreground">
+                  {{ selectedPreviewFile.file_name }}
+                </DialogTitle>
+                <DialogDescription class="text-sm text-muted-foreground">
+                  Uploaded {{ formatUploadedFileTimestamp(selectedPreviewFile.created_at) }} · {{ formatUploadedFileSize(selectedPreviewFile.file_size_bytes) }}
+                </DialogDescription>
+                <p v-if="selectedPreviewFile.mime_type" class="text-xs text-muted-foreground">
+                  {{ selectedPreviewFile.mime_type }}
+                </p>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <Button
+                  v-if="selectedPreviewOpenUrl"
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  class="rounded-full"
+                  as-child
+                >
+                  <a :href="selectedPreviewOpenUrl" target="_blank" rel="noreferrer">Open in Drive</a>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-3 px-5 py-4 md:px-6 md:py-5">
+            <p class="text-sm text-muted-foreground">
+              Preview loads from Google Drive inside the canvas. Audio and video files can usually be played here when Drive supports inline preview for the uploaded format.
+            </p>
+
+            <div class="overflow-hidden rounded-[1.5rem] border border-border/70 bg-card/70">
+              <iframe
+                v-if="selectedPreviewEmbedUrl"
+                :src="selectedPreviewEmbedUrl"
+                class="h-[24rem] w-full bg-background md:h-[32rem]"
+                allow="autoplay"
+              />
+
+              <div
+                v-else
+                class="flex h-[20rem] items-center justify-center px-6 text-center text-sm text-muted-foreground"
+              >
+                Preview is not available for this file yet. Use Open in Drive to view it in a new tab.
+              </div>
+            </div>
+          </div>
+        </template>
+      </DialogContent>
+    </Dialog>
+    -->
   </section>
 </template>

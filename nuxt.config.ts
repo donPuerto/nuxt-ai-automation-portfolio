@@ -39,6 +39,11 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: false },
   ssr: true,
+  vue: {
+    compilerOptions: {
+      isCustomElement: tag => tag.startsWith('media-'),
+    },
+  },
   experimental: {
     buildCache: false
   },
@@ -168,6 +173,8 @@ export default defineNuxtConfig({
         '@vee-validate/zod',
         'vee-validate',
         'zod',
+        'vidstack',
+        'vidstack/elements',
       ],
     },
     plugins: [
@@ -239,12 +246,12 @@ export default defineNuxtConfig({
     anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? process.env.NUXT_ANTHROPIC_API_KEY ?? '',
     openaiApiKey: process.env.OPENAI_API_KEY ?? process.env.NUXT_OPENAI_API_KEY ?? '',
     supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NUXT_SUPABASE_SERVICE_ROLE_KEY ?? '',
-    videoToTextWebhookUrl: '',
-    videoToTextApiKey: '',
-    videoToTextCallbackUrl: '',
-    videoToTextUploadWebhookUrl: '',
-    videoToTextDeleteWebhookUrl: '',
-    videoToTextDriveFolderId: '',
+    videoToTextWebhookUrl: process.env.VIDEO_TO_TEXT_WEBHOOK_URL ?? process.env.NUXT_VIDEO_TO_TEXT_WEBHOOK_URL ?? '',
+    videoToTextApiKey: process.env.VIDEO_TO_TEXT_API_KEY ?? process.env.NUXT_VIDEO_TO_TEXT_API_KEY ?? '',
+    videoToTextCallbackUrl: process.env.VIDEO_TO_TEXT_CALLBACK_URL ?? process.env.NUXT_VIDEO_TO_TEXT_CALLBACK_URL ?? '',
+    videoToTextUploadWebhookUrl: process.env.VIDEO_TO_TEXT_UPLOAD_WEBHOOK_URL ?? process.env.NUXT_VIDEO_TO_TEXT_UPLOAD_WEBHOOK_URL ?? '',
+    videoToTextDeleteWebhookUrl: process.env.VIDEO_TO_TEXT_DELETE_WEBHOOK_URL ?? process.env.NUXT_VIDEO_TO_TEXT_DELETE_WEBHOOK_URL ?? '',
+    videoToTextDriveFolderId: process.env.VIDEO_TO_TEXT_DRIVE_FOLDER_ID ?? process.env.NUXT_VIDEO_TO_TEXT_DRIVE_FOLDER_ID ?? '',
     public: {
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL ?? '',
       supabaseKey: process.env.NUXT_PUBLIC_SUPABASE_KEY ?? process.env.SUPABASE_KEY ?? '',
@@ -257,12 +264,14 @@ export default defineNuxtConfig({
       contentSecurityPolicy: {
         'img-src': ["'self'", 'data:', 'blob:', 'https://cdn.simpleicons.org', 'https://*.stripe.com'],
         'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://js.stripe.com'],
+        'media-src': ["'self'", 'blob:', 'https://drive.google.com', 'https://drive.usercontent.google.com'],
         'worker-src': ["'self'", 'blob:'],
         'style-src': ["'self'", "'unsafe-inline'"],
         'frame-src': [
           "'self'",
           'https://js.stripe.com',
           'https://hooks.stripe.com',
+          'https://drive.google.com',
           'https://www.youtube.com',
           'https://www.youtube-nocookie.com',
         ],
@@ -272,6 +281,8 @@ export default defineNuxtConfig({
           'https://api.stripe.com',
           'https://r.stripe.com',
           'https://m.stripe.network',
+          'https://drive.google.com',
+          'https://drive.usercontent.google.com',
           'https://cidyudlrjfrjvwmytwhd.supabase.co',
           'wss://cidyudlrjfrjvwmytwhd.supabase.co',
           'https://*.livekit.cloud',
