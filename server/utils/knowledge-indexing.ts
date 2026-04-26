@@ -1,4 +1,3 @@
-import { PDFParse } from 'pdf-parse'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 type KnowledgeSourceType = 'text' | 'file'
@@ -103,6 +102,7 @@ export const extractKnowledgeFileText = async (file: UploadedKnowledgeFile) => {
   const normalizedName = file.filename.toLowerCase()
 
   if (normalizedMimeType.includes('pdf') || normalizedName.endsWith('.pdf')) {
+    const { PDFParse } = await import('pdf-parse')
     const parser = new PDFParse({ data: file.data })
     const parsed = await parser.getText()
     const text = parsed.text.replace(/\s+\n/g, '\n').trim()

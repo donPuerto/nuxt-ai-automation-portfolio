@@ -131,7 +131,7 @@ export default defineEventHandler(async (event) => {
       body: {
         job_id: jobId,
         url: trimmedUrl,
-        source: 'auto',
+        source,
         transcriber,
         gdrive_file_id: '',
         callback_url: callbackUrl,

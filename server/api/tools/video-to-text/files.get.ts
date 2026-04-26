@@ -1,10 +1,11 @@
+import type { H3Event } from 'h3'
 import { getSupabaseAdmin } from '../../../utils/supabase-admin'
 import { requireSupabaseUser } from '../../../utils/knowledge-auth'
 import {
-  extractHighlightsFromPayload,
-  extractSummaryFromPayload,
-  extractTranscriptFromPayload,
-} from '../../../utils/video-to-text-payload'
+  createSignedTranscriptionMediaUrl,
+  getSignedTranscriptionMediaUrlTtl,
+  getTranscriptionStorageMeta,
+} from '../../../utils/transcription-storage'
 import { mapHighlights, transcriptionFileSelect, type TranscriptionFileRow } from '../../../utils/video-to-text-file-records'
 
 type VideoToTextJobStatus = 'processing' | 'completed' | 'failed' | 'cancelled'
@@ -23,12 +24,6 @@ type VideoToTextStatusResult = {
   job?: VideoToTextJob
 }
 
-type TranscriptionRunRow = {
-  status: VideoToTextJobStatus
-  error_message: string | null
-  result_payload: Record<string, unknown> | null
-}
-
 const isMissingTranscriptionFilesTableError = (error: { message?: string, code?: string } | null) => {
   if (!error) {
     return false
@@ -45,60 +40,59 @@ const isMissingTranscriptionFilesTableError = (error: { message?: string, code?:
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
-const getLastJobId = (metadata: Record<string, unknown> | null) => {
-  const candidate = metadata?.last_job_id
-  const normalizedCandidate = typeof candidate === 'string' ? candidate.trim() : ''
+const getCurrentJobId = (file: Pick<TranscriptionFileRow, 'current_job_id'>) => {
+  const normalizedCandidate = typeof file.current_job_id === 'string' ? file.current_job_id.trim() : ''
   return uuidPattern.test(normalizedCandidate) ? normalizedCandidate : ''
+}
+
+const withSignedStorageUrl = async (
+  file: TranscriptionFileRow,
+  event: H3Event,
+) => {
+  const storageMeta = getTranscriptionStorageMeta(file.metadata)
+  if (!storageMeta.bucket || !storageMeta.path) {
+    return file
+  }
+
+  try {
+    const supabase = getSupabaseAdmin(event)
+    const signedUrl = await createSignedTranscriptionMediaUrl({
+      supabase,
+      bucket: storageMeta.bucket,
+      path: storageMeta.path,
+      expiresIn: getSignedTranscriptionMediaUrlTtl(),
+    })
+
+    if (!signedUrl) {
+      return file
+    }
+
+    return {
+      ...file,
+      source_url: signedUrl,
+    }
+  }
+  catch (error) {
+    console.warn('transcription file signed url refresh skipped', error)
+    return file
+  }
 }
 
 const reconcileTranscriptionFile = async (
   file: TranscriptionFileRow,
-  event: Parameters<typeof defineEventHandler>[0],
+  event: H3Event,
 ) => {
   if (!['queued', 'processing'].includes(file.status)) {
     return file
   }
 
-  const lastJobId = getLastJobId(file.metadata)
-  if (!lastJobId) {
+  const currentJobId = getCurrentJobId(file)
+  if (!currentJobId) {
     return file
   }
 
-  const supabase = getSupabaseAdmin(event)
-
-  const { data: runRecord, error: runError } = await supabase
-    .from('transcription_runs')
-    .select('status,error_message,result_payload')
-    .eq('job_id', lastJobId)
-    .eq('transcription_file_id', file.id)
-    .maybeSingle<TranscriptionRunRow>()
-
-  if (!runError && runRecord && runRecord.status !== 'processing') {
-    const transcript = extractTranscriptFromPayload((runRecord.result_payload ?? undefined) as Record<string, unknown> | undefined)
-    const summary = extractSummaryFromPayload((runRecord.result_payload ?? undefined) as Record<string, unknown> | undefined)
-    const highlights = extractHighlightsFromPayload((runRecord.result_payload ?? undefined) as Record<string, unknown> | undefined) ?? []
-
-    const { data: updatedFile, error: updateError } = await supabase
-      .from('transcription_files')
-      .update({
-        status: runRecord.status,
-        transcription: transcript || file.transcription || null,
-        summary: summary || file.summary || null,
-        highlights: highlights.length ? highlights : file.highlights,
-        error_message: runRecord.status === 'completed' ? null : runRecord.error_message || 'Transcription failed.',
-      })
-      .eq('id', file.id)
-      .eq('user_id', file.user_id)
-      .select(transcriptionFileSelect)
-      .single()
-
-    if (!updateError && updatedFile) {
-      return updatedFile as TranscriptionFileRow
-    }
-  }
-
   const requestUrl = getRequestURL(event)
-  const statusUrl = `${requestUrl.origin}/api/tools/video-to-text/status/${lastJobId}`
+  const statusUrl = `${requestUrl.origin}/api/tools/video-to-text/status/${currentJobId}`
 
   try {
     const result = await $fetch<VideoToTextStatusResult>(statusUrl, {
@@ -114,16 +108,7 @@ const reconcileTranscriptionFile = async (
 
     const nextStatus = result.job.status
     const highlights = Array.isArray(result.job.highlights) ? result.job.highlights : []
-
-    await supabase
-      .from('transcription_runs')
-      .update({
-        status: nextStatus,
-        finished_at: new Date().toISOString(),
-        error_message: nextStatus === 'completed' ? null : result.job.error || 'Transcription failed.',
-      })
-      .eq('job_id', lastJobId)
-      .eq('transcription_file_id', file.id)
+    const supabase = getSupabaseAdmin(event)
 
     const { data: updatedFile, error: updateError } = await supabase
       .from('transcription_files')
@@ -133,6 +118,7 @@ const reconcileTranscriptionFile = async (
         summary: result.job.summary || file.summary || null,
         highlights,
         error_message: nextStatus === 'completed' ? null : result.job.error || 'Transcription failed.',
+        finished_at: new Date().toISOString(),
       })
       .eq('id', file.id)
       .eq('user_id', file.user_id)
@@ -187,8 +173,11 @@ export default defineEventHandler(async (event) => {
   const reconciledFiles = await Promise.all(
     ((data ?? []) as TranscriptionFileRow[]).map(file => reconcileTranscriptionFile(file, event)),
   )
+  const hydratedFiles = await Promise.all(
+    reconciledFiles.map(file => withSignedStorageUrl(file, event)),
+  )
 
-  const files = reconciledFiles.map(file => ({
+  const files = hydratedFiles.map(file => ({
     ...file,
     highlights: mapHighlights(file.highlights),
   }))

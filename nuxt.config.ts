@@ -249,9 +249,6 @@ export default defineNuxtConfig({
     videoToTextWebhookUrl: process.env.VIDEO_TO_TEXT_WEBHOOK_URL ?? process.env.NUXT_VIDEO_TO_TEXT_WEBHOOK_URL ?? '',
     videoToTextApiKey: process.env.VIDEO_TO_TEXT_API_KEY ?? process.env.NUXT_VIDEO_TO_TEXT_API_KEY ?? '',
     videoToTextCallbackUrl: process.env.VIDEO_TO_TEXT_CALLBACK_URL ?? process.env.NUXT_VIDEO_TO_TEXT_CALLBACK_URL ?? '',
-    videoToTextUploadWebhookUrl: process.env.VIDEO_TO_TEXT_UPLOAD_WEBHOOK_URL ?? process.env.NUXT_VIDEO_TO_TEXT_UPLOAD_WEBHOOK_URL ?? '',
-    videoToTextDeleteWebhookUrl: process.env.VIDEO_TO_TEXT_DELETE_WEBHOOK_URL ?? process.env.NUXT_VIDEO_TO_TEXT_DELETE_WEBHOOK_URL ?? '',
-    videoToTextDriveFolderId: process.env.VIDEO_TO_TEXT_DRIVE_FOLDER_ID ?? process.env.NUXT_VIDEO_TO_TEXT_DRIVE_FOLDER_ID ?? '',
     public: {
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL ?? '',
       supabaseKey: process.env.NUXT_PUBLIC_SUPABASE_KEY ?? process.env.SUPABASE_KEY ?? '',

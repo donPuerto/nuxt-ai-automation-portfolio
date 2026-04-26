@@ -70,32 +70,20 @@ export default defineEventHandler(async (event) => {
   if (hasSupabaseAdminConfig(event)) {
     try {
       const supabase = getSupabaseAdmin(event)
-      const runStatus = success ? 'completed' : 'failed'
-      const { data: runRecord } = await supabase
-        .from('transcription_runs')
+      const nextStatus = success ? 'completed' : 'failed'
+      await supabase
+        .from('transcription_files')
         .update({
-          status: runStatus,
+          status: nextStatus,
+          transcriber: body?.transcriber || baseJob.transcriber,
+          transcription: transcript || baseJob.transcription || null,
+          summary: summary || null,
+          highlights: highlights ?? [],
           error_message: success ? null : body?.error || body?.message || 'Transcription failed.',
           finished_at: now,
           result_payload: body as Record<string, unknown>,
         })
-        .eq('job_id', jobId)
-        .select('transcription_file_id')
-        .maybeSingle()
-
-      if (runRecord?.transcription_file_id) {
-        await supabase
-          .from('transcription_files')
-          .update({
-            status: runStatus,
-            transcriber: body?.transcriber || baseJob.transcriber,
-            transcription: transcript || baseJob.transcription || null,
-            summary: summary || null,
-            highlights: highlights ?? [],
-            error_message: success ? null : body?.error || body?.message || 'Transcription failed.',
-          })
-          .eq('id', runRecord.transcription_file_id)
-      }
+        .eq('current_job_id', jobId)
     }
     catch (dbError) {
       console.warn('video-to-text callback db sync failed', dbError)

@@ -1,0 +1,176 @@
+- generic [ref=e3]:
+  - generic [ref=e545]:
+    - generic [ref=e548]:
+      - generic [ref=e549]:
+        - generic [ref=e550]:
+          - textbox "Search prompts" [ref=e553]
+          - list [ref=e554]:
+            - listitem [ref=e555]:
+              - button "New chat" [ref=e556]:
+                - generic [ref=e558]: New chat
+        - generic [ref=e559]:
+          - generic [ref=e560]: Navigation
+          - list [ref=e561]:
+            - listitem [ref=e562]:
+              - button "Me" [ref=e563]:
+                - generic [ref=e565]: Me
+            - listitem [ref=e566]:
+              - button "Projects" [ref=e567]:
+                - generic [ref=e569]: Projects
+            - listitem [ref=e570]:
+              - button "Stack" [ref=e571]:
+                - generic [ref=e573]: Stack
+            - listitem [ref=e574]:
+              - button "AI booking" [ref=e575]:
+                - generic [ref=e577]: AI booking
+        - generic [ref=e578]:
+          - generic [ref=e579]: Recent conversations
+          - generic [ref=e580]: Your recent conversations will appear here. Sign in to sync them across devices.
+      - button "Open profile actions" [ref=e582]:
+        - generic [ref=e583]: C
+        - generic [ref=e584]:
+          - generic [ref=e585]: codex-upload-test-1777172012339
+          - generic [ref=e586]: codex-upload-test-1777172012339@example.com
+      - button "Toggle Sidebar" [ref=e588]
+    - main [ref=e589]:
+      - generic [ref=e590]:
+        - generic [ref=e592]:
+          - button "Toggle Sidebar" [ref=e594]:
+            - img
+            - generic [ref=e595]: Toggle Sidebar
+          - generic [ref=e510]:
+            - generic [ref=e511]: NEWS!
+            - 'link "Opinion: Can morality in AI be guided by religion?" [ref=e659] [cursor=pointer]':
+              - /url: https://news.google.com/rss/articles/CBMid0FVX3lxTE9IdjBjVFMzUkd6T0ZnM0N4NmRDV1dTcmFCOVlTdTBEUncwb3V5QWJpbS1IMEtDbXFpUnVIZ2MtUERLRnBXYjFLZFBkYUo1RldVSDR5R0ZLTnFtVU45M3dfMXZyTm9ucS1CR3dGS1FvX0hyd1pKeXh3?oc=5
+          - button "Toggle theme" [ref=e598]
+        - generic [ref=e601]:
+          - generic [ref=e667]:
+            - generic [ref=e668]:
+              - generic [ref=e669]: Don Puerto
+              - generic [ref=e670]: These are the projects I usually surface first when someone wants to understand the kind of workflow products and custom solutions I build.
+              - generic:
+                - button "Copy response"
+                - button "Thumbs up"
+                - button "Thumbs down"
+                - button "Retry prompt"
+            - generic [ref=e671]:
+              - generic [ref=e672]: Featured projects
+              - generic [ref=e674]:
+                - button "Content Creation & Social Media Video to Text Transcriber Drop in a YouTube or video URL and get back a transcription through an n8n-powered multi-source pipeline. Workflow preview Paste URL in. Queue transcription. Read the transcript below. $129 workflow View details" [ref=e675]:
+                  - generic [ref=e676]:
+                    - generic [ref=e678]: Content Creation & Social Media
+                    - generic [ref=e680]:
+                      - heading "Video to Text Transcriber" [level=3] [ref=e681]
+                      - paragraph [ref=e682]: Drop in a YouTube or video URL and get back a transcription through an n8n-powered multi-source pipeline.
+                  - generic [ref=e683]:
+                    - paragraph [ref=e684]: Workflow preview
+                    - paragraph [ref=e685]: Paste URL in. Queue transcription. Read the transcript below.
+                  - generic [ref=e686]:
+                    - generic [ref=e687]: $129 workflow
+                    - generic [ref=e688]: View details
+                - button "Content Creation & Social Media Podcast Publisher Engine Turns a topic prompt or voice note into a recorded, packaged, and distributed podcast episode. Workflow preview Prompt in. Episode out. Published everywhere. $149 template View details" [ref=e689]:
+                  - generic [ref=e690]:
+                    - generic [ref=e692]: Content Creation & Social Media
+                    - generic [ref=e694]:
+                      - heading "Podcast Publisher Engine" [level=3] [ref=e695]
+                      - paragraph [ref=e696]: Turns a topic prompt or voice note into a recorded, packaged, and distributed podcast episode.
+                  - generic [ref=e697]:
+                    - paragraph [ref=e698]: Workflow preview
+                    - paragraph [ref=e699]: Prompt in. Episode out. Published everywhere.
+                  - generic [ref=e700]:
+                    - generic [ref=e701]: $149 template
+                    - generic [ref=e702]: View details
+                - button "Sales & Lead Generation LinkedIn Outreach Orchestrator Finds prospects, enriches context, drafts personalized outreach, and routes replies into the sales pipeline. Workflow preview Prospects in, context enriched, outreach queued. $199 system View details" [ref=e703]:
+                  - generic [ref=e704]:
+                    - generic [ref=e706]: Sales & Lead Generation
+                    - generic [ref=e708]:
+                      - heading "LinkedIn Outreach Orchestrator" [level=3] [ref=e709]
+                      - paragraph [ref=e710]: Finds prospects, enriches context, drafts personalized outreach, and routes replies into the sales pipeline.
+                  - generic [ref=e711]:
+                    - paragraph [ref=e712]: Workflow preview
+                    - paragraph [ref=e713]: Prospects in, context enriched, outreach queued.
+                  - generic [ref=e714]:
+                    - generic [ref=e715]: $199 system
+                    - generic [ref=e716]: View details
+                - button "Appointments & Customer Support AI Booking Concierge Handles booking requests, FAQ replies, reminders, and appointment routing from one automation layer. Workflow preview Inquiry, qualification, reminder, and booking in one flow. $169 system View details" [ref=e717]:
+                  - generic [ref=e718]:
+                    - generic [ref=e720]: Appointments & Customer Support
+                    - generic [ref=e722]:
+                      - heading "AI Booking Concierge" [level=3] [ref=e723]
+                      - paragraph [ref=e724]: Handles booking requests, FAQ replies, reminders, and appointment routing from one automation layer.
+                  - generic [ref=e725]:
+                    - paragraph [ref=e726]: Workflow preview
+                    - paragraph [ref=e727]: Inquiry, qualification, reminder, and booking in one flow.
+                  - generic [ref=e728]:
+                    - generic [ref=e729]: $169 system
+                    - generic [ref=e730]: View details
+                - button "AI Agents & Internal Tools Claude SOP Copilot Turns internal documentation into a practical assistant that answers workflow questions with context. Workflow preview Internal docs become a usable day-to-day copilot. $189 system View details" [ref=e731]:
+                  - generic [ref=e732]:
+                    - generic [ref=e734]: AI Agents & Internal Tools
+                    - generic [ref=e736]:
+                      - heading "Claude SOP Copilot" [level=3] [ref=e737]
+                      - paragraph [ref=e738]: Turns internal documentation into a practical assistant that answers workflow questions with context.
+                  - generic [ref=e739]:
+                    - paragraph [ref=e740]: Workflow preview
+                    - paragraph [ref=e741]: Internal docs become a usable day-to-day copilot.
+                  - generic [ref=e742]:
+                    - generic [ref=e743]: $189 system
+                    - generic [ref=e744]: View details
+                - button "CRM & Follow-up Automation GHL Reactivation Engine Reactivates dormant leads with segmented follow-up logic, personalized messaging, and booking prompts. Workflow preview Dormant leads return to active pipeline with the right sequence. $179 system View details" [ref=e745]:
+                  - generic [ref=e746]:
+                    - generic [ref=e748]: CRM & Follow-up Automation
+                    - generic [ref=e750]:
+                      - heading "GHL Reactivation Engine" [level=3] [ref=e751]
+                      - paragraph [ref=e752]: Reactivates dormant leads with segmented follow-up logic, personalized messaging, and booking prompts.
+                  - generic [ref=e753]:
+                    - paragraph [ref=e754]: Workflow preview
+                    - paragraph [ref=e755]: Dormant leads return to active pipeline with the right sequence.
+                  - generic [ref=e756]:
+                    - generic [ref=e757]: $179 system
+                    - generic [ref=e758]: View details
+                - button "CRM & Follow-up Automation Pipeline Sync — MyCase to GHL Keeps GoHighLevel opportunity stages aligned with pipeline changes coming from MyCase. Workflow preview Case status changes sync into GHL automatically. $149 workflow View details" [ref=e759]:
+                  - generic [ref=e760]:
+                    - generic [ref=e762]: CRM & Follow-up Automation
+                    - generic [ref=e764]:
+                      - heading "Pipeline Sync — MyCase to GHL" [level=3] [ref=e765]
+                      - paragraph [ref=e766]: Keeps GoHighLevel opportunity stages aligned with pipeline changes coming from MyCase.
+                  - generic [ref=e767]:
+                    - paragraph [ref=e768]: Workflow preview
+                    - paragraph [ref=e769]: Case status changes sync into GHL automatically.
+                  - generic [ref=e770]:
+                    - generic [ref=e771]: $149 workflow
+                    - generic [ref=e772]: View details
+                - button "Appointments & Customer Support Appointment Confirmation + Reminder Automates appointment confirmations and reacts differently to confirm, reschedule, or unclear replies. Workflow preview Scheduled appointments trigger smart reply handling. $119 workflow View details" [ref=e773]:
+                  - generic [ref=e774]:
+                    - generic [ref=e776]: Appointments & Customer Support
+                    - generic [ref=e778]:
+                      - heading "Appointment Confirmation + Reminder" [level=3] [ref=e779]
+                      - paragraph [ref=e780]: Automates appointment confirmations and reacts differently to confirm, reschedule, or unclear replies.
+                  - generic [ref=e781]:
+                    - paragraph [ref=e782]: Workflow preview
+                    - paragraph [ref=e783]: Scheduled appointments trigger smart reply handling.
+                  - generic [ref=e784]:
+                    - generic [ref=e785]: $119 workflow
+                    - generic [ref=e786]: View details
+                - button "Sales & Lead Generation Lead Follow-Up Sequence Runs a timed follow-up sequence with email and call actions until a lead replies or the sequence completes. Workflow preview New leads enter a timed nurture and callback sequence. $129 workflow View details" [ref=e787]:
+                  - generic [ref=e788]:
+                    - generic [ref=e790]: Sales & Lead Generation
+                    - generic [ref=e792]:
+                      - heading "Lead Follow-Up Sequence" [level=3] [ref=e793]
+                      - paragraph [ref=e794]: Runs a timed follow-up sequence with email and call actions until a lead replies or the sequence completes.
+                  - generic [ref=e795]:
+                    - paragraph [ref=e796]: Workflow preview
+                    - paragraph [ref=e797]: New leads enter a timed nurture and callback sequence.
+                  - generic [ref=e798]:
+                    - generic [ref=e799]: $129 workflow
+                    - generic [ref=e800]: View details
+            - generic [ref=e801]:
+              - generic [ref=e802]: Next Step
+              - button "Start AI booking call" [ref=e804]
+          - generic [ref=e806]:
+            - button "Me" [ref=e807]: Me
+            - button "Projects" [ref=e809]: Projects
+            - button "Stack" [ref=e811]: Stack
+            - button "AI booking" [ref=e813]
+  - region "Notifications alt+T":
+    - list

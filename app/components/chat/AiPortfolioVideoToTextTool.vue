@@ -49,9 +49,6 @@ type UploadedTranscriptionFile = {
   mime_type: string | null
   file_size_bytes: number | null
   source_url: string | null
-  drive_file_id: string | null
-  drive_web_view_link: string | null
-  drive_folder_id?: string | null
   status: 'uploaded' | 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'deleted'
   transcriber: VideoToTextTranscriber
   transcription: string | null
@@ -154,21 +151,6 @@ const displayStatus = computed(() => {
   return isCurrentTabStatus.value ? status.value : 'idle'
 })
 const canStopTranscription = computed(() => isCurrentTabStatus.value && status.value === 'processing' && (!!jobId.value || loading.value || callbackPending.value))
-const driveFolderId = computed(() => {
-  for (const file of transcriptionFiles.value) {
-    const folderId = typeof file.drive_folder_id === 'string' ? file.drive_folder_id.trim() : ''
-    if (folderId) {
-      return folderId
-    }
-  }
-
-  return ''
-})
-const driveFolderUrl = computed(() => {
-  return driveFolderId.value
-    ? `https://drive.google.com/drive/folders/${driveFolderId.value}`
-    : ''
-})
 const shouldShowTranscriptCard = computed(() => {
   return status.value === 'completed'
     && transcript.value.trim().length > 0
@@ -396,14 +378,6 @@ const formatUploadedFileTimestamp = (value: string | null) => {
 }
 
 const getUploadedFileOpenUrl = (file: UploadedTranscriptionFile) => {
-  if (file.drive_web_view_link?.trim()) {
-    return file.drive_web_view_link
-  }
-
-  if (file.drive_file_id?.trim()) {
-    return `https://drive.google.com/file/d/${file.drive_file_id}/view`
-  }
-
   return file.source_url?.trim() ?? ''
 }
 
@@ -417,27 +391,11 @@ const getUploadedFileMediaKind = (file: UploadedTranscriptionFile) => {
   return 'audio'
 }
 
-const getUploadedFileDrivePreviewUrl = (file: UploadedTranscriptionFile) => {
-  if (!file.drive_file_id?.trim()) {
-    return ''
-  }
-
-  return `https://drive.google.com/file/d/${file.drive_file_id}/preview`
-}
-
 const isGoogleDriveMediaUrl = (value: string) => {
   return value.includes('drive.google.com') || value.includes('drive.usercontent.google.com')
 }
 
 const getUploadedFileMediaUrl = (file: UploadedTranscriptionFile) => {
-  if (file.drive_download_link?.trim()) {
-    return file.drive_download_link
-  }
-
-  if (file.drive_file_id?.trim()) {
-    return `https://drive.google.com/uc?export=download&id=${file.drive_file_id}`
-  }
-
   const sourceUrl = file.source_url?.trim() ?? ''
   if (!sourceUrl) {
     return ''
@@ -451,11 +409,6 @@ const getUploadedFileMediaUrl = (file: UploadedTranscriptionFile) => {
 }
 
 const getUploadedFilePreviewMode = (file: UploadedTranscriptionFile) => {
-  const drivePreviewUrl = getUploadedFileDrivePreviewUrl(file)
-  if (drivePreviewUrl) {
-    return 'iframe' as const
-  }
-
   const mediaUrl = getUploadedFileMediaUrl(file)
   if (mediaUrl && !isGoogleDriveMediaUrl(mediaUrl)) {
     return 'player' as const
@@ -725,7 +678,7 @@ const uploadAndTranscribeFile = async () => {
 
     selectedUploadFile.value = null
     await loadUploadedFiles()
-    toast.success(result.message || 'File uploaded to Google Drive.')
+    toast.success(result.message || 'File uploaded to Supabase Storage.')
   }
   catch (error) {
     const message = getApiErrorMessage(error)
@@ -1066,7 +1019,7 @@ watch(filesDialogOpen, (open) => {
           Request body uses your selected transcriber, the video URL, and the env-backed callback URL.
         </p>
         <p v-else>
-          Upload request sends file metadata to your configured upload webhook, then starts transcription with Drive-backed source details.
+          Upload request stores the media in Supabase Storage, then starts transcription from a signed app relay URL.
         </p>
         <p v-if="callbackNotice" class="text-amber-500">
           {{ callbackNotice }}
@@ -1105,19 +1058,8 @@ watch(filesDialogOpen, (open) => {
             <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary/85">
               Uploaded files
             </p>
-            <p v-if="driveFolderUrl" class="text-xs text-muted-foreground">
-              Google Drive folder:
-              <a
-                :href="driveFolderUrl"
-                target="_blank"
-                rel="noreferrer"
-                class="ml-1 underline underline-offset-4 hover:text-foreground"
-              >
-                Open location
-              </a>
-            </p>
-            <p v-else class="text-xs text-muted-foreground">
-              Google Drive folder location will appear after the first successful upload.
+            <p class="text-xs text-muted-foreground">
+              New uploads are stored in private Supabase Storage and opened with refreshed signed links.
             </p>
             </div>
 
@@ -1164,7 +1106,7 @@ watch(filesDialogOpen, (open) => {
           </div>
 
           <p class="text-xs text-muted-foreground">
-            Search by file name, status, transcriber, or upload date. Preview opens inside the canvas, and audio or video files can be played through Google Drive preview when available.
+            Search by file name, status, transcriber, or upload date. Preview opens inside the canvas, and audio or video files can be played inline when a playable media URL is available.
           </p>
         </div>
 
@@ -1476,22 +1418,9 @@ watch(filesDialogOpen, (open) => {
               </Tooltip>
             </div>
 
-            <div class="space-y-1">
-              <p v-if="driveFolderUrl" class="text-xs text-muted-foreground">
-                Google Drive folder:
-                <a
-                  :href="driveFolderUrl"
-                  target="_blank"
-                  rel="noreferrer"
-                  class="ml-1 underline underline-offset-4 hover:text-foreground"
-                >
-                  Open location
-                </a>
-              </p>
-              <p v-else class="text-xs text-muted-foreground">
-                Google Drive folder location will appear after the first successful upload.
-              </p>
-            </div>
+            <p class="text-xs text-muted-foreground">
+              New uploads are stored in private Supabase Storage and opened with refreshed signed links.
+            </p>
           </div>
         </DialogHeader>
 
@@ -1558,7 +1487,7 @@ watch(filesDialogOpen, (open) => {
                     >
                       <a :href="getUploadedFileOpenUrl(file)" target="_blank" rel="noreferrer">
                         <Icon name="lucide:external-link" class="size-4" />
-                        Open in Drive
+                        Open media
                       </a>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -1619,14 +1548,8 @@ watch(filesDialogOpen, (open) => {
                   </div>
 
                   <div class="overflow-hidden rounded-[1.5rem] border border-border/70 bg-card/70">
-                    <iframe
-                      v-if="getUploadedFilePreviewMode(file) === 'iframe'"
-                      :src="getUploadedFileDrivePreviewUrl(file)"
-                      class="h-[20rem] w-full bg-background md:h-[26rem]"
-                      allow="autoplay"
-                    />
                     <VidstackPreview
-                      v-else-if="getUploadedFilePreviewMode(file) === 'player'"
+                      v-if="getUploadedFilePreviewMode(file) === 'player'"
                       :title="file.file_name"
                       :src="getUploadedFileMediaUrl(file)"
                       :media-kind="getUploadedFileMediaKind(file)"
@@ -1635,7 +1558,7 @@ watch(filesDialogOpen, (open) => {
                       v-else
                       class="flex h-[16rem] items-center justify-center px-6 text-center text-sm text-muted-foreground"
                     >
-                      Preview is not available for this file yet. Use Open in Drive to view it in a new tab.
+                      Preview is not available for this file yet. Use Open to view it in a new tab.
                     </div>
                   </div>
 
@@ -1682,7 +1605,7 @@ watch(filesDialogOpen, (open) => {
 
           <div class="space-y-3 px-5 py-4 md:px-6 md:py-5">
             <p class="text-sm text-muted-foreground">
-              Preview loads from Google Drive inside the canvas. Audio and video files can usually be played here when Drive supports inline preview for the uploaded format.
+              Uploaded files now use Supabase Storage and should preview inline when a playable signed URL is available.
             </p>
 
             <div class="overflow-hidden rounded-[1.5rem] border border-border/70 bg-card/70">

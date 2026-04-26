@@ -1,0 +1,243 @@
+- generic:
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - textbox:
+                            - /placeholder: Search prompts
+                      - list:
+                        - listitem:
+                          - button:
+                            - generic: New chat
+                    - generic:
+                      - generic: Navigation
+                      - list:
+                        - listitem:
+                          - button:
+                            - generic: Me
+                        - listitem:
+                          - button:
+                            - generic: Projects
+                        - listitem:
+                          - button:
+                            - generic: Stack
+                        - listitem:
+                          - button:
+                            - generic: AI booking
+                    - generic:
+                      - generic: Recent conversations
+                      - generic: Your recent conversations will appear here. Sign in to sync them across devices.
+                  - generic:
+                    - button [expanded]:
+                      - generic: L
+                      - generic:
+                        - generic: Login
+                        - generic: Sign in to save your workspace
+                  - button
+            - main:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - button:
+                        - img
+                        - generic: Toggle Sidebar
+                    - generic [ref=e57]:
+                      - generic [ref=e58]: NEWS!
+                      - link [ref=e446] [cursor=pointer]:
+                        - /url: https://news.google.com/rss/articles/CBMijAFBVV95cUxPTUpSSHp4QTU0d2J3WElOb0hzRWxxVUh1VXlrUmFsYWRfTDVHUi1YLVdyWjA0N085YkpkaDRlU2MxU3VHMzQyaWQxdXNUVFRuWlVnN2N0ZTFtYi1ucWMxM1k0eEZsLUtmS0kzaS1jU0k2OWJucDJJOXBoQkVHWlhobkdGZ2xIOG9OWFJrcw?oc=5
+                        - text: "Claude Mythos: Breakthrough or just hype?"
+                    - generic:
+                      - button
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic:
+                                    - generic: Don Puerto
+                                    - generic: These are the projects I usually surface first when someone wants to understand the kind of workflow products and custom solutions I build.
+                                    - generic:
+                                      - button
+                                      - button
+                                      - button
+                                      - button
+                                  - generic:
+                                    - generic: Featured projects
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - generic:
+                                            - paragraph: Content Creation & Social Media
+                                            - heading [level=3]: Video to Text Transcriber
+                                            - paragraph: Paste a YouTube URL or upload a file, start transcription, and review the completed transcript below as soon as n8n returns the result.
+                                          - generic:
+                                            - generic:
+                                              - generic:
+                                                - tablist:
+                                                  - tab [selected]: URL
+                                                  - tab: File
+                                                - tabpanel:
+                                                  - textbox:
+                                                    - /placeholder: Paste a YouTube URL here...
+                                              - generic:
+                                                - combobox:
+                                                  - generic: AssemblyAI
+                                                  - img
+                                                - button [disabled]:
+                                                  - generic: Transcribe
+                                              - generic:
+                                                - paragraph: Paste a YouTube or supported video URL, then start transcription.
+                                                - paragraph: Request body uses your selected transcriber, the video URL, and the env-backed callback URL.
+                                              - generic:
+                                                - generic: idle
+                                      - generic:
+                                        - button:
+                                          - generic:
+                                            - generic:
+                                              - generic: Content Creation & Social Media
+                                            - generic:
+                                              - heading [level=3]: Video to Text Transcriber
+                                              - paragraph: Drop in a YouTube or video URL and get back a transcription through an n8n-powered multi-source pipeline.
+                                          - generic:
+                                            - paragraph: Workflow preview
+                                            - paragraph: Paste URL in. Queue transcription. Read the transcript below.
+                                          - generic:
+                                            - generic: $129 workflow
+                                            - generic: Hide details
+                                        - button:
+                                          - generic:
+                                            - generic:
+                                              - generic: Content Creation & Social Media
+                                            - generic:
+                                              - heading [level=3]: Podcast Publisher Engine
+                                              - paragraph: Turns a topic prompt or voice note into a recorded, packaged, and distributed podcast episode.
+                                          - generic:
+                                            - paragraph: Workflow preview
+                                            - paragraph: Prompt in. Episode out. Published everywhere.
+                                          - generic:
+                                            - generic: $149 template
+                                            - generic: View details
+                                        - button:
+                                          - generic:
+                                            - generic:
+                                              - generic: Sales & Lead Generation
+                                            - generic:
+                                              - heading [level=3]: LinkedIn Outreach Orchestrator
+                                              - paragraph: Finds prospects, enriches context, drafts personalized outreach, and routes replies into the sales pipeline.
+                                          - generic:
+                                            - paragraph: Workflow preview
+                                            - paragraph: Prospects in, context enriched, outreach queued.
+                                          - generic:
+                                            - generic: $199 system
+                                            - generic: View details
+                                        - button:
+                                          - generic:
+                                            - generic:
+                                              - generic: Appointments & Customer Support
+                                            - generic:
+                                              - heading [level=3]: AI Booking Concierge
+                                              - paragraph: Handles booking requests, FAQ replies, reminders, and appointment routing from one automation layer.
+                                          - generic:
+                                            - paragraph: Workflow preview
+                                            - paragraph: Inquiry, qualification, reminder, and booking in one flow.
+                                          - generic:
+                                            - generic: $169 system
+                                            - generic: View details
+                                        - button:
+                                          - generic:
+                                            - generic:
+                                              - generic: AI Agents & Internal Tools
+                                            - generic:
+                                              - heading [level=3]: Claude SOP Copilot
+                                              - paragraph: Turns internal documentation into a practical assistant that answers workflow questions with context.
+                                          - generic:
+                                            - paragraph: Workflow preview
+                                            - paragraph: Internal docs become a usable day-to-day copilot.
+                                          - generic:
+                                            - generic: $189 system
+                                            - generic: View details
+                                        - button:
+                                          - generic:
+                                            - generic:
+                                              - generic: CRM & Follow-up Automation
+                                            - generic:
+                                              - heading [level=3]: GHL Reactivation Engine
+                                              - paragraph: Reactivates dormant leads with segmented follow-up logic, personalized messaging, and booking prompts.
+                                          - generic:
+                                            - paragraph: Workflow preview
+                                            - paragraph: Dormant leads return to active pipeline with the right sequence.
+                                          - generic:
+                                            - generic: $179 system
+                                            - generic: View details
+                                        - button:
+                                          - generic:
+                                            - generic:
+                                              - generic: CRM & Follow-up Automation
+                                            - generic:
+                                              - heading [level=3]: Pipeline Sync — MyCase to GHL
+                                              - paragraph: Keeps GoHighLevel opportunity stages aligned with pipeline changes coming from MyCase.
+                                          - generic:
+                                            - paragraph: Workflow preview
+                                            - paragraph: Case status changes sync into GHL automatically.
+                                          - generic:
+                                            - generic: $149 workflow
+                                            - generic: View details
+                                        - button:
+                                          - generic:
+                                            - generic:
+                                              - generic: Appointments & Customer Support
+                                            - generic:
+                                              - heading [level=3]: Appointment Confirmation + Reminder
+                                              - paragraph: Automates appointment confirmations and reacts differently to confirm, reschedule, or unclear replies.
+                                          - generic:
+                                            - paragraph: Workflow preview
+                                            - paragraph: Scheduled appointments trigger smart reply handling.
+                                          - generic:
+                                            - generic: $119 workflow
+                                            - generic: View details
+                                        - button:
+                                          - generic:
+                                            - generic:
+                                              - generic: Sales & Lead Generation
+                                            - generic:
+                                              - heading [level=3]: Lead Follow-Up Sequence
+                                              - paragraph: Runs a timed follow-up sequence with email and call actions until a lead replies or the sequence completes.
+                                          - generic:
+                                            - paragraph: Workflow preview
+                                            - paragraph: New leads enter a timed nurture and callback sequence.
+                                          - generic:
+                                            - generic: $129 workflow
+                                            - generic: View details
+                                  - generic:
+                                    - generic: Next Step
+                                    - generic:
+                                      - button: Start AI booking call
+                  - generic [ref=e269]:
+                    - button [ref=e447]: Me
+                    - button [ref=e448]: Projects
+                    - button [ref=e449]: Stack
+                    - button [ref=e450]: AI booking
+      - region "Notifications alt+T":
+        - list
+  - menu "Open login menu" [active] [ref=e451]:
+    - generic [ref=e452]:
+      - generic [ref=e453]: L
+      - generic [ref=e454]:
+        - generic [ref=e455]: Login
+        - generic [ref=e456]: Sign in to save your workspace
+    - separator [ref=e457]
+    - menuitem "Login" [ref=e458]:
+      - generic [ref=e460]: Login

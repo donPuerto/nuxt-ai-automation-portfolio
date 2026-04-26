@@ -1,0 +1,46 @@
+- generic [ref=e3]:
+  - main [ref=e464]:
+    - generic [ref=e467]:
+      - generic [ref=e469]:
+        - generic [ref=e471]:
+          - generic [ref=e472]:
+            - heading "Welcome back" [level=1] [ref=e473]
+            - paragraph [ref=e474]: Sign in to access your workspace, saved prompts, and portfolio tools.
+          - group [ref=e475]:
+            - generic [ref=e476]: Email
+            - textbox "Email" [ref=e477]:
+              - /placeholder: you@company.com
+          - group [ref=e478]:
+            - generic [ref=e479]:
+              - generic [ref=e480]: Password
+              - link "Forgot your password?" [ref=e481] [cursor=pointer]:
+                - /url: /contact
+            - textbox "Password" [ref=e482]:
+              - /placeholder: Enter your password
+          - group [ref=e483]:
+            - button "Login" [ref=e484]
+          - generic [ref=e486]: Or continue with
+          - group [ref=e487]:
+            - button "Login with GitHub" [ref=e488]:
+              - img
+              - generic [ref=e489]: Login with GitHub
+            - button "Login with Google" [ref=e490]:
+              - img
+              - generic [ref=e491]: Login with Google
+          - paragraph [ref=e492]:
+            - text: Need access?
+            - link "Request an invite" [ref=e493] [cursor=pointer]:
+              - /url: /contact
+        - generic [ref=e496]:
+          - generic [ref=e497]:
+            - generic [ref=e498]: Portfolio Access
+            - generic [ref=e499]: Keep your automation workspace in sync.
+          - generic [ref=e500]:
+            - paragraph [ref=e501]: Save recent prompts, continue project conversations, and unlock private portfolio tools.
+            - list [ref=e502]:
+              - listitem [ref=e503]: Saved conversations
+              - listitem [ref=e505]: Portfolio workspace sync
+              - listitem [ref=e507]: Private access links
+      - paragraph [ref=e509]: By continuing, you agree to the portfolio access terms and privacy policy.
+  - region "Notifications alt+T":
+    - list

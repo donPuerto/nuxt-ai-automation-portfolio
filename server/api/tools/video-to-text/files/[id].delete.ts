@@ -1,9 +1,9 @@
 import { getSupabaseAdmin } from '../../../../utils/supabase-admin'
 import { requireSupabaseUser } from '../../../../utils/knowledge-auth'
+import { getTranscriptionStorageMeta, removeTranscriptionMediaFile } from '../../../../utils/transcription-storage'
 
 export default defineEventHandler(async (event) => {
   const user = await requireSupabaseUser(event)
-  const config = useRuntimeConfig(event)
   const id = getRouterParam(event, 'id')
 
   if (!id) {
@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
   const supabase = getSupabaseAdmin(event)
   const { data: file, error: fileError } = await supabase
     .from('transcription_files')
-    .select('id,user_id,drive_file_id,metadata')
+    .select('id,user_id,metadata')
     .eq('id', id)
     .eq('user_id', user.id)
     .is('deleted_at', null)
@@ -29,29 +29,18 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  let driveDeleteError: string | null = null
-  if (file.drive_file_id && config.videoToTextDeleteWebhookUrl && config.videoToTextApiKey) {
+  const storageMeta = getTranscriptionStorageMeta(file.metadata)
+  let storageDeleteError: string | null = null
+  if (storageMeta.bucket && storageMeta.path) {
     try {
-      const response = await $fetch.raw(config.videoToTextDeleteWebhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': config.videoToTextApiKey,
-        },
-        ignoreResponseError: true,
-        body: {
-          drive_file_id: file.drive_file_id,
-          user_id: user.id,
-          transcription_file_id: file.id,
-        },
+      await removeTranscriptionMediaFile({
+        supabase,
+        bucket: storageMeta.bucket,
+        path: storageMeta.path,
       })
-
-      if (!response.ok) {
-        driveDeleteError = `Drive delete webhook returned ${response.status}.`
-      }
     }
     catch (error) {
-      driveDeleteError = error instanceof Error ? error.message : 'Drive delete failed.'
+      storageDeleteError = error instanceof Error ? error.message : 'Supabase Storage delete failed.'
     }
   }
 
@@ -60,10 +49,10 @@ export default defineEventHandler(async (event) => {
     .update({
       status: 'deleted',
       deleted_at: new Date().toISOString(),
-      error_message: driveDeleteError,
+      error_message: storageDeleteError,
       metadata: {
         ...(file.metadata ?? {}),
-        drive_delete_error: driveDeleteError,
+        storage_delete_error: storageDeleteError,
       },
     })
     .eq('id', file.id)
@@ -78,6 +67,6 @@ export default defineEventHandler(async (event) => {
 
   return {
     success: true,
-    driveDeleteError,
+    storageDeleteError,
   }
 })

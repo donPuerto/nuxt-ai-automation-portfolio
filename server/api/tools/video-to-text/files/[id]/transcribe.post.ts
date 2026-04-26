@@ -1,5 +1,11 @@
 import { getSupabaseAdmin } from '../../../../../utils/supabase-admin'
 import { requireSupabaseUser } from '../../../../../utils/knowledge-auth'
+import {
+  createSignedTranscriptionMediaUrl,
+  getSignedTranscriptionMediaUrlTtl,
+  getTranscriptionStorageMeta,
+} from '../../../../../utils/transcription-storage'
+import { buildTranscriptionSourceRelayUrl } from '../../../../../utils/transcription-source-relay'
 import { setVideoToTextJob } from '../../../../../utils/video-to-text-jobs'
 import { mapHighlights, transcriptionFileSelect } from '../../../../../utils/video-to-text-file-records'
 
@@ -67,10 +73,19 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  if (!file.drive_file_id && !file.source_url) {
+  const storageMeta = getTranscriptionStorageMeta(file.metadata)
+  const signedStorageUrl = await createSignedTranscriptionMediaUrl({
+    supabase,
+    bucket: storageMeta.bucket,
+    path: storageMeta.path,
+    expiresIn: getSignedTranscriptionMediaUrlTtl(),
+  })
+  const sourceUrl = signedStorageUrl || file.source_url
+
+  if (!storageMeta.path || !sourceUrl) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'This file has no Google Drive reference yet. Upload it again first.',
+      statusMessage: 'This file is not stored in Supabase Storage. Upload it again first.',
     })
   }
 
@@ -86,34 +101,43 @@ export default defineEventHandler(async (event) => {
   const callbackUrl = configuredCallbackUrl || fallbackCallbackUrl
   const callbackReachable = Boolean(callbackUrl)
   const now = new Date().toISOString()
+  const relayOrigin = isPublicOrigin(siteUrl) ? siteUrl : requestOrigin
+  const relaySourceUrl = buildTranscriptionSourceRelayUrl({
+    origin: relayOrigin,
+    fileId: file.id,
+    secret: config.videoToTextApiKey,
+  })
 
   await setVideoToTextJob({
     id: jobId,
     status: 'processing',
-    sourceUrl: file.source_url || file.file_name,
-    source: 'gdrive',
+    sourceUrl: sourceUrl || file.file_name,
+    source: 'supabase',
     transcriber,
     createdAt: now,
     updatedAt: now,
   }, event)
 
-  const { error: runInsertError } = await supabase
-    .from('transcription_runs')
-    .insert({
-      transcription_file_id: file.id,
-      user_id: user.id,
-      job_id: jobId,
+  const { error: trackError } = await supabase
+    .from('transcription_files')
+    .update({
+      current_job_id: jobId,
       callback_url: callbackUrl || null,
-      transcriber,
-      status: 'processing',
-      source_url: file.source_url,
       started_at: now,
+      finished_at: null,
+      result_payload: null,
+      status: 'processing',
+      transcriber,
+      error_message: null,
+      source_url: sourceUrl,
     })
+    .eq('id', file.id)
+    .eq('user_id', user.id)
 
-  if (runInsertError) {
+  if (trackError) {
     throw createError({
       statusCode: 500,
-      statusMessage: runInsertError.message,
+      statusMessage: trackError.message,
     })
   }
 
@@ -126,10 +150,12 @@ export default defineEventHandler(async (event) => {
     ignoreResponseError: true,
     body: {
       job_id: jobId,
-      url: file.source_url || '',
-      source: 'gdrive',
+      url: relaySourceUrl,
+      source: 'upload',
+      source_type: 'upload',
+      storage_provider: 'supabase-storage',
       transcriber,
-      gdrive_file_id: file.drive_file_id || '',
+      gdrive_file_id: '',
       callback_url: callbackUrl,
     },
   })
@@ -144,20 +170,12 @@ export default defineEventHandler(async (event) => {
         : `Video to text webhook returned ${response.status}.`
 
     await supabase
-      .from('transcription_runs')
+      .from('transcription_files')
       .update({
+        current_job_id: jobId,
         status: 'failed',
         error_message: message,
         finished_at: new Date().toISOString(),
-      })
-      .eq('job_id', jobId)
-      .eq('user_id', user.id)
-
-    await supabase
-      .from('transcription_files')
-      .update({
-        status: 'failed',
-        error_message: message,
       })
       .eq('id', file.id)
       .eq('user_id', user.id)
@@ -171,13 +189,15 @@ export default defineEventHandler(async (event) => {
   const { data: updatedFile } = await supabase
     .from('transcription_files')
     .update({
+      current_job_id: jobId,
+      callback_url: callbackUrl || null,
+      started_at: now,
+      finished_at: null,
+      result_payload: null,
       status: 'processing',
       transcriber,
       error_message: null,
-      metadata: {
-        ...(file.metadata ?? {}),
-        last_job_id: jobId,
-      },
+      source_url: sourceUrl,
     })
     .eq('id', file.id)
     .eq('user_id', user.id)

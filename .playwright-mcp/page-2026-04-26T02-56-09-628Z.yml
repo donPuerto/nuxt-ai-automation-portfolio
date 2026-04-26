@@ -1,0 +1,265 @@
+- generic:
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - textbox:
+                            - /placeholder: Search prompts
+                      - list:
+                        - listitem:
+                          - button:
+                            - generic: New chat
+                    - generic:
+                      - generic: Navigation
+                      - list:
+                        - listitem:
+                          - button:
+                            - generic: Me
+                        - listitem:
+                          - button:
+                            - generic: Projects
+                        - listitem:
+                          - button:
+                            - generic: Stack
+                        - listitem:
+                          - button:
+                            - generic: AI booking
+                    - generic:
+                      - generic: Recent conversations
+                      - generic: Your recent conversations will appear here. Sign in to sync them across devices.
+                  - generic:
+                    - button:
+                      - generic: C
+                      - generic:
+                        - generic: codex-upload-test-1777172012339
+                        - generic: codex-upload-test-1777172012339@example.com
+                  - button
+            - main:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - button:
+                        - img
+                        - generic: Toggle Sidebar
+                    - generic [ref=e510]:
+                      - generic [ref=e511]: NEWS!
+                      - link [ref=e1001] [cursor=pointer]:
+                        - /url: https://news.google.com/rss/articles/CBMi5AFBVV95cUxPZ1FkS0J5cmxkN0xnR2RMOHJQbmptQ2hieVB1ZHVaNGtsWFlrTUt5NDlGSFVQTE5FYjJXZ0hMZWRPNGxLVW93alRFRlJqT3h4X1lWekVRZVdVTmg4TGRkX0U5bGtESHJaNTFoYVl5V3F2bWFERWNSUWg4ejltTXk5OTROZmU1QmpVUm9CSV9fLUhpLVdIRlJxcksxaHFPMk5rQkZ4QVpMZnR0d0ZvYW1Zbzh4QzQ0aHZYc1IzYm8zeEVtRkNvSnRzTlp3MERiOExPR2loaXoyb1V1WGtfVUdnVG5MS0o?oc=5
+                        - text: "Editorial: Who controls the internet with AI flaws?"
+                    - generic:
+                      - button
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic:
+                                    - generic: Don Puerto
+                                    - generic: These are the projects I usually surface first when someone wants to understand the kind of workflow products and custom solutions I build.
+                                    - generic:
+                                      - button
+                                      - button
+                                      - button
+                                      - button
+                                  - generic:
+                                    - generic: Featured projects
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - generic:
+                                            - paragraph: Content Creation & Social Media
+                                            - heading [level=3]: Video to Text Transcriber
+                                            - paragraph: Paste a YouTube URL or upload a file, start transcription, and review the completed transcript below as soon as n8n returns the result.
+                                          - generic:
+                                            - generic:
+                                              - generic:
+                                                - tablist:
+                                                  - tab: URL
+                                                  - tab [selected]: File
+                                                - tabpanel:
+                                                  - button
+                                                  - paragraph: "Supported formats: `.mp3`, `.wav`, `.m4a`, `.mp4`, `.mov`, `.webm` (plus most `audio/*` and `video/*` files)."
+                                              - generic:
+                                                - combobox:
+                                                  - generic: AssemblyAI
+                                                  - img
+                                                - button [disabled]:
+                                                  - generic: Transcribe
+                                                - button:
+                                                  - generic: Manage uploaded files
+                                              - generic:
+                                                - paragraph: Transcription failed.
+                                                - paragraph: Upload an audio or video file, then start transcription with your selected transcriber.
+                                                - paragraph: Upload request sends file metadata to your configured upload webhook, then starts transcription with Drive-backed source details.
+                                                - paragraph: "SSL Issue: consider using the 'Ignore SSL issues' option"
+                                              - generic:
+                                                - generic: failed
+                                      - generic:
+                                        - button:
+                                          - generic:
+                                            - generic:
+                                              - generic: Content Creation & Social Media
+                                            - generic:
+                                              - heading [level=3]: Video to Text Transcriber
+                                              - paragraph: Drop in a YouTube or video URL and get back a transcription through an n8n-powered multi-source pipeline.
+                                          - generic:
+                                            - paragraph: Workflow preview
+                                            - paragraph: Paste URL in. Queue transcription. Read the transcript below.
+                                          - generic:
+                                            - generic: $129 workflow
+                                            - generic: Hide details
+                                        - button:
+                                          - generic:
+                                            - generic:
+                                              - generic: Content Creation & Social Media
+                                            - generic:
+                                              - heading [level=3]: Podcast Publisher Engine
+                                              - paragraph: Turns a topic prompt or voice note into a recorded, packaged, and distributed podcast episode.
+                                          - generic:
+                                            - paragraph: Workflow preview
+                                            - paragraph: Prompt in. Episode out. Published everywhere.
+                                          - generic:
+                                            - generic: $149 template
+                                            - generic: View details
+                                        - button:
+                                          - generic:
+                                            - generic:
+                                              - generic: Sales & Lead Generation
+                                            - generic:
+                                              - heading [level=3]: LinkedIn Outreach Orchestrator
+                                              - paragraph: Finds prospects, enriches context, drafts personalized outreach, and routes replies into the sales pipeline.
+                                          - generic:
+                                            - paragraph: Workflow preview
+                                            - paragraph: Prospects in, context enriched, outreach queued.
+                                          - generic:
+                                            - generic: $199 system
+                                            - generic: View details
+                                        - button:
+                                          - generic:
+                                            - generic:
+                                              - generic: Appointments & Customer Support
+                                            - generic:
+                                              - heading [level=3]: AI Booking Concierge
+                                              - paragraph: Handles booking requests, FAQ replies, reminders, and appointment routing from one automation layer.
+                                          - generic:
+                                            - paragraph: Workflow preview
+                                            - paragraph: Inquiry, qualification, reminder, and booking in one flow.
+                                          - generic:
+                                            - generic: $169 system
+                                            - generic: View details
+                                        - button:
+                                          - generic:
+                                            - generic:
+                                              - generic: AI Agents & Internal Tools
+                                            - generic:
+                                              - heading [level=3]: Claude SOP Copilot
+                                              - paragraph: Turns internal documentation into a practical assistant that answers workflow questions with context.
+                                          - generic:
+                                            - paragraph: Workflow preview
+                                            - paragraph: Internal docs become a usable day-to-day copilot.
+                                          - generic:
+                                            - generic: $189 system
+                                            - generic: View details
+                                        - button:
+                                          - generic:
+                                            - generic:
+                                              - generic: CRM & Follow-up Automation
+                                            - generic:
+                                              - heading [level=3]: GHL Reactivation Engine
+                                              - paragraph: Reactivates dormant leads with segmented follow-up logic, personalized messaging, and booking prompts.
+                                          - generic:
+                                            - paragraph: Workflow preview
+                                            - paragraph: Dormant leads return to active pipeline with the right sequence.
+                                          - generic:
+                                            - generic: $179 system
+                                            - generic: View details
+                                        - button:
+                                          - generic:
+                                            - generic:
+                                              - generic: CRM & Follow-up Automation
+                                            - generic:
+                                              - heading [level=3]: Pipeline Sync — MyCase to GHL
+                                              - paragraph: Keeps GoHighLevel opportunity stages aligned with pipeline changes coming from MyCase.
+                                          - generic:
+                                            - paragraph: Workflow preview
+                                            - paragraph: Case status changes sync into GHL automatically.
+                                          - generic:
+                                            - generic: $149 workflow
+                                            - generic: View details
+                                        - button:
+                                          - generic:
+                                            - generic:
+                                              - generic: Appointments & Customer Support
+                                            - generic:
+                                              - heading [level=3]: Appointment Confirmation + Reminder
+                                              - paragraph: Automates appointment confirmations and reacts differently to confirm, reschedule, or unclear replies.
+                                          - generic:
+                                            - paragraph: Workflow preview
+                                            - paragraph: Scheduled appointments trigger smart reply handling.
+                                          - generic:
+                                            - generic: $119 workflow
+                                            - generic: View details
+                                        - button:
+                                          - generic:
+                                            - generic:
+                                              - generic: Sales & Lead Generation
+                                            - generic:
+                                              - heading [level=3]: Lead Follow-Up Sequence
+                                              - paragraph: Runs a timed follow-up sequence with email and call actions until a lead replies or the sequence completes.
+                                          - generic:
+                                            - paragraph: Workflow preview
+                                            - paragraph: New leads enter a timed nurture and callback sequence.
+                                          - generic:
+                                            - generic: $129 workflow
+                                            - generic: View details
+                                  - generic:
+                                    - generic: Next Step
+                                    - generic:
+                                      - button: Start AI booking call
+                  - generic [ref=e806]:
+                    - button [ref=e1002]: Me
+                    - button [ref=e1003]: Projects
+                    - button [ref=e1004]: Stack
+                    - button [ref=e1005]: AI booking
+      - region "Notifications alt+T":
+        - list
+  - dialog "Uploaded files" [ref=e1007]:
+    - generic [ref=e1008]:
+      - generic [ref=e1009]:
+        - heading "Uploaded files" [level=2] [ref=e1010]
+        - paragraph [ref=e1011]: Browse, search, sort, preview, and manage your uploaded media files in one canvas modal.
+      - generic [ref=e1012]:
+        - generic [ref=e1013]:
+          - searchbox "Search uploaded files..." [active] [ref=e1015]
+          - button "Toggle uploaded files date sort" [ref=e1016]:
+            - generic [ref=e1018]: Toggle uploaded files date sort
+          - button "Refresh uploaded files" [ref=e1019]:
+            - generic [ref=e1021]: Refresh uploaded files
+        - paragraph [ref=e1022]: New uploads are stored in private Supabase Storage and opened with refreshed signed links.
+    - generic [ref=e1026]:
+      - heading ".tmp-upload-test.txt failed 31 B / assemblyai / Apr 26, 2026, 10:55 AM" [level=3] [ref=e1027]:
+        - button ".tmp-upload-test.txt failed 31 B / assemblyai / Apr 26, 2026, 10:55 AM" [ref=e1028]:
+          - generic [ref=e1029]:
+            - generic [ref=e1030]:
+              - paragraph [ref=e1031]: .tmp-upload-test.txt
+              - generic [ref=e1032]: failed
+            - paragraph [ref=e1033]: 31 B / assemblyai / Apr 26, 2026, 10:55 AM
+          - img
+      - button "Open file actions" [ref=e1034]:
+        - generic [ref=e1036]: Open file actions
+    - button "Close" [ref=e1037]:
+      - img
+      - generic [ref=e1038]: Close

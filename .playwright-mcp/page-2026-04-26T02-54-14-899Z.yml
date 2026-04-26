@@ -1,0 +1,137 @@
+- generic:
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - textbox:
+                            - /placeholder: Search prompts
+                      - list:
+                        - listitem:
+                          - button:
+                            - generic: New chat
+                    - generic:
+                      - generic: Navigation
+                      - list:
+                        - listitem:
+                          - button:
+                            - generic: Me
+                        - listitem:
+                          - button:
+                            - generic: Projects
+                        - listitem:
+                          - button:
+                            - generic: Stack
+                        - listitem:
+                          - button:
+                            - generic: AI booking
+                    - generic:
+                      - generic: Recent conversations
+                      - generic: Your recent conversations will appear here. Sign in to sync them across devices.
+                  - generic:
+                    - button:
+                      - generic: C
+                      - generic:
+                        - generic: codex-upload-test-1777172012339
+                        - generic: codex-upload-test-1777172012339@example.com
+                  - button
+            - main:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - button:
+                        - img
+                        - generic: Toggle Sidebar
+                    - generic [ref=e510]:
+                      - generic [ref=e511]: NEWS!
+                      - link [ref=e512] [cursor=pointer]:
+                        - /url: https://www.anthropic.com/news
+                        - text: Claude tools are getting more agent-native
+                    - generic:
+                      - button
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: G
+                                - generic: o
+                                - generic: o
+                                - generic: d
+                                - generic: m
+                                - generic: o
+                                - generic: r
+                                - generic: "n"
+                                - generic: i
+                                - generic: "n"
+                                - generic: g
+                                - generic: ","
+                                - generic: D
+                                - generic: o
+                                - generic: "n"
+                                - generic: P
+                                - generic: u
+                                - generic: e
+                                - generic: r
+                                - generic: t
+                                - generic: o
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic: Type your message here...
+                                - textbox
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - button
+                                  - generic: AI
+                                  - button:
+                                    - generic: "Baidu: Qianfan-OCR-Fast (free)"
+                                - generic:
+                                  - button [disabled]
+                        - generic:
+                          - generic:
+                            - button: Me
+                            - button: Projects
+                            - button: Stack
+                            - button: AI booking
+      - region "Notifications alt+T":
+        - list
+  - dialog "Welcome, Don Puerto" [ref=e514]:
+    - generic [ref=e515]:
+      - generic [ref=e516]:
+        - generic [ref=e519]:
+          - heading "Welcome, Don Puerto" [level=2] [ref=e520]
+          - paragraph [ref=e521]: Your workspace is ready. Let's personalize your profile, agent defaults, and preferences so the portfolio assistant knows how to help you.
+        - button "Continue to settings" [active] [ref=e523]
+      - generic [ref=e526]:
+        - generic [ref=e527]:
+          - generic [ref=e528]: Portfolio Workspace
+          - generic [ref=e529]: Set your defaults once. Let the assistant carry the context.
+        - list [ref=e530]:
+          - listitem [ref=e531]:
+            - generic [ref=e532]: "-"
+            - generic [ref=e533]: Confirm profile and contact details.
+          - listitem [ref=e534]:
+            - generic [ref=e535]: "-"
+            - generic [ref=e536]: Choose your default agent and model.
+          - listitem [ref=e537]:
+            - generic [ref=e538]: "-"
+            - generic [ref=e539]: Prepare your knowledge base for RAG.
+    - button "Close" [ref=e540]:
+      - img
+      - generic [ref=e541]: Close
