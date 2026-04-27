@@ -42,10 +42,24 @@ export const buildWordBoostFromFileName = (fileName: string, maxItems = 12) => {
     .filter(token => token.length >= 3 && !FILE_NAME_STOP_WORDS.has(token))
 
   const phrases: string[] = []
-  for (let index = 0; index < tokens.length - 1; index += 1) {
-    const pair = `${tokens[index]} ${tokens[index + 1]}`.trim()
-    if (pair.length >= 7) {
-      phrases.push(pair)
+  const pushGram = (start: number, size: number) => {
+    const gram = tokens.slice(start, start + size).join(' ').trim()
+    if (gram.length >= 7) {
+      phrases.push(gram)
+    }
+  }
+
+  for (let index = 0; index < tokens.length; index += 1) {
+    if (index + 1 < tokens.length) {
+      pushGram(index, 2)
+    }
+
+    if (index + 2 < tokens.length) {
+      pushGram(index, 3)
+    }
+
+    if (index + 3 < tokens.length) {
+      pushGram(index, 4)
     }
   }
 

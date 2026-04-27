@@ -63,7 +63,14 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const upstreamResponse = await fetch(signedStorageUrl)
+  const incomingRange = getHeader(event, 'range')
+  const upstreamResponse = await fetch(signedStorageUrl, {
+    headers: incomingRange
+      ? {
+          range: incomingRange,
+        }
+      : undefined,
+  })
   if (!upstreamResponse.ok || !upstreamResponse.body) {
     throw createError({
       statusCode: 502,
@@ -74,18 +81,32 @@ export default defineEventHandler(async (event) => {
   const headers = new Headers()
   const contentType = file.mime_type?.trim() || upstreamResponse.headers.get('content-type') || 'application/octet-stream'
   const contentLength = upstreamResponse.headers.get('content-length')
+  const contentRange = upstreamResponse.headers.get('content-range')
+  const acceptRanges = upstreamResponse.headers.get('accept-ranges')
+  const etag = upstreamResponse.headers.get('etag')
+  const lastModified = upstreamResponse.headers.get('last-modified')
   const fileName = file.file_name.replace(/"/g, '')
 
   headers.set('content-type', contentType)
   headers.set('cache-control', 'private, max-age=60, no-transform')
   headers.set('content-disposition', `inline; filename="${fileName}"`)
+  headers.set('accept-ranges', acceptRanges || 'bytes')
 
   if (contentLength) {
     headers.set('content-length', contentLength)
   }
+  if (contentRange) {
+    headers.set('content-range', contentRange)
+  }
+  if (etag) {
+    headers.set('etag', etag)
+  }
+  if (lastModified) {
+    headers.set('last-modified', lastModified)
+  }
 
   return new Response(upstreamResponse.body, {
-    status: 200,
+    status: upstreamResponse.status,
     headers,
   })
 })

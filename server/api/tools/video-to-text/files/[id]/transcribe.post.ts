@@ -108,6 +108,7 @@ export default defineEventHandler(async (event) => {
     fileId: file.id,
     secret: config.videoToTextApiKey,
   })
+  const mediaSourceUrl = sourceUrl || relaySourceUrl
 
   await setVideoToTextJob({
     id: jobId,
@@ -151,7 +152,7 @@ export default defineEventHandler(async (event) => {
     ignoreResponseError: true,
     body: {
       job_id: jobId,
-      url: relaySourceUrl,
+      url: mediaSourceUrl,
       source: 'upload',
       source_type: 'upload',
       storage_provider: 'supabase-storage',

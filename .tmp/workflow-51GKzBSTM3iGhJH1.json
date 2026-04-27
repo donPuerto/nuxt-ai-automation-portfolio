@@ -35,7 +35,7 @@
                   {
                       "parameters":  {
                                          "mode":  "raw",
-                                         "jsonOutput":  "={{ (() =\u003e {\nconst body = $json.body || {};\nconst url = body.url || \u0027\u0027;\nconst source = body.source || \u0027auto\u0027;\nconst transcriber = body.transcriber || \u0027assemblyai\u0027;\nconst gdrive_file_id = body.gdrive_file_id || \u0027\u0027;\nconst callback_url = body.callback_url || \u0027\u0027;\n\nlet detectedSource = source;\nif (source === \u0027auto\u0027 \u0026\u0026 url) {\n  if (url.includes(\u0027youtube.com\u0027) || url.includes(\u0027youtu.be\u0027)) {\n    detectedSource = \u0027youtube\u0027;\n  } else if (url.includes(\u0027drive.google.com\u0027)) {\n    detectedSource = \u0027gdrive\u0027;\n  } else {\n    detectedSource = \u0027social\u0027;\n  }\n}\nif (gdrive_file_id) detectedSource = \u0027gdrive\u0027;\n\nreturn JSON.stringify({ url, source: detectedSource, transcriber, gdrive_file_id, callback_url });\n})() }}",
+                                         "jsonOutput":  "={{ (() =\u003e { const body = $json.body || {}; const url = body.url || \"\"; const source = body.source || \"auto\"; const transcriber = body.transcriber || \"assemblyai\"; const gdrive_file_id = body.gdrive_file_id || \"\"; const callback_url = body.callback_url || \"\"; const word_boost = Array.isArray(body.word_boost) ? body.word_boost.filter(Boolean) : []; const directMediaPattern = /\\.(mp3|wav|m4a|mp4|mov|webm)(\\?|$)/i; const isDirectMediaUrl = directMediaPattern.test(url) || url.includes(\"supabase.co/storage\") || url.includes(\"/api/tools/video-to-text/files/\"); let detectedSource = source; if (source === \"auto\" \u0026\u0026 url) { if (url.includes(\"youtube.com\") || url.includes(\"youtu.be\")) { detectedSource = \"youtube\"; } else if (url.includes(\"drive.google.com\")) { detectedSource = \"gdrive\"; } else if (isDirectMediaUrl) { detectedSource = \"upload\"; } else { detectedSource = \"social\"; } } if ((source === \"social\" || source === \"upload\" || source === \"supabase\") \u0026\u0026 isDirectMediaUrl) { detectedSource = \"upload\"; } if (gdrive_file_id) detectedSource = \"gdrive\"; return JSON.stringify({ url, source: detectedSource, transcriber, gdrive_file_id, callback_url, word_boost }); })() }}",
                                          "options":  {
 
                                                      }
@@ -121,6 +121,29 @@
                                                                                          },
                                                                           "renameOutput":  true,
                                                                           "outputKey":  "Google Drive"
+                                                                      },
+                                                                      {
+                                                                          "conditions":  {
+                                                                                             "options":  {
+                                                                                                             "caseSensitive":  false,
+                                                                                                             "leftValue":  "",
+                                                                                                             "typeValidation":  "strict"
+                                                                                                         },
+                                                                                             "conditions":  [
+                                                                                                                {
+                                                                                                                    "id":  "cond-upload",
+                                                                                                                    "leftValue":  "={{ $json.source }}",
+                                                                                                                    "rightValue":  "upload",
+                                                                                                                    "operator":  {
+                                                                                                                                     "type":  "string",
+                                                                                                                                     "operation":  "equals"
+                                                                                                                                 }
+                                                                                                                }
+                                                                                                            ],
+                                                                                             "combinator":  "and"
+                                                                                         },
+                                                                          "renameOutput":  true,
+                                                                          "outputKey":  "Upload"
                                                                       }
                                                                   ]
                                                    },
@@ -336,7 +359,7 @@
                                          "authentication":  "genericCredentialType",
                                          "genericAuthType":  "httpHeaderAuth",
                                          "options":  {
-
+                                                         "allowUnauthorizedCerts":  true
                                                      }
                                      },
                       "id":  "a0000010-0000-0000-0000-000000000010",
@@ -719,7 +742,7 @@
                   {
                       "parameters":  {
                                          "mode":  "raw",
-                                         "jsonOutput":  "={{ (() =\u003e {\n  const input = $(\u0027Set: Extract \u0026 Detect Source\u0027).first().json;\n  const text = $json.text || $json.transcription || \u0027\u0027;\n  return JSON.stringify({\n    success: true,\n    transcription: text,\n    source_url: input.url || \u0027\u0027,\n    source: input.source,\n    transcriber: input.transcriber,\n    word_count: text.split(/\\s+/).filter(w =\u003e w).length,\n    timestamp: new Date().toISOString()\n  });\n})() }}",
+                                         "jsonOutput":  "={{ (() =\u003e { const input = $(\"Set: Extract \u0026 Detect Source\").first().json; const rawText = ($json.text || $json.transcription || \"\").trim(); const success = rawText.length \u003e 0; return JSON.stringify({ success, transcription: rawText, source_url: input.url || \"\", source: input.source, transcriber: input.transcriber, word_count: success ? rawText.split(/\\s+/).filter(w =\u003e w).length : 0, error: success ? \"\" : \"No transcript text was detected from the selected source. Try clearer speech audio or switch transcriber.\", timestamp: new Date().toISOString() }); })() }}",
                                          "options":  {
 
                                                      }
@@ -1011,7 +1034,7 @@
                   {
                       "parameters":  {
                                          "method":  "POST",
-                                         "url":  "https://api.deepgram.com/v1/listen?model=nova-2\u0026smart_format=true",
+                                         "url":  "https://api.deepgram.com/v1/listen?model=whisper-large\u0026smart_format=true\u0026punctuate=true\u0026paragraphs=true",
                                          "authentication":  "genericCredentialType",
                                          "genericAuthType":  "httpHeaderAuth",
                                          "sendBody":  true,
@@ -1041,15 +1064,16 @@
                   {
                       "parameters":  {
                                          "method":  "POST",
-                                         "url":  "https://api.deepgram.com/v1/listen?model=nova-2\u0026smart_format=true",
+                                         "url":  "https://api.deepgram.com/v1/listen?model=whisper-large\u0026smart_format=true\u0026punctuate=true\u0026paragraphs=true",
                                          "authentication":  "genericCredentialType",
                                          "genericAuthType":  "httpHeaderAuth",
                                          "sendBody":  true,
-                                         "contentType":  "binaryData",
-                                         "inputDataFieldName":  "data",
+                                         "contentType":  "json",
                                          "options":  {
 
-                                                     }
+                                                     },
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={{ JSON.stringify({ url: $(\"Set: Extract \u0026 Detect Source\").first().json.url }) }}"
                                      },
                       "id":  "a0000041-0000-0000-0000-000000000041",
                       "name":  "Deepgram: Transcribe Audio",
@@ -1070,7 +1094,7 @@
                   {
                       "parameters":  {
                                          "mode":  "raw",
-                                         "jsonOutput":  "={{ (() =\u003e { const text = $json?.results?.channels?.[0]?.alternatives?.[0]?.transcript || \"\"; return JSON.stringify({ text }); })() }}",
+                                         "jsonOutput":  "={{ (() =\u003e { const alt = $json?.results?.channels?.[0]?.alternatives?.[0] || {}; const para = $json?.results?.channels?.[0]?.alternatives?.[0]?.paragraphs?.transcript || \"\"; const wordText = Array.isArray(alt.words) ? alt.words.map(w =\u003e w.punctuated_word || w.word || \"\").filter(Boolean).join(\" \") : \"\"; const text = (alt.transcript || para || wordText || \"\").trim(); return JSON.stringify({ text, deepgram_raw_len: text.length }); })() }}",
                                          "options":  {
 
                                                      }
@@ -1088,7 +1112,7 @@
                   {
                       "parameters":  {
                                          "mode":  "raw",
-                                         "jsonOutput":  "={{ (() =\u003e { const text = $json?.results?.channels?.[0]?.alternatives?.[0]?.transcript || \"\"; return JSON.stringify({ text }); })() }}",
+                                         "jsonOutput":  "={{ (() =\u003e { const alt = $json?.results?.channels?.[0]?.alternatives?.[0] || {}; const para = $json?.results?.channels?.[0]?.alternatives?.[0]?.paragraphs?.transcript || \"\"; const wordText = Array.isArray(alt.words) ? alt.words.map(w =\u003e w.punctuated_word || w.word || \"\").filter(Boolean).join(\" \") : \"\"; const text = (alt.transcript || para || wordText || \"\").trim(); return JSON.stringify({ text, deepgram_raw_len: text.length }); })() }}",
                                          "options":  {
 
                                                      }
@@ -1498,6 +1522,13 @@
                                                                          "type":  "main",
                                                                          "index":  0
                                                                      }
+                                                                 ],
+                                                                 [
+                                                                     {
+                                                                         "node":  "Switch: Transcriber (Social/GDrive)",
+                                                                         "type":  "main",
+                                                                         "index":  0
+                                                                     }
                                                                  ]
                                                              ]
                                                 },
@@ -1788,7 +1819,7 @@
                                                                            ],
                                                                            [
                                                                                {
-                                                                                   "node":  "Set: Format Error (RapidAPI)",
+                                                                                   "node":  "FastSaverAPI: Get Download URL",
                                                                                    "type":  "main",
                                                                                    "index":  0
                                                                                }
@@ -1977,7 +2008,7 @@
                                                                          ],
                                                                          [
                                                                              {
-                                                                                 "node":  "Set: Format Error (RapidAPI)",
+                                                                                 "node":  "FastSaverAPI: Get Download URL",
                                                                                  "type":  "main",
                                                                                  "index":  0
                                                                              }
