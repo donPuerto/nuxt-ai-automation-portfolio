@@ -1,1 +1,1 @@
-export { default as VidstackPreview } from './VidstackPreview.vue'
+export { default as MediaPreview } from './MediaPreview.vue'

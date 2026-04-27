@@ -39,11 +39,6 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: false },
   ssr: true,
-  vue: {
-    compilerOptions: {
-      isCustomElement: tag => tag.startsWith('media-'),
-    },
-  },
   experimental: {
     buildCache: false
   },
@@ -173,8 +168,6 @@ export default defineNuxtConfig({
         '@vee-validate/zod',
         'vee-validate',
         'zod',
-        'vidstack',
-        'vidstack/elements',
       ],
     },
     plugins: [
@@ -261,7 +254,7 @@ export default defineNuxtConfig({
       contentSecurityPolicy: {
         'img-src': ["'self'", 'data:', 'blob:', 'https://cdn.simpleicons.org', 'https://*.stripe.com'],
         'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://js.stripe.com'],
-        'media-src': ["'self'", 'blob:', 'https://drive.google.com', 'https://drive.usercontent.google.com'],
+        'media-src': ["'self'", 'blob:', 'https://drive.google.com', 'https://drive.usercontent.google.com', 'https://cidyudlrjfrjvwmytwhd.supabase.co'],
         'worker-src': ["'self'", 'blob:'],
         'style-src': ["'self'", "'unsafe-inline'"],
         'frame-src': [

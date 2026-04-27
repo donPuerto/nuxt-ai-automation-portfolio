@@ -8,6 +8,7 @@ import {
 import { buildTranscriptionSourceRelayUrl } from '../../../../../utils/transcription-source-relay'
 import { setVideoToTextJob } from '../../../../../utils/video-to-text-jobs'
 import { mapHighlights, transcriptionFileSelect } from '../../../../../utils/video-to-text-file-records'
+import { buildWordBoostFromFileName } from '../../../../../utils/video-to-text-word-boost'
 
 type StartFileTranscriptionBody = {
   transcriber?: 'assemblyai' | 'deepgram' | 'whisper'
@@ -155,6 +156,7 @@ export default defineEventHandler(async (event) => {
       source_type: 'upload',
       storage_provider: 'supabase-storage',
       transcriber,
+      word_boost: buildWordBoostFromFileName(file.file_name),
       gdrive_file_id: '',
       callback_url: callbackUrl,
     },

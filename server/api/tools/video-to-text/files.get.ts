@@ -39,10 +39,29 @@ const isMissingTranscriptionFilesTableError = (error: { message?: string, code?:
 }
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const PROCESSING_TIMEOUT_MS = 15 * 60 * 1000
 
 const getCurrentJobId = (file: Pick<TranscriptionFileRow, 'current_job_id'>) => {
   const normalizedCandidate = typeof file.current_job_id === 'string' ? file.current_job_id.trim() : ''
   return uuidPattern.test(normalizedCandidate) ? normalizedCandidate : ''
+}
+
+const isProcessingTimedOut = (file: Pick<TranscriptionFileRow, 'started_at' | 'created_at' | 'status'>) => {
+  if (!['queued', 'processing'].includes(file.status)) {
+    return false
+  }
+
+  const startedAtRaw = file.started_at || file.created_at
+  if (!startedAtRaw) {
+    return false
+  }
+
+  const startedAt = new Date(startedAtRaw).getTime()
+  if (Number.isNaN(startedAt)) {
+    return false
+  }
+
+  return Date.now() - startedAt > PROCESSING_TIMEOUT_MS
 }
 
 const withSignedStorageUrl = async (
@@ -102,8 +121,34 @@ const reconcileTranscriptionFile = async (
       },
     })
 
-    if (!result.ok || !result.job || result.job.status === 'processing') {
+    if (!result.ok || !result.job) {
       return file
+    }
+
+    if (result.job.status === 'processing') {
+      if (!isProcessingTimedOut(file)) {
+        return file
+      }
+
+      const supabase = getSupabaseAdmin(event)
+      const { data: timedOutFile, error: timedOutError } = await supabase
+        .from('transcription_files')
+        .update({
+          status: 'failed',
+          error_message: 'Transcription timed out while waiting for n8n callback. Please retry.',
+          finished_at: new Date().toISOString(),
+        })
+        .eq('id', file.id)
+        .eq('user_id', file.user_id)
+        .select(transcriptionFileSelect)
+        .single()
+
+      if (timedOutError || !timedOutFile) {
+        console.warn('transcription file timeout reconcile failed', timedOutError)
+        return file
+      }
+
+      return timedOutFile as TranscriptionFileRow
     }
 
     const nextStatus = result.job.status
@@ -133,6 +178,30 @@ const reconcileTranscriptionFile = async (
     return updatedFile as TranscriptionFileRow
   }
   catch (error) {
+    if (isProcessingTimedOut(file)) {
+      try {
+        const supabase = getSupabaseAdmin(event)
+        const { data: timedOutFile, error: timedOutError } = await supabase
+          .from('transcription_files')
+          .update({
+            status: 'failed',
+            error_message: 'Transcription timed out while waiting for n8n callback. Please retry.',
+            finished_at: new Date().toISOString(),
+          })
+          .eq('id', file.id)
+          .eq('user_id', file.user_id)
+          .select(transcriptionFileSelect)
+          .single()
+
+        if (!timedOutError && timedOutFile) {
+          return timedOutFile as TranscriptionFileRow
+        }
+      }
+      catch (timeoutError) {
+        console.warn('transcription timeout fallback failed', timeoutError)
+      }
+    }
+
     console.warn('transcription file reconcile skipped', error)
     return file
   }

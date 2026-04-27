@@ -1,44 +1,28 @@
-import type { H3Event } from 'h3'
-import { getSupabaseAdmin } from '../../../../utils/supabase-admin'
-import { requireSupabaseUser } from '../../../../utils/knowledge-auth'
+import { getSupabaseAdmin } from '../../../../../utils/supabase-admin'
+import { requireSupabaseUser } from '../../../../../utils/knowledge-auth'
 import {
+  buildTranscriptionMediaPath,
   createSignedTranscriptionMediaUrl,
   getSignedTranscriptionMediaUrlTtl,
-  uploadTranscriptionMediaFile,
-} from '../../../../utils/transcription-storage'
-import { buildTranscriptionSourceRelayUrl } from '../../../../utils/transcription-source-relay'
-import { setVideoToTextJob } from '../../../../utils/video-to-text-jobs'
-import { mapHighlights, transcriptionFileSelect } from '../../../../utils/video-to-text-file-records'
-import { buildWordBoostFromFileName } from '../../../../utils/video-to-text-word-boost'
+  getTranscriptionMediaBucket,
+} from '../../../../../utils/transcription-storage'
+import { buildTranscriptionSourceRelayUrl } from '../../../../../utils/transcription-source-relay'
+import { setVideoToTextJob } from '../../../../../utils/video-to-text-jobs'
+import { mapHighlights, transcriptionFileSelect } from '../../../../../utils/video-to-text-file-records'
+import { buildWordBoostFromFileName } from '../../../../../utils/video-to-text-word-boost'
 
-const MAX_UPLOAD_FILE_BYTES = 95 * 1024 * 1024
-
-const readUploadBody = async (event: H3Event) => {
-  const form = await readMultipartFormData(event)
-  const fields = new Map<string, string>()
-  let uploadedFile: { filename: string, mimeType: string, data: Buffer } | null = null
-
-  for (const part of form ?? []) {
-    if (part.filename) {
-      uploadedFile = {
-        filename: part.filename,
-        mimeType: part.type || 'application/octet-stream',
-        data: part.data,
-      }
-      continue
-    }
-
-    if (part.name) {
-      fields.set(part.name, part.data.toString('utf8'))
-    }
-  }
-
-  return {
-    uploadedFile,
-    transcriber: fields.get('transcriber') || 'deepgram',
-    autoTranscribe: fields.get('autoTranscribe') !== 'false',
-  }
+type CompleteUploadBody = {
+  fileId?: string
+  fileName?: string
+  mimeType?: string
+  fileSizeBytes?: number
+  bucket?: string
+  path?: string
+  transcriber?: 'assemblyai' | 'deepgram' | 'whisper'
+  autoTranscribe?: boolean
 }
+
+const MAX_DIRECT_UPLOAD_FILE_BYTES = 512 * 1024 * 1024
 
 const isPublicOrigin = (origin: string) => {
   try {
@@ -64,40 +48,60 @@ const buildConfiguredCallbackUrl = (callbackBaseUrl: string, jobId: string) => {
 export default defineEventHandler(async (event) => {
   const user = await requireSupabaseUser(event)
   const config = useRuntimeConfig(event)
+  const body = await readBody<CompleteUploadBody>(event)
   const supabase = getSupabaseAdmin(event)
-  const { uploadedFile, transcriber, autoTranscribe } = await readUploadBody(event)
 
-  if (!uploadedFile) {
+  const fileId = typeof body?.fileId === 'string' ? body.fileId.trim() : ''
+  const fileName = typeof body?.fileName === 'string' ? body.fileName.trim() : ''
+  const mimeType = typeof body?.mimeType === 'string' ? body.mimeType.trim() : 'application/octet-stream'
+  const fileSizeBytes = Number.isFinite(body?.fileSizeBytes) ? Number(body.fileSizeBytes) : 0
+  const bucket = typeof body?.bucket === 'string' ? body.bucket.trim() : ''
+  const path = typeof body?.path === 'string' ? body.path.trim() : ''
+  const transcriber = body?.transcriber && ['assemblyai', 'deepgram', 'whisper'].includes(body.transcriber)
+    ? body.transcriber
+    : 'deepgram'
+  const autoTranscribe = body?.autoTranscribe !== false
+
+  if (!fileId || !fileName || !bucket || !path || fileSizeBytes <= 0) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Upload a file before starting transcription.',
+      statusMessage: 'Missing upload completion details.',
     })
   }
 
-  if (!['assemblyai', 'deepgram', 'whisper'].includes(transcriber)) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Unsupported transcriber selection.',
-    })
-  }
-
-  if (uploadedFile.data.length > MAX_UPLOAD_FILE_BYTES) {
+  if (fileSizeBytes > MAX_DIRECT_UPLOAD_FILE_BYTES) {
     throw createError({
       statusCode: 413,
-      statusMessage: 'File is too large. Keep uploads under 95MB for reliable upload.',
+      statusMessage: 'File is too large. Keep uploads under 512MB.',
+    })
+  }
+
+  const expectedBucket = getTranscriptionMediaBucket()
+  const expectedPath = buildTranscriptionMediaPath(fileId, fileName)
+
+  if (bucket !== expectedBucket || path !== expectedPath) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Upload path mismatch. Retry the upload.',
     })
   }
 
   const { data: createdFile, error: createErrorResult } = await supabase
     .from('transcription_files')
     .insert({
+      id: fileId,
       user_id: user.id,
-      file_name: uploadedFile.filename,
-      mime_type: uploadedFile.mimeType,
-      file_size_bytes: uploadedFile.data.length,
+      file_name: fileName,
+      mime_type: mimeType,
+      file_size_bytes: fileSizeBytes,
       source_type: 'upload',
-      status: 'uploaded',
+      status: autoTranscribe ? 'queued' : 'uploaded',
       transcriber,
+      metadata: {
+        storage_bucket: bucket,
+        storage_path: path,
+        upload_provider: 'supabase-storage',
+      },
     })
     .select(transcriptionFileSelect)
     .single()
@@ -110,15 +114,10 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const storageTarget = await uploadTranscriptionMediaFile({
-      supabase,
-      fileId: createdFile.id,
-      file: uploadedFile,
-    })
     const sourceUrl = await createSignedTranscriptionMediaUrl({
       supabase,
-      bucket: storageTarget.bucket,
-      path: storageTarget.path,
+      bucket,
+      path,
       expiresIn: getSignedTranscriptionMediaUrlTtl(),
     })
 
@@ -128,12 +127,6 @@ export default defineEventHandler(async (event) => {
         source_url: sourceUrl,
         status: autoTranscribe ? 'queued' : 'uploaded',
         error_message: null,
-        metadata: {
-          ...(createdFile.metadata ?? {}),
-          storage_bucket: storageTarget.bucket,
-          storage_path: storageTarget.path,
-          upload_provider: 'supabase-storage',
-        },
       })
       .eq('id', createdFile.id)
       .eq('user_id', user.id)
@@ -225,7 +218,7 @@ export default defineEventHandler(async (event) => {
         source_type: 'upload',
         storage_provider: 'supabase-storage',
         transcriber,
-        word_boost: buildWordBoostFromFileName(uploadedFileRecord.file_name),
+        word_boost: buildWordBoostFromFileName(fileName),
         gdrive_file_id: '',
         callback_url: callbackUrl,
       },
@@ -253,21 +246,6 @@ export default defineEventHandler(async (event) => {
 
       throw new Error(message)
     }
-
-    await supabase
-      .from('transcription_files')
-      .update({
-        status: 'processing',
-        error_message: null,
-        transcriber,
-        current_job_id: jobId,
-        callback_url: callbackUrl || null,
-        started_at: now,
-        finished_at: null,
-        result_payload: null,
-      })
-      .eq('id', uploadedFileRecord.id)
-      .eq('user_id', user.id)
 
     const { data: finalFile } = await supabase
       .from('transcription_files')

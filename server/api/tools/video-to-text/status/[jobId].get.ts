@@ -110,13 +110,16 @@ export default defineEventHandler(async (event) => {
         .from('transcription_files')
         .select('current_job_id,status,source_url,transcriber,transcription,summary,highlights,error_message,started_at,created_at,updated_at')
         .eq('current_job_id', jobId)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false })
+        .order('updated_at', { ascending: false })
         .limit(1)
         .maybeSingle()
 
       if (!error && fileRow) {
         const file = fileRow as SupabaseTranscriptionFileSnapshot
+        const deletedMessage = file.status === 'deleted'
+          ? 'This uploaded file was deleted before the transcript callback completed.'
+          : undefined
+
         const fallbackJob = {
           id: jobId,
           status: mapSupabaseStatusToJobStatus(file.status),
@@ -126,7 +129,7 @@ export default defineEventHandler(async (event) => {
           transcription: file.transcription || undefined,
           summary: file.summary || undefined,
           highlights: Array.isArray(file.highlights) ? file.highlights : [],
-          error: file.error_message || undefined,
+          error: deletedMessage || file.error_message || undefined,
           createdAt: file.started_at || file.created_at || new Date().toISOString(),
           updatedAt: file.updated_at || new Date().toISOString(),
         }

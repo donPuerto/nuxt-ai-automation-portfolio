@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PortfolioKnowledgeProject } from '@@/shared'
-import VidstackPreview from '@/components/ui/media/VidstackPreview.vue'
+import MediaPreview from '@/components/ui/media/MediaPreview.vue'
 import { toast } from 'vue-sonner'
 
 type StartTranscriptionResult = {
@@ -65,11 +65,21 @@ type UploadFileResult = {
   message?: string
 }
 
+type SignedUploadInitResult = {
+  bucket: string
+  path: string
+  fileId: string
+  token: string
+  maxFileSizeBytes: number
+}
+
 type UploadedFilesResult = {
   files: UploadedTranscriptionFile[]
 }
 
 type UploadedFilesSortOption = 'newest' | 'oldest'
+
+const MAX_UPLOAD_FILE_BYTES = 512 * 1024 * 1024
 
 const props = defineProps<{
   project: PortfolioKnowledgeProject
@@ -210,7 +220,6 @@ const statusBadgeClass = computed(() => {
 const formattedTranscriptParagraphs = computed(() => {
   const normalizedTranscript = transcript.value
     .replace(/\r\n/g, '\n')
-    .replace(/[ \t]+/g, ' ')
     .trim()
 
   if (!normalizedTranscript) {
@@ -222,41 +231,7 @@ const formattedTranscriptParagraphs = computed(() => {
     .map(paragraph => paragraph.trim())
     .filter(Boolean)
 
-  if (explicitParagraphs.length > 1) {
-    return explicitParagraphs
-  }
-
-  const sentences = normalizedTranscript
-    .split(/(?<=[.!?])\s+(?=(?:[A-Z0-9"'])|(?:No\b)|(?:But\b)|(?:And\b)|(?:So\b))/)
-    .map(sentence => sentence.trim())
-    .filter(Boolean)
-
-  if (sentences.length <= 3) {
-    return [normalizedTranscript]
-  }
-
-  const paragraphs: string[] = []
-  let currentParagraph = ''
-
-  for (const sentence of sentences) {
-    const nextParagraph = currentParagraph
-      ? `${currentParagraph} ${sentence}`
-      : sentence
-
-    if (nextParagraph.length > 420 && currentParagraph) {
-      paragraphs.push(currentParagraph)
-      currentParagraph = sentence
-      continue
-    }
-
-    currentParagraph = nextParagraph
-  }
-
-  if (currentParagraph) {
-    paragraphs.push(currentParagraph)
-  }
-
-  return paragraphs
+  return explicitParagraphs.length ? explicitParagraphs : [normalizedTranscript]
 })
 const callbackNotice = computed(() => {
   if (!callbackPending.value || !isCurrentTabStatus.value) {
@@ -319,12 +294,18 @@ const clearPolling = () => {
 
 const getApiErrorMessage = (error: unknown) => {
   const candidate = error as ApiErrorLike | null
+  const message
+    = candidate?.data?.message
+      || candidate?.data?.statusMessage
+      || candidate?.statusMessage
+      || candidate?.message
+      || ''
 
-  return candidate?.data?.message
-    || candidate?.data?.statusMessage
-    || candidate?.statusMessage
-    || candidate?.message
-    || 'We could not start the transcription workflow right now.'
+  if (message.includes('Failed to fetch') || message.includes('<no response>')) {
+    return `Upload failed before the server responded. Keep files under ${formatUploadLimit(MAX_UPLOAD_FILE_BYTES)} and try again.`
+  }
+
+  return message || 'We could not start the transcription workflow right now.'
 }
 
 const getAuthHeaders = async () => {
@@ -360,6 +341,10 @@ const formatUploadedFileSize = (bytes: number | null) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
+const formatUploadLimit = (bytes: number) => {
+  return `${Math.round(bytes / (1024 * 1024))}MB`
+}
+
 const formatUploadedFileTimestamp = (value: string | null) => {
   if (!value) {
     return 'Unknown upload time'
@@ -385,6 +370,15 @@ const getUploadedFileMediaKind = (file: UploadedTranscriptionFile) => {
   const mimeType = file.mime_type?.toLowerCase() ?? ''
 
   if (mimeType.startsWith('video/')) {
+    return 'video'
+  }
+
+  if (mimeType.startsWith('audio/')) {
+    return 'audio'
+  }
+
+  const normalizedName = file.file_name.toLowerCase()
+  if (/\.(mp4|mov|webm|m4v|avi|mkv)$/.test(normalizedName)) {
     return 'video'
   }
 
@@ -507,7 +501,21 @@ const pollStatus = async () => {
     statusSourceTab.value = activeJobSourceTab.value ?? statusSourceTab.value ?? sourceTab.value
 
     if (result.job.status === 'completed') {
-      transcript.value = result.job.transcription || ''
+      const resolvedTranscript = (result.job.transcription || '').trim()
+
+      if (!resolvedTranscript) {
+        const emptyTranscriptMessage = result.job.error || 'Transcription finished but no spoken transcript text was detected.'
+        status.value = 'failed'
+        errorMessage.value = emptyTranscriptMessage
+        statusMessage.value = 'Transcription failed.'
+        loading.value = false
+        callbackPending.value = false
+        toast.error(emptyTranscriptMessage)
+        clearPolling()
+        return
+      }
+
+      transcript.value = resolvedTranscript
       transcriptSummary.value = typeof result.job.summary === 'string' ? result.job.summary.trim() : ''
       summaryHighlights.value = Array.isArray(result.job.highlights)
         ? result.job.highlights
@@ -648,20 +656,54 @@ const uploadAndTranscribeFile = async () => {
     return
   }
 
+  if (selectedUploadFile.value.size > MAX_UPLOAD_FILE_BYTES) {
+    toast.error(`File is too large. Keep uploads under ${formatUploadLimit(MAX_UPLOAD_FILE_BYTES)}.`)
+    return
+  }
+
   uploadingFile.value = true
   errorMessage.value = ''
 
   try {
     const headers = await getAuthHeaders()
-    const formData = new FormData()
-    formData.append('file', selectedUploadFile.value)
-    formData.append('transcriber', transcriber.value)
-    formData.append('autoTranscribe', 'true')
+    if (!supabase) {
+      throw new Error('Please sign in to manage uploaded files.')
+    }
 
-    const result = await $fetch<UploadFileResult>('/api/tools/video-to-text/files/upload', {
+    const selectedFile = selectedUploadFile.value
+    const uploadInit = await $fetch<SignedUploadInitResult>('/api/tools/video-to-text/files/upload/signed-url', {
       method: 'POST',
       headers,
-      body: formData,
+      body: {
+        fileName: selectedFile.name,
+        fileSizeBytes: selectedFile.size,
+      },
+    })
+
+    const { error: uploadError } = await supabase.storage
+      .from(uploadInit.bucket)
+      .uploadToSignedUrl(uploadInit.path, uploadInit.token, selectedFile, {
+        contentType: selectedFile.type || 'application/octet-stream',
+        upsert: true,
+      })
+
+    if (uploadError) {
+      throw new Error(uploadError.message || 'Could not upload file to Supabase Storage.')
+    }
+
+    const result = await $fetch<UploadFileResult>('/api/tools/video-to-text/files/upload/complete', {
+      method: 'POST',
+      headers,
+      body: {
+        fileId: uploadInit.fileId,
+        fileName: selectedFile.name,
+        mimeType: selectedFile.type || 'application/octet-stream',
+        fileSizeBytes: selectedFile.size,
+        bucket: uploadInit.bucket,
+        path: uploadInit.path,
+        transcriber: transcriber.value,
+        autoTranscribe: true,
+      },
     })
 
     if (result.jobId) {
@@ -945,7 +987,7 @@ watch(filesDialogOpen, (open) => {
               @change="handleFileSelection"
             />
             <p class="mt-2 text-xs text-muted-foreground">
-              Supported formats: `.mp3`, `.wav`, `.m4a`, `.mp4`, `.mov`, `.webm` (plus most `audio/*` and `video/*` files).
+              Supported formats: `.mp3`, `.wav`, `.m4a`, `.mp4`, `.mov`, `.webm` (plus most `audio/*` and `video/*` files). Max upload size: `512MB`.
             </p>
           </TabsContent>
         </Tabs>
@@ -1548,7 +1590,7 @@ watch(filesDialogOpen, (open) => {
                   </div>
 
                   <div class="overflow-hidden rounded-[1.5rem] border border-border/70 bg-card/70">
-                    <VidstackPreview
+                    <MediaPreview
                       v-if="getUploadedFilePreviewMode(file) === 'player'"
                       :title="file.file_name"
                       :src="getUploadedFileMediaUrl(file)"
@@ -1561,6 +1603,13 @@ watch(filesDialogOpen, (open) => {
                       Preview is not available for this file yet. Use Open to view it in a new tab.
                     </div>
                   </div>
+
+                  <p
+                    v-if="getUploadedFilePreviewMode(file) === 'player' && getUploadedFileMediaKind(file) === 'audio'"
+                    class="text-xs text-muted-foreground"
+                  >
+                    This file is audio-only ({{ file.mime_type || 'unknown type' }}), so no video picture will appear.
+                  </p>
 
                   <p v-if="file.error_message" class="text-sm text-destructive">
                     {{ file.error_message }}

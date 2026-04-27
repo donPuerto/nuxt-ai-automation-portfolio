@@ -33,7 +33,6 @@
     "stripe": "^20.4.1",
     "three": "^0.183.2",
     "vee-validate": "^4.15.1",
-    "vidstack": "^0.6.15",
     "vue": "^3.5.30",
     "vue-sonner": "^2.0.9",
     "wrangler": "^4.79.0",
