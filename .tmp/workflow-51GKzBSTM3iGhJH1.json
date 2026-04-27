@@ -35,7 +35,7 @@
                   {
                       "parameters":  {
                                          "mode":  "raw",
-                                         "jsonOutput":  "={{ (() =\u003e { const body = $json.body || {}; const url = body.url || \"\"; const source = body.source || \"auto\"; const transcriber = body.transcriber || \"assemblyai\"; const gdrive_file_id = body.gdrive_file_id || \"\"; const callback_url = body.callback_url || \"\"; const word_boost = Array.isArray(body.word_boost) ? body.word_boost.filter(Boolean) : []; const directMediaPattern = /\\.(mp3|wav|m4a|mp4|mov|webm)(\\?|$)/i; const isDirectMediaUrl = directMediaPattern.test(url) || url.includes(\"supabase.co/storage\") || url.includes(\"/api/tools/video-to-text/files/\"); let detectedSource = source; if (source === \"auto\" \u0026\u0026 url) { if (url.includes(\"youtube.com\") || url.includes(\"youtu.be\")) { detectedSource = \"youtube\"; } else if (url.includes(\"drive.google.com\")) { detectedSource = \"gdrive\"; } else if (isDirectMediaUrl) { detectedSource = \"upload\"; } else { detectedSource = \"social\"; } } if ((source === \"social\" || source === \"upload\" || source === \"supabase\") \u0026\u0026 isDirectMediaUrl) { detectedSource = \"upload\"; } if (gdrive_file_id) detectedSource = \"gdrive\"; return JSON.stringify({ url, source: detectedSource, transcriber, gdrive_file_id, callback_url, word_boost }); })() }}",
+                                         "jsonOutput":  "={{ (() =\u003e { const body = $json.body || {}; const url = body.url || \"\"; const source = body.source || \"auto\"; const transcriber = body.transcriber || \"assemblyai\"; const callback_url = body.callback_url || \"\"; const word_boost = Array.isArray(body.word_boost) ? body.word_boost.filter(Boolean) : []; const directMediaPattern = /\\.(mp3|wav|m4a|mp4|mov|webm)(\\?|$)/i; const isDirectMediaUrl = directMediaPattern.test(url) || url.includes(\"supabase.co/storage\") || url.includes(\"/api/tools/video-to-text/files/\"); let detectedSource = source; if (source === \"auto\" \u0026\u0026 url) { if (url.includes(\"youtube.com\") || url.includes(\"youtu.be\")) { detectedSource = \"youtube\"; } else if (isDirectMediaUrl) { detectedSource = \"upload\"; } else { detectedSource = \"social\"; } } if ((source === \"social\" || source === \"upload\" || source === \"supabase\") \u0026\u0026 isDirectMediaUrl) { detectedSource = \"upload\"; } return JSON.stringify({ url, source: detectedSource, transcriber, callback_url, word_boost }); })() }}",
                                          "options":  {
 
                                                      }
@@ -98,29 +98,6 @@
                                                                                          },
                                                                           "renameOutput":  true,
                                                                           "outputKey":  "Social Media"
-                                                                      },
-                                                                      {
-                                                                          "conditions":  {
-                                                                                             "options":  {
-                                                                                                             "caseSensitive":  false,
-                                                                                                             "leftValue":  "",
-                                                                                                             "typeValidation":  "strict"
-                                                                                                         },
-                                                                                             "conditions":  [
-                                                                                                                {
-                                                                                                                    "id":  "cond-gdrive",
-                                                                                                                    "leftValue":  "={{ $json.source }}",
-                                                                                                                    "rightValue":  "gdrive",
-                                                                                                                    "operator":  {
-                                                                                                                                     "type":  "string",
-                                                                                                                                     "operation":  "equals"
-                                                                                                                                 }
-                                                                                                                }
-                                                                                                            ],
-                                                                                             "combinator":  "and"
-                                                                                         },
-                                                                          "renameOutput":  true,
-                                                                          "outputKey":  "Google Drive"
                                                                       },
                                                                       {
                                                                           "conditions":  {
@@ -312,33 +289,16 @@
                   },
                   {
                       "parameters":  {
-                                         "method":  "POST",
-                                         "url":  "https://api.openai.com/v1/audio/transcriptions",
-                                         "authentication":  "predefinedCredentialType",
-                                         "nodeCredentialType":  "openAiApi",
-                                         "sendBody":  true,
-                                         "contentType":  "multipart-form-data",
-                                         "bodyParameters":  {
-                                                                "parameters":  [
-                                                                                   {
-                                                                                       "name":  "model",
-                                                                                       "value":  "whisper-1"
-                                                                                   },
-                                                                                   {
-                                                                                       "parameterType":  "formBinaryData",
-                                                                                       "name":  "file",
-                                                                                       "inputDataFieldName":  "data"
-                                                                                   }
-                                                                               ]
-                                                            },
+                                         "resource":  "audio",
+                                         "operation":  "transcribe",
                                          "options":  {
 
                                                      }
                                      },
                       "id":  "a0000009-0000-0000-0000-000000000009",
                       "name":  "Whisper: Transcribe YouTube Audio",
-                      "type":  "n8n-nodes-base.httpRequest",
-                      "typeVersion":  4.2,
+                      "type":  "@n8n/n8n-nodes-langchain.openAi",
+                      "typeVersion":  1.8,
                       "position":  [
                                        2016,
                                        -40
@@ -537,7 +497,7 @@
                                                      }
                                      },
                       "id":  "a0000012-0000-0000-0000-000000000012",
-                      "name":  "Switch: Transcriber (Social/GDrive)",
+                      "name":  "Switch: Transcriber (Social/Upload)",
                       "type":  "n8n-nodes-base.switch",
                       "typeVersion":  3.2,
                       "position":  [
@@ -547,33 +507,16 @@
                   },
                   {
                       "parameters":  {
-                                         "method":  "POST",
-                                         "url":  "https://api.openai.com/v1/audio/transcriptions",
-                                         "authentication":  "predefinedCredentialType",
-                                         "nodeCredentialType":  "openAiApi",
-                                         "sendBody":  true,
-                                         "contentType":  "multipart-form-data",
-                                         "bodyParameters":  {
-                                                                "parameters":  [
-                                                                                   {
-                                                                                       "name":  "model",
-                                                                                       "value":  "whisper-1"
-                                                                                   },
-                                                                                   {
-                                                                                       "parameterType":  "formBinaryData",
-                                                                                       "name":  "file",
-                                                                                       "inputDataFieldName":  "data"
-                                                                                   }
-                                                                               ]
-                                                            },
+                                         "resource":  "audio",
+                                         "operation":  "transcribe",
                                          "options":  {
 
                                                      }
                                      },
                       "id":  "a0000013-0000-0000-0000-000000000013",
                       "name":  "Whisper: Transcribe Audio",
-                      "type":  "n8n-nodes-base.httpRequest",
-                      "typeVersion":  4.2,
+                      "type":  "@n8n/n8n-nodes-langchain.openAi",
+                      "typeVersion":  1.8,
                       "position":  [
                                        2464,
                                        1088
@@ -714,33 +657,6 @@
                   },
                   {
                       "parameters":  {
-                                         "operation":  "download",
-                                         "fileId":  {
-                                                        "__rl":  true,
-                                                        "mode":  "id",
-                                                        "value":  "={{ $(\u0027Set: Extract \u0026 Detect Source\u0027).first().json.gdrive_file_id }}"
-                                                    },
-                                         "options":  {
-
-                                                     }
-                                     },
-                      "id":  "a0000019-0000-0000-0000-000000000019",
-                      "name":  "Google Drive: Download File",
-                      "type":  "n8n-nodes-base.googleDrive",
-                      "typeVersion":  3,
-                      "position":  [
-                                       1120,
-                                       1880
-                                   ],
-                      "credentials":  {
-                                          "googleDriveOAuth2Api":  {
-                                                                       "id":  "YO4qnGhKlEgotzkB",
-                                                                       "name":  "DP: Google Drive Account"
-                                                                   }
-                                      }
-                  },
-                  {
-                      "parameters":  {
                                          "mode":  "raw",
                                          "jsonOutput":  "={{ (() =\u003e { const input = $(\"Set: Extract \u0026 Detect Source\").first().json; const rawText = ($json.text || $json.transcription || \"\").trim(); const success = rawText.length \u003e 0; return JSON.stringify({ success, transcription: rawText, source_url: input.url || \"\", source: input.source, transcriber: input.transcriber, word_count: success ? rawText.split(/\\s+/).filter(w =\u003e w).length : 0, error: success ? \"\" : \"No transcript text was detected from the selected source. Try clearer speech audio or switch transcriber.\", timestamp: new Date().toISOString() }); })() }}",
                                          "options":  {
@@ -802,22 +718,6 @@
                       "position":  [
                                        688,
                                        576
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "content":  "### Google Drive Path\nDownloads file from Google Drive, then sends to chosen transcriber.",
-                                         "height":  132,
-                                         "width":  628,
-                                         "color":  6
-                                     },
-                      "id":  "a0000030-0000-0000-0000-000000000030",
-                      "name":  "Sticky: Google Drive Section",
-                      "type":  "n8n-nodes-base.stickyNote",
-                      "typeVersion":  1,
-                      "position":  [
-                                       688,
-                                       816
                                    ]
                   },
                   {
@@ -1469,6 +1369,60 @@
                                    ],
                       "notesInFlow":  true,
                       "notes":  "Formats transcription error payload. Covers Deepgram REMOTE_CONTENT_ERROR, AssemblyAI failures, Whisper rejections."
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  false,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "loose"
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "cond-upload-whisper",
+                                                                                   "leftValue":  "={{ $(\"Set: Extract \u0026 Detect Source\").first().json.transcriber }}",
+                                                                                   "rightValue":  "whisper",
+                                                                                   "operator":  {
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "equals"
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "a0000091-0000-0000-0000-000000000091",
+                      "name":  "IF: Upload Uses Whisper?",
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       672,
+                                       1744
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "url":  "={{ $(\"Set: Extract \u0026 Detect Source\").first().json.url }}",
+                                         "options":  {
+                                                         "response":  {
+                                                                          "response":  {
+                                                                                           "responseFormat":  "file"
+                                                                                       }
+                                                                      }
+                                                     }
+                                     },
+                      "id":  "a0000092-0000-0000-0000-000000000092",
+                      "name":  "Download: Upload Source File",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       896,
+                                       1744
+                                   ]
                   }
               ],
     "connections":  {
@@ -1518,14 +1472,7 @@
                                                                  ],
                                                                  [
                                                                      {
-                                                                         "node":  "Google Drive: Download File",
-                                                                         "type":  "main",
-                                                                         "index":  0
-                                                                     }
-                                                                 ],
-                                                                 [
-                                                                     {
-                                                                         "node":  "Switch: Transcriber (Social/GDrive)",
+                                                                         "node":  "IF: Upload Uses Whisper?",
                                                                          "type":  "main",
                                                                          "index":  0
                                                                      }
@@ -1641,49 +1588,13 @@
                                                     "main":  [
                                                                  [
                                                                      {
-                                                                         "node":  "Switch: Transcriber (Social/GDrive)",
+                                                                         "node":  "Switch: Transcriber (Social/Upload)",
                                                                          "type":  "main",
                                                                          "index":  0
                                                                      }
                                                                  ]
                                                              ]
                                                 },
-                        "Google Drive: Download File":  {
-                                                            "main":  [
-                                                                         [
-                                                                             {
-                                                                                 "node":  "Switch: Transcriber (Social/GDrive)",
-                                                                                 "type":  "main",
-                                                                                 "index":  0
-                                                                             }
-                                                                         ]
-                                                                     ]
-                                                        },
-                        "Switch: Transcriber (Social/GDrive)":  {
-                                                                    "main":  [
-                                                                                 [
-                                                                                     {
-                                                                                         "node":  "Whisper: Transcribe Audio",
-                                                                                         "type":  "main",
-                                                                                         "index":  0
-                                                                                     }
-                                                                                 ],
-                                                                                 [
-                                                                                     {
-                                                                                         "node":  "AssemblyAI: Upload Audio",
-                                                                                         "type":  "main",
-                                                                                         "index":  0
-                                                                                     }
-                                                                                 ],
-                                                                                 [
-                                                                                     {
-                                                                                         "node":  "Deepgram: Transcribe Audio",
-                                                                                         "type":  "main",
-                                                                                         "index":  0
-                                                                                     }
-                                                                                 ]
-                                                                             ]
-                                                                },
                         "Whisper: Transcribe Audio":  {
                                                           "main":  [
                                                                        [
@@ -2036,7 +1947,61 @@
                                                                               }
                                                                           ]
                                                                       ]
-                                                         }
+                                                         },
+                        "IF: Upload Uses Whisper?":  {
+                                                         "main":  [
+                                                                      [
+                                                                          {
+                                                                              "node":  "Download: Upload Source File",
+                                                                              "type":  "main",
+                                                                              "index":  0
+                                                                          }
+                                                                      ],
+                                                                      [
+                                                                          {
+                                                                              "node":  "Switch: Transcriber (Social/Upload)",
+                                                                              "type":  "main",
+                                                                              "index":  0
+                                                                          }
+                                                                      ]
+                                                                  ]
+                                                     },
+                        "Download: Upload Source File":  {
+                                                             "main":  [
+                                                                          [
+                                                                              {
+                                                                                  "node":  "Whisper: Transcribe Audio",
+                                                                                  "type":  "main",
+                                                                                  "index":  0
+                                                                              }
+                                                                          ]
+                                                                      ]
+                                                         },
+                        "Switch: Transcriber (Social/Upload)":  {
+                                                                    "main":  [
+                                                                                 [
+                                                                                     {
+                                                                                         "node":  "Whisper: Transcribe Audio",
+                                                                                         "type":  "main",
+                                                                                         "index":  0
+                                                                                     }
+                                                                                 ],
+                                                                                 [
+                                                                                     {
+                                                                                         "node":  "AssemblyAI: Upload Audio",
+                                                                                         "type":  "main",
+                                                                                         "index":  0
+                                                                                     }
+                                                                                 ],
+                                                                                 [
+                                                                                     {
+                                                                                         "node":  "Deepgram: Transcribe Audio",
+                                                                                         "type":  "main",
+                                                                                         "index":  0
+                                                                                     }
+                                                                                 ]
+                                                                             ]
+                                                                }
                     },
     "settings":  {
                      "executionOrder":  "v1",
