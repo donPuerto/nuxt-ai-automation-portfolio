@@ -1,1 +1,0 @@
-supabase ui upload smoke test
