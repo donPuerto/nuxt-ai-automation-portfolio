@@ -674,9 +674,9 @@
                   },
                   {
                       "parameters":  {
-                                         "content":  "## [Video to Text] - Multi-Source Transcription - v1\n\n**Trigger:** Webhook POST `/video-to-text`\n**Sources:** YouTube (RapidAPI MP3), Social Media (FastSaverAPI), Google Drive\n**Transcribers:** OpenAI Whisper | AssemblyAI | Deepgram Nova-2\n**Output:** JSON result POSTed to callback_url\n\n⚠️ **ASYNC API** — n8n runs in queue mode.\nEvery request returns {\"message\": \"Workflow was started\"} immediately.\nResults are POSTed to callback_url when done.\n\n### Request Body:\n```json\n{\n  \"url\": \"https://youtube.com/watch?v=xxx\",\n  \"source\": \"auto\",\n  \"transcriber\": \"assemblyai\",\n  \"gdrive_file_id\": \"\",\n  \"callback_url\": \"https://your-app.com/api/result\"\n}\n```\n\n### Callback Response:\n```json\n{\n  \"success\": true,\n  \"transcription\": \"Full text...\",\n  \"source_url\": \"...\",\n  \"source\": \"youtube\",\n  \"transcriber\": \"assemblyai\",\n  \"word_count\": 1234,\n  \"timestamp\": \"...\"\n}\n```\n\n### API Key\n`vtt_33872321dd87e4bd6275578fe674bf9102f7d4c96d4a62ee8ddbc54fc1368561`",
-                                         "height":  816,
-                                         "width":  500,
+                                         "content":  "## [Video to Text] - Multi-Source Transcription - v1\n\n**Trigger:** Webhook POST `/video-to-text`\n**Sources:** YouTube, social/video URLs, Supabase upload URLs\n**Transcribers:** OpenAI Whisper (native node) | AssemblyAI | Deepgram\n**Output:** Result JSON POSTed to `callback_url`\n\n### Current flow\n- `youtube` -\u003e RapidAPI MP3 -\u003e FastSaver fallback -\u003e transcriber path\n- `social` -\u003e FastSaver download extraction -\u003e transcriber path\n- `upload` -\u003e Supabase signed/relay URL -\u003e direct transcriber path\n- Whisper upload path downloads binary first so the native OpenAI node receives `data`\n\n### Request body\n```json\n{\n  \"url\": \"https://youtube.com/watch?v=xxx\",\n  \"source\": \"auto\",\n  \"transcriber\": \"whisper\",\n  \"callback_url\": \"https://your-app.com/api/result\"\n}\n```\n\n### Callback shape\n```json\n{\n  \"success\": true,\n  \"transcription\": \"Full text...\",\n  \"source_url\": \"...\",\n  \"source\": \"upload\",\n  \"transcriber\": \"whisper\",\n  \"word_count\": 1234,\n  \"timestamp\": \"...\"\n}\n```",
+                                         "height":  760,
+                                         "width":  520,
                                          "color":  4
                                      },
                       "id":  "a0000027-0000-0000-0000-000000000027",
@@ -690,9 +690,9 @@
                   },
                   {
                       "parameters":  {
-                                         "content":  "## YouTube Path\n**RapidAPI youtube-mp36 → AssemblyAI / Deepgram / Whisper**\n1. Extract video ID from URL\n2. GET https://youtube-mp36.p.rapidapi.com/dl?id={videoId}\n3. Returns { link: \"https://...mp3\" }\n4. AssemblyAI: download binary → upload to AAI → poll\n5. Deepgram: send MP3 URL directly → sync response\n6. Whisper: DISABLED\n\n⚠️ YouTube IPs are blocked from n8n VPS — must use RapidAPI\n⚠️ RapidAPI temp URLs are IP-restricted — must download binary before sending to AssemblyAI",
-                                         "height":  304,
-                                         "width":  724,
+                                         "content":  "## YouTube Path\n**RapidAPI youtube-mp36 -\u003e FastSaver fallback -\u003e Whisper / AssemblyAI / Deepgram**\n1. Extract video ID from URL\n2. Try `youtube-mp36` to get a temporary MP3 link\n3. If RapidAPI has no `link`, try FastSaver as downloader fallback\n4. Whisper: download MP3 binary -\u003e native OpenAI `Transcribe` node\n5. AssemblyAI: download MP3 binary -\u003e upload -\u003e submit -\u003e poll\n6. Deepgram: download MP3 binary -\u003e transcribe\n\nNotes:\n- Downloader availability depends on the specific YouTube video\n- Some videos fail at both downloader providers before transcription starts",
+                                         "height":  336,
+                                         "width":  760,
                                          "color":  6
                                      },
                       "id":  "a0000028-0000-0000-0000-000000000028",
@@ -706,9 +706,9 @@
                   },
                   {
                       "parameters":  {
-                                         "content":  "### Social Media Path\nFastSaverAPI extracts audio from TikTok, Instagram, Facebook, Twitter, etc.\nFree tier: 200 points/month, 1 req/sec.",
-                                         "height":  200,
-                                         "width":  636,
+                                         "content":  "### Social + Upload Path\n- Social links use FastSaver to extract audio/video download URLs\n- Supabase uploads do not use Google Drive anymore\n- Upload URLs route directly into the selected transcriber path\n- Whisper upload path adds a download step so the native OpenAI node receives binary `data`",
+                                         "height":  210,
+                                         "width":  660,
                                          "color":  6
                                      },
                       "id":  "a0000029-0000-0000-0000-000000000029",
@@ -722,9 +722,9 @@
                   },
                   {
                       "parameters":  {
-                                         "content":  "### AssemblyAI Polling (async)\nSubmit transcript → Code node 15s delay → Poll status\n→ IF completed → continue, else → loop back\n\n⚠️ Uses Code node for delay (NOT Wait node)\nWait node closes webhook connection — Code node does not.\n\nBudget 60-120s per video.",
-                                         "height":  240,
-                                         "width":  660,
+                                         "content":  "### AssemblyAI Polling (async)\nSubmit transcript -\u003e 15s delay -\u003e poll status\n-\u003e IF `completed` continue\n-\u003e ELSE loop and poll again\n\nUsed only for AssemblyAI.\nDeepgram and Whisper return in the same execution path.",
+                                         "height":  220,
+                                         "width":  640,
                                          "color":  5
                                      },
                       "id":  "a0000031-0000-0000-0000-000000000031",
@@ -738,9 +738,9 @@
                   },
                   {
                       "parameters":  {
-                                         "content":  "### Output: Callback Only\n\nIF callback_url provided → POST result JSON to callback_url\nIF no callback_url → workflow ends silently\n\nResult shape:\n{\n  success, transcription, source_url,\n  source, transcriber, word_count, timestamp\n}\n\nNo Google Docs — use callback_url in your web app.",
-                                         "height":  236,
-                                         "width":  604,
+                                         "content":  "### Output: Callback Only\nIf `callback_url` exists -\u003e POST result JSON back to the app\nIf no `callback_url` -\u003e workflow ends silently\n\nThe Nuxt app stores upload metadata in Supabase.\nThis workflow only returns the finished transcription payload.",
+                                         "height":  220,
+                                         "width":  620,
                                          "color":  6
                                      },
                       "id":  "a0000032-0000-0000-0000-000000000032",
@@ -1151,9 +1151,9 @@
                   },
                   {
                       "parameters":  {
-                                         "content":  "### ⚠️ RapidAPI Error Handling\n\nBoth RapidAPI nodes have `continueOnFail: true`.\nAfter each call, an IF node checks if `link` exists in the response.\n\n**Success path:** `link` is present → continue to download/transcribe\n**Error path:** `link` is missing (HTTP error OR soft error like `{status:\"fail\"}`) → `Set: Format Error (RapidAPI)` → callback to UI\n\n**Error callback shape:**\n```json\n{\n  \"success\": false,\n  \"error\": \"RapidAPI error message\",\n  \"error_code\": \"RAPIDAPI_FETCH_FAILED\",\n  \"error_stage\": \"youtube_download\",\n  \"api_status\": \"fail\",\n  \"http_status\": 429,\n  \"source_url\": \"https://youtube.com/...\",\n  \"transcriber\": \"assemblyai\",\n  \"timestamp\": \"...\"\n}\n```\n\nCommon causes: quota exhausted (500/month), invalid video ID, region-blocked video.",
-                                         "height":  472,
-                                         "width":  532,
+                                         "content":  "### YouTube Downloader Error Handling\nBoth YouTube RapidAPI nodes use `continueOnFail: true`.\n\nFlow:\n- If `link` exists -\u003e continue to transcription\n- If `link` is missing -\u003e try FastSaver fallback\n- If FastSaver also fails -\u003e format downloader error and callback to UI\n\nCommon causes:\n- quota exhausted\n- invalid or blocked video\n- provider cannot extract media for that specific URL",
+                                         "height":  320,
+                                         "width":  560,
                                          "color":  7
                                      },
                       "id":  "a0000048-0000-0000-0000-000000000048",
