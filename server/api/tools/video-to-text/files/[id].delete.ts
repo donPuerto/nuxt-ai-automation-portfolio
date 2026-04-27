@@ -44,24 +44,16 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const { error: updateError } = await supabase
+  const { error: deleteError } = await supabase
     .from('transcription_files')
-    .update({
-      status: 'deleted',
-      deleted_at: new Date().toISOString(),
-      error_message: storageDeleteError,
-      metadata: {
-        ...(file.metadata ?? {}),
-        storage_delete_error: storageDeleteError,
-      },
-    })
+    .delete()
     .eq('id', file.id)
     .eq('user_id', user.id)
 
-  if (updateError) {
+  if (deleteError) {
     throw createError({
       statusCode: 500,
-      statusMessage: updateError.message,
+      statusMessage: deleteError.message,
     })
   }
 
