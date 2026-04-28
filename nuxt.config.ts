@@ -242,6 +242,7 @@ export default defineNuxtConfig({
     videoToTextWebhookUrl: process.env.VIDEO_TO_TEXT_WEBHOOK_URL ?? process.env.NUXT_VIDEO_TO_TEXT_WEBHOOK_URL ?? '',
     videoToTextApiKey: process.env.VIDEO_TO_TEXT_API_KEY ?? process.env.NUXT_VIDEO_TO_TEXT_API_KEY ?? '',
     videoToTextCallbackUrl: process.env.VIDEO_TO_TEXT_CALLBACK_URL ?? process.env.NUXT_VIDEO_TO_TEXT_CALLBACK_URL ?? '',
+    selfLearnEnabled: (process.env.SELF_LEARN_ENABLED ?? process.env.NUXT_SELF_LEARN_ENABLED ?? '') === 'true',
     public: {
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL ?? '',
       supabaseKey: process.env.NUXT_PUBLIC_SUPABASE_KEY ?? process.env.SUPABASE_KEY ?? '',

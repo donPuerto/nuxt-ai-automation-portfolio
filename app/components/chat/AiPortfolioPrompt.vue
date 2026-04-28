@@ -147,8 +147,8 @@ watch(selectedAgent, (agent) => {
         />
       </div>
 
-      <div class="flex flex-wrap items-center justify-between gap-2.5 pt-2.5 text-muted-foreground">
-        <div class="flex min-w-0 items-center gap-2 text-sm">
+      <div class="flex items-center justify-between gap-2.5 pt-2.5 text-muted-foreground">
+        <div class="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto pb-px text-sm [scrollbar-width:thin]">
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
               <Button
@@ -246,7 +246,7 @@ watch(selectedAgent, (agent) => {
           </DropdownMenu>
         </div>
 
-        <div class="flex min-w-0 flex-1 items-center justify-end gap-2 text-sm sm:flex-initial">
+        <div class="flex shrink-0 items-center justify-end gap-2 text-sm">
           <Button
             type="button"
             size="icon"

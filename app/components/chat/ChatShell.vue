@@ -142,7 +142,7 @@ const promptSurfaceClass = computed(() => {
   }
 
   if (isConversationMode.value) {
-    return 'px-4 pb-72 pt-4 md:px-8 md:pb-80 md:pt-5'
+    return 'px-4 pb-6 pt-4 md:px-8 md:pb-8 md:pt-5'
   }
 
   return 'px-4 py-6 md:px-8 md:py-8'
@@ -353,9 +353,9 @@ if (import.meta.client) {
             </div>
           </header>
 
-          <div class="relative min-h-0 flex-1">
+          <div class="flex min-h-0 flex-1 flex-col">
             <div
-              class="h-full overflow-y-auto"
+              class="chat-scrollbar min-h-0 flex-1 overflow-y-auto"
               :class="promptSurfaceClass"
             >
               <div class="mx-auto flex h-full w-full max-w-6xl flex-col">
@@ -459,11 +459,11 @@ if (import.meta.client) {
               </div>
             </div>
 
-            <div v-if="isPromptMode && isConversationMode" class="pointer-events-none absolute inset-x-0 bottom-0 z-30 pb-4 md:pb-6">
-              <div class="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-background via-background/88 to-transparent" />
+            <div v-if="isPromptMode && isConversationMode" class="relative shrink-0 pb-4 md:pb-6">
+              <div class="pointer-events-none absolute inset-x-0 -top-20 h-20 bg-linear-to-b from-transparent to-background" />
 
               <motion.div
-                class="pointer-events-auto relative mx-auto flex w-full max-w-6xl flex-col items-center gap-3 px-4 md:px-8"
+                class="relative mx-auto flex w-full max-w-6xl flex-col items-center gap-3 px-4 md:px-8"
                 :initial="{ opacity: 0, y: 42, filter: 'blur(12px)' }"
                 :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
                 :exit="{ opacity: 0, y: 26, filter: 'blur(8px)' }"

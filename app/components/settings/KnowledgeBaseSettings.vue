@@ -57,6 +57,7 @@ const loading = ref(false)
 const saving = ref(false)
 const deletingId = ref<string | null>(null)
 const archiveId = ref<string | null>(null)
+const syncingProjects = ref(false)
 const selectedUploadFile = ref<File | null>(null)
 const filePickerKey = ref(0)
 
@@ -325,6 +326,33 @@ const deleteDocument = (document: KnowledgeDocument) => {
   })
 }
 
+const syncProjects = async () => {
+  if (syncingProjects.value) return
+  syncingProjects.value = true
+  try {
+    const headers = await getAuthHeaders()
+    const result = await $fetch<{
+      ok: boolean
+      report?: { synced: number, created: number, updated: number, skipped: number }
+    }>('/api/knowledge/sync-projects', { method: 'POST', headers })
+
+    await loadKnowledge()
+    const r = result.report
+    if (r) {
+      toast.success('Projects synced', {
+        description: `${r.created} created · ${r.updated} updated · ${r.skipped} skipped`,
+      })
+    }
+  }
+  catch (error) {
+    const description = error instanceof Error ? error.message : 'Unable to sync projects.'
+    toast.error('Sync failed', { description })
+  }
+  finally {
+    syncingProjects.value = false
+  }
+}
+
 const formatDate = (value: string | null) => {
   if (!value) {
     return 'Unknown'
@@ -454,6 +482,19 @@ watch(
       </div>
 
       <div class="flex shrink-0 flex-col items-end gap-2 self-end md:self-end">
+        <Button
+          variant="outline"
+          class="h-8 border-[#4a433d] bg-[#221f1d] px-3 text-xs text-[#f0deca] hover:bg-[#2d2926] hover:text-[#fff4e6]"
+          :disabled="syncingProjects"
+          @click="syncProjects"
+        >
+          <Icon
+            :name="syncingProjects ? 'lucide:loader-circle' : 'lucide:refresh-cw'"
+            class="mr-1.5 size-3.5"
+            :class="syncingProjects ? 'animate-spin' : ''"
+          />
+          {{ syncingProjects ? 'Syncing…' : 'Sync projects' }}
+        </Button>
         <Button
           variant="outline"
           class="h-8 border-[#4a433d] bg-[#221f1d] px-3 text-xs text-[#f0deca] hover:bg-[#2d2926] hover:text-[#fff4e6]"
@@ -660,20 +701,54 @@ watch(
           <div
             v-for="document in filteredDocuments"
             :key="document.id"
-            class="rounded-xl border border-[#4a433d]/70 bg-[#2b2724] p-3"
+            class="group rounded-xl border border-[#4a433d]/70 bg-[#2b2724] p-3 transition hover:border-[#6a5a4c]/80 hover:bg-[#2d2926]"
           >
-            <div class="flex items-center justify-between gap-3">
-              <div class="min-w-0">
-                <h3 class="truncate text-sm font-semibold text-[#fff4e6]">
-                  {{ document.name }}
-                </h3>
-                <p class="mt-1 line-clamp-2 text-sm leading-6 text-[#ab9986]">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <Icon name="lucide:notebook-text" class="size-4 shrink-0 text-[#d47f55]" />
+                  <h3 class="truncate text-sm font-semibold text-[#fff4e6]">
+                    {{ document.name }}
+                  </h3>
+                  <span
+                    class="rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em]"
+                    :class="embeddingStatusTone(document.embedding_status)"
+                  >
+                    {{ embeddingStatusLabel(document.embedding_status) }}
+                  </span>
+                </div>
+                <p class="mt-1.5 line-clamp-2 text-sm leading-6 text-[#ab9986]">
                   {{ document.preview || document.summary || 'No content preview.' }}
                 </p>
+                <div class="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[#8f857a]">
+                  <span>{{ document.chunk_count }} chunks</span>
+                  <span>{{ document.embedded_chunk_count }} embedded</span>
+                  <span>Updated {{ formatDate(document.updated_at) }}</span>
+                </div>
               </div>
-              <Button variant="ghost" class="h-8 px-2 text-xs text-[#f0deca] hover:bg-[#221f1d]" @click="openEditDialog(document)">
-                Edit
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="size-8 shrink-0 text-[#ab9986] hover:bg-[#221f1d] hover:text-[#fff4e6]"
+                  >
+                    <Icon name="lucide:more-horizontal" class="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" class="w-36 border-[#4a433d] bg-[#2b2724] text-[#f0deca]">
+                  <DropdownMenuItem class="text-xs focus:bg-[#221f1d] focus:text-[#fff4e6]" @select="openEditDialog(document)">
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    class="text-xs text-red-200 focus:bg-red-950/40 focus:text-red-100"
+                    :disabled="deletingId === document.id"
+                    @select="deleteDocument(document)"
+                  >
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
@@ -690,31 +765,53 @@ watch(
           <div
             v-for="document in filteredDocuments"
             :key="document.id"
-            class="rounded-xl border border-[#4a433d]/70 bg-[#2b2724] p-3"
+            class="group rounded-xl border border-[#4a433d]/70 bg-[#2b2724] p-3 transition hover:border-[#6a5a4c]/80 hover:bg-[#2d2926]"
           >
-            <div class="flex items-center justify-between gap-3">
-              <div class="min-w-0">
-                <h3 class="truncate text-sm font-semibold text-[#fff4e6]">
-                  {{ document.name }}
-                </h3>
-                <p class="mt-1 truncate text-sm text-[#ab9986]">
-                  {{ document.storage_path || document.file_name || 'No file path available yet.' }}
-                </p>
-                <div class="mt-2 flex flex-wrap items-center gap-2">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <Icon name="lucide:file-text" class="size-4 shrink-0 text-[#d47f55]" />
+                  <h3 class="truncate text-sm font-semibold text-[#fff4e6]">
+                    {{ document.name }}
+                  </h3>
                   <span
                     class="rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em]"
                     :class="embeddingStatusTone(document.embedding_status)"
                   >
                     {{ embeddingStatusLabel(document.embedding_status) }}
                   </span>
-                  <span class="text-[11px] text-[#8f857a]">
-                    {{ document.embedded_chunk_count }} / {{ document.chunk_count }} chunks embedded
-                  </span>
+                </div>
+                <p class="mt-1.5 truncate text-sm text-[#ab9986]">
+                  {{ document.storage_path || document.file_name || 'No file path available yet.' }}
+                </p>
+                <div class="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[#8f857a]">
+                  <span>{{ document.embedded_chunk_count }} / {{ document.chunk_count }} chunks embedded</span>
+                  <span>Updated {{ formatDate(document.updated_at) }}</span>
                 </div>
               </div>
-              <Button variant="ghost" class="h-8 px-2 text-xs text-[#f0deca] hover:bg-[#221f1d]" @click="openEditDialog(document)">
-                Edit
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="size-8 shrink-0 text-[#ab9986] hover:bg-[#221f1d] hover:text-[#fff4e6]"
+                  >
+                    <Icon name="lucide:more-horizontal" class="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" class="w-36 border-[#4a433d] bg-[#2b2724] text-[#f0deca]">
+                  <DropdownMenuItem class="text-xs focus:bg-[#221f1d] focus:text-[#fff4e6]" @select="openEditDialog(document)">
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    class="text-xs text-red-200 focus:bg-red-950/40 focus:text-red-100"
+                    :disabled="deletingId === document.id"
+                    @select="deleteDocument(document)"
+                  >
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>

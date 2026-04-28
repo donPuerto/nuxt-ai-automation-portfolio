@@ -5,6 +5,7 @@ import { tryGetSupabaseUser } from '../../utils/knowledge-auth'
 import { buildPortfolioAssistantResponse } from '../../utils/portfolio-assistant/build-response'
 import { generatePortfolioAiResponse, hasConfiguredPortfolioAiProvider } from '../../utils/portfolio-assistant/generate-ai-response'
 import { normalizeAssistantResponse } from '../../utils/portfolio-assistant/response-format'
+import { selfLearnFromConversation } from '../../utils/portfolio-assistant/self-learn'
 
 type AssistantApiResult = {
   ok?: boolean
@@ -182,6 +183,12 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
   const intent = body.intent ?? 'prompt'
 
+  const fireSelfLearn = (answer: string) => {
+    if (intent !== 'prompt' || !body.prompt || !answer) return
+    void selfLearnFromConversation({ prompt: body.prompt, answer, config, event })
+      .catch(err => console.warn('[self-learn] background job failed', err))
+  }
+
   // Navigator-driven canvas views should render from the app's own structured
   // portfolio data rather than depending on the generic n8n prompt workflow.
   if (intent !== 'prompt') {
@@ -208,6 +215,7 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    fireSelfLearn(directResponse.answer)
     return {
       ok: true,
       message: 'n8n Ask Don webhook is not configured. Generated response directly from AI provider.',
@@ -287,6 +295,7 @@ export default defineEventHandler(async (event) => {
         }
       }
 
+      fireSelfLearn(directResponse.answer)
       return {
         ok: true,
         message: 'Ask Don webhook returned an invalid response shape. Generated response directly from AI provider.',
@@ -305,6 +314,7 @@ export default defineEventHandler(async (event) => {
         }
       }
 
+      fireSelfLearn(directResponse.answer)
       return {
         ok: true,
         message: 'Ask Don webhook returned an empty knowledge response. Generated response directly from AI provider.',
@@ -313,6 +323,7 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    fireSelfLearn(normalized.answer)
     return {
       ok: true,
       message: upstream._data?.message || 'Portfolio assistant response ready.',
@@ -331,6 +342,7 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    fireSelfLearn(directResponse.answer)
     return {
       ok: true,
       message: toMessage(error) || 'n8n Ask Don webhook request failed. Generated response directly from AI provider.',

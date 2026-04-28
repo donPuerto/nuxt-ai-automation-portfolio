@@ -32,6 +32,9 @@ export default defineEventHandler(async (event) => {
     storagePath: existingDocument.storage_path,
   })
 
+  // Delete chunks first in case the FK doesn't have ON DELETE CASCADE
+  await supabase.from('document_chunks').delete().eq('document_id', id)
+
   const { error } = await supabase
     .from('documents')
     .delete()
