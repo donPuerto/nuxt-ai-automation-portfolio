@@ -323,23 +323,36 @@ const renderedTurns = computed(() => {
 
         <motion.div
           v-if="loading"
-          class="flex items-start gap-3 md:gap-4"
-          :initial="{ opacity: 0, y: 12 }"
+          class="relative"
+          :initial="{ opacity: 0, y: 18 }"
           :animate="{ opacity: 1, y: 0 }"
+          :transition="{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }"
         >
-          <div class="flex size-7 shrink-0 items-center justify-center">
+          <div class="absolute left-0 top-0 hidden md:flex size-7 shrink-0 items-center justify-center">
             <AiPortfolioSparkIcon
               :size="18"
-              :speed="0.7"
+              :speed="1.4"
               :colors="assistantAvatarColors"
             />
           </div>
-          <div class="min-w-0 flex-1 rounded-[1.5rem] border border-border/60 bg-background/55 px-4 py-4 text-sm text-muted-foreground shadow-[0_18px_42px_-34px_rgba(0,0,0,0.55)] md:px-5">
-            <div class="flex max-w-xs items-center gap-2.5">
-              <span class="size-1.5 rounded-full bg-primary/80 animate-bounce [animation-delay:-0.2s]" />
-              <span class="size-1.5 rounded-full bg-primary/70 animate-bounce [animation-delay:-0.1s]" />
-              <span class="size-1.5 rounded-full bg-primary/60 animate-bounce" />
-              <Skeleton class="h-2.5 w-28 rounded-full bg-primary/15" />
+
+          <div class="mx-auto min-w-0 w-full max-w-7xl space-y-1.5 md:pl-9">
+            <div class="max-w-4xl space-y-2.5">
+              <div class="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/90">
+                Don Puerto
+              </div>
+
+              <div class="flex items-end gap-1">
+                <span class="inline-block size-[6px] rounded-full bg-primary/75 animate-bounce [animation-delay:0ms]" />
+                <span class="inline-block size-[6px] rounded-full bg-primary/55 animate-bounce [animation-delay:150ms]" />
+                <span class="inline-block size-[6px] rounded-full bg-primary/35 animate-bounce [animation-delay:300ms]" />
+              </div>
+
+              <div class="space-y-2 pt-0.5">
+                <Skeleton class="h-[13px] w-[82%] max-w-lg rounded-sm bg-foreground/[0.07]" />
+                <Skeleton class="h-[13px] w-[67%] max-w-md rounded-sm bg-foreground/[0.055]" />
+                <Skeleton class="h-[13px] w-[48%] max-w-sm rounded-sm bg-foreground/[0.04]" />
+              </div>
             </div>
           </div>
         </motion.div>
