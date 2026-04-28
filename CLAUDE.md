@@ -37,6 +37,22 @@ Nuxt 4 AI automation portfolio deployed on Cloudflare Workers.
 | Security / RLS policies | `supabase-security` |
 | Vitest unit tests | `vitest` |
 
+### Cloudflare Skills (always invoke for any Cloudflare work)
+| Task | Skill |
+|------|-------|
+| General Cloudflare concepts & products | `cloudflare` |
+| Wrangler CLI usage | `wrangler` |
+| Workers architecture & best practices | `workers-best-practices` |
+| Web performance on the edge | `web-perf` |
+| Durable Objects (stateful Workers) | `durable-objects` |
+| Cloudflare Agents SDK | `agents-sdk` |
+| Cloudflare Sandbox SDK | `sandbox-sdk` |
+| Building AI agents on Cloudflare | `building-ai-agent-on-cloudflare` |
+| Building MCP servers on Cloudflare | `building-mcp-server-on-cloudflare` |
+| Cloudflare Email Routing / Workers | `cloudflare-email-service` |
+| Migrating Nuxt to Vinext | `migrate-to-vinext` |
+| Cloudflare Browser Rendering | `cloudflare-browser` |
+
 ## n8n Workflow Standards
 
 ### Native AI Nodes — Always Required
