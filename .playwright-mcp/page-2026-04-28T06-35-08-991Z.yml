@@ -1,0 +1,221 @@
+- generic [ref=e3]:
+  - main [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - complementary [ref=e7]:
+          - generic [ref=e8]:
+            - generic [ref=e10]:
+              - menubar [ref=e11]:
+                - menuitem "Add new item" [ref=e12]:
+                  - button "Add new item" [ref=e14] [cursor=pointer]:
+                    - img [ref=e16]
+              - button "Open command palette" [ref=e19] [cursor=pointer]:
+                - img [ref=e21]
+              - button "Toggle sidebar" [ref=e26] [cursor=pointer]:
+                - img [ref=e28]
+            - generic [ref=e36]:
+              - menuitem "Overview" [ref=e39] [cursor=pointer]:
+                - img [ref=e41]
+              - menuitem "Personal" [ref=e47] [cursor=pointer]:
+                - img [ref=e49]
+              - menuitem "Chat" [ref=e55] [cursor=pointer]:
+                - img [ref=e57]
+            - generic [ref=e61]:
+              - menuitem "Templates" [ref=e64] [cursor=pointer]:
+                - img [ref=e66]
+              - menuitem "Help" [ref=e73] [cursor=pointer]:
+                - img [ref=e75]
+              - menuitem "Settings" [ref=e81] [cursor=pointer]:
+                - img [ref=e83]
+        - main [ref=e87]:
+          - generic [ref=e89]:
+            - generic [ref=e90]:
+              - generic [ref=e91]:
+                - generic [ref=e93]:
+                  - heading "Overview" [level=2] [ref=e94]
+                  - generic [ref=e95]: All the workflows, credentials and data tables you have access to
+                - generic [ref=e98]:
+                  - button "Create credential" [ref=e99] [cursor=pointer]:
+                    - generic [ref=e101]: Create credential
+                  - button [ref=e104] [cursor=pointer]:
+                    - img [ref=e106]
+              - generic [ref=e110]:
+                - link "Workflows" [ref=e112] [cursor=pointer]:
+                  - /url: /home/workflows
+                  - generic [ref=e113]: Workflows
+                - link "Credentials" [ref=e115] [cursor=pointer]:
+                  - /url: /home/credentials
+                  - generic [ref=e116]: Credentials
+                - link "Executions" [ref=e118] [cursor=pointer]:
+                  - /url: /home/executions
+                  - generic [ref=e119]: Executions
+                - link "Variables" [ref=e121] [cursor=pointer]:
+                  - /url: /home/variables
+                  - generic [ref=e122]: Variables
+                - link "Data tables" [ref=e124] [cursor=pointer]:
+                  - /url: /home/datatables
+                  - generic [ref=e125]: Data tables
+            - main [ref=e126]:
+              - generic [ref=e128]:
+                - generic [ref=e131]:
+                  - generic [ref=e133]:
+                    - img [ref=e135]
+                    - textbox "Search credentials..." [ref=e139]: openai
+                    - button [ref=e140] [cursor=pointer]:
+                      - img [ref=e141]
+                  - generic [ref=e148]:
+                    - combobox "Select" [ref=e149] [cursor=pointer]: Sort by last updated
+                    - img [ref=e152] [cursor=pointer]
+                  - button "Filters" [ref=e157] [cursor=pointer]:
+                    - img [ref=e159]
+                - generic [ref=e168] [cursor=pointer]:
+                  - generic [ref=e172]:
+                    - img
+                  - generic [ref=e173]:
+                    - 'heading "DP: OpenAi Account" [level=2] [ref=e175]'
+                    - generic [ref=e178]:
+                      - text: OpenAI |
+                      - generic [ref=e179]: Last updated 2 months ago |
+                      - text: Created 14 February
+                  - generic [ref=e181]:
+                    - generic [ref=e185]:
+                      - img [ref=e186]
+                      - text: "10"
+                    - generic [ref=e192]:
+                      - img [ref=e194]
+                      - generic [ref=e198]: Personal
+                    - button [ref=e201]:
+                      - img [ref=e202]
+      - dialog [ref=e216]:
+        - generic [active] [ref=e217]:
+          - generic [ref=e218]:
+            - generic [ref=e219]:
+              - generic [ref=e220]:
+                - generic [ref=e224]:
+                  - img
+                - generic [ref=e225]:
+                  - 'generic "DP: OpenAi Account" [ref=e227]':
+                    - generic [ref=e229] [cursor=pointer]: "DP: OpenAi Account"
+                  - paragraph [ref=e230]: OpenAI
+              - generic [ref=e231]:
+                - button "Save" [disabled] [ref=e233]:
+                  - generic [ref=e235]: Save
+                - button "Delete" [ref=e236] [cursor=pointer]:
+                  - img [ref=e238]
+            - button "Close this dialog" [ref=e240] [cursor=pointer]:
+              - img [ref=e242]
+          - generic [ref=e246]:
+            - generic [ref=e247]:
+              - menuitem "Connection" [ref=e249] [cursor=pointer]:
+                - generic [ref=e251]: Connection
+              - menuitem "Sharing" [ref=e253] [cursor=pointer]:
+                - generic [ref=e255]: Sharing
+              - menuitem "Details" [ref=e257] [cursor=pointer]:
+                - generic [ref=e259]: Details
+            - generic [ref=e262]:
+              - alert [ref=e263]:
+                - generic [ref=e264]:
+                  - generic [ref=e265]: Need help filling out these fields?
+                  - link "Read our docs" [ref=e266] [cursor=pointer]:
+                    - /url: https://docs.n8n.io/integrations/builtin/credentials/openai/?utm_source=n8n_app&utm_medium=credential_settings&utm_campaign=create_new_credentials_modal
+                    - generic [ref=e268]: Read our docs
+              - generic [ref=e270]:
+                - img [ref=e271]
+                - generic [ref=e275]:
+                  - generic [ref=e277]: Connection tested successfully
+                  - button "Retry" [ref=e278] [cursor=pointer]:
+                    - img [ref=e281]
+                    - generic:
+                      - generic: Retry
+              - generic [ref=e283]:
+                - generic [ref=e286]:
+                  - generic [ref=e288]:
+                    - generic [ref=e291]:
+                      - text: API Key
+                      - generic [ref=e292]: "*"
+                    - generic [ref=e296]:
+                      - button [ref=e300] [cursor=pointer]:
+                        - img [ref=e301]
+                      - radiogroup [ref=e306]:
+                        - radio "Fixed" [checked] [ref=e307]:
+                          - generic [ref=e308] [cursor=pointer]: Fixed
+                        - radio "Expression" [ref=e309]:
+                          - generic [ref=e310] [cursor=pointer]: Expression
+                  - 'textbox "Parameter: \"\"" [ref=e317]':
+                    - /placeholder: ""
+                    - text: __n8n_BLANK_VALUE_e5362baf-c777-4d57-a609-6eaf1f9e87f6
+                - generic [ref=e320]:
+                  - generic [ref=e322]:
+                    - generic [ref=e323]:
+                      - generic [ref=e325]: Organization ID (optional)
+                      - img [ref=e328]
+                    - generic [ref=e335]:
+                      - button [ref=e339] [cursor=pointer]:
+                        - img [ref=e340]
+                      - radiogroup [ref=e345]:
+                        - radio "Fixed" [checked] [ref=e346]:
+                          - generic [ref=e347] [cursor=pointer]: Fixed
+                        - radio "Expression" [ref=e348]:
+                          - generic [ref=e349] [cursor=pointer]: Expression
+                  - generic [ref=e350]:
+                    - 'textbox "Parameter: \"\"" [ref=e356]':
+                      - /placeholder: ""
+                    - generic [ref=e360]: Only required if you belong to multiple organisations
+                - generic [ref=e363]:
+                  - generic [ref=e365]:
+                    - generic [ref=e366]:
+                      - generic [ref=e368]: Base URL
+                      - img [ref=e371]
+                    - generic [ref=e378]:
+                      - button [ref=e382] [cursor=pointer]:
+                        - img [ref=e383]
+                      - radiogroup [ref=e388]:
+                        - radio "Fixed" [checked] [ref=e389]:
+                          - generic [ref=e390] [cursor=pointer]: Fixed
+                        - radio "Expression" [ref=e391]:
+                          - generic [ref=e392] [cursor=pointer]: Expression
+                  - 'textbox "Parameter: \"\"" [ref=e399]':
+                    - /placeholder: ""
+                    - text: https://api.openai.com/v1
+                - generic [ref=e402]:
+                  - generic [ref=e404]:
+                    - generic [ref=e407]: Add Custom Header
+                    - generic [ref=e411]:
+                      - button [ref=e415] [cursor=pointer]:
+                        - img [ref=e416]
+                      - radiogroup [ref=e421]:
+                        - radio "Fixed" [checked] [ref=e422]:
+                          - generic [ref=e423] [cursor=pointer]: Fixed
+                        - radio "Expression" [ref=e424]:
+                          - generic [ref=e425] [cursor=pointer]: Expression
+                  - switch [ref=e430] [cursor=pointer]
+                - generic [ref=e434]:
+                  - generic [ref=e436]:
+                    - generic [ref=e437]:
+                      - generic [ref=e439]: Allowed HTTP Request Domains
+                      - img [ref=e442]
+                    - generic [ref=e449]:
+                      - button [ref=e453] [cursor=pointer]:
+                        - img [ref=e454]
+                      - radiogroup [ref=e459]:
+                        - radio "Fixed" [checked] [ref=e460]:
+                          - generic [ref=e461] [cursor=pointer]: Fixed
+                        - radio "Expression" [ref=e462]:
+                          - generic [ref=e463] [cursor=pointer]: Expression
+                  - 'generic "Parameter: \"\"" [ref=e467]':
+                    - generic [ref=e471]:
+                      - combobox "Select" [ref=e472] [cursor=pointer]: All
+                      - img [ref=e475] [cursor=pointer]
+              - generic [ref=e479]:
+                - img [ref=e480]
+                - generic [ref=e484]:
+                  - text: Enterprise plan users can pull in credentials from external vaults.
+                  - link "More info" [ref=e485] [cursor=pointer]:
+                    - /url: https://docs.n8n.io/external-secrets/
+                    - generic [ref=e487]: More info
+  - complementary
+  - alert [ref=e207] [cursor=pointer]:
+    - generic [ref=e208]:
+      - heading "One click credential setup" [level=2] [ref=e209]
+      - paragraph [ref=e211]: Setting up credentials on n8n Cloud is easier for supported services.
+      - img [ref=e213]

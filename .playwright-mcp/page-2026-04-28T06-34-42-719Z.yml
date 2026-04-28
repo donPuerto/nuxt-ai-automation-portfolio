@@ -1,0 +1,458 @@
+- generic [ref=e3]:
+  - main [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - complementary [ref=e7]:
+          - generic [ref=e8]:
+            - generic [ref=e10]:
+              - menubar [ref=e11]:
+                - menuitem "Add new item" [ref=e12]:
+                  - button "Add new item" [ref=e14] [cursor=pointer]:
+                    - img [ref=e16]
+              - button "Open command palette" [ref=e19] [cursor=pointer]:
+                - img [ref=e21]
+              - button "Toggle sidebar" [ref=e26] [cursor=pointer]:
+                - img [ref=e28]
+            - generic [ref=e36]:
+              - menuitem "Overview" [ref=e39] [cursor=pointer]:
+                - img [ref=e41]
+              - menuitem "Personal" [ref=e47] [cursor=pointer]:
+                - img [ref=e49]
+              - menuitem "Chat" [ref=e55] [cursor=pointer]:
+                - img [ref=e57]
+            - generic [ref=e61]:
+              - menuitem "Templates" [ref=e64] [cursor=pointer]:
+                - img [ref=e66]
+              - menuitem "Help" [ref=e73] [cursor=pointer]:
+                - img [ref=e75]
+              - menuitem "Settings" [ref=e81] [cursor=pointer]:
+                - img [ref=e83]
+        - main [ref=e87]:
+          - generic [ref=e89]:
+            - generic [ref=e90]:
+              - generic [ref=e91]:
+                - generic [ref=e93]:
+                  - heading "Overview" [level=2] [ref=e94]
+                  - generic [ref=e95]: All the workflows, credentials and data tables you have access to
+                - generic [ref=e98]:
+                  - button "Create credential" [ref=e99] [cursor=pointer]:
+                    - generic [ref=e101]: Create credential
+                  - button [ref=e104] [cursor=pointer]:
+                    - img [ref=e106]
+              - generic [ref=e110]:
+                - link "Workflows" [ref=e112] [cursor=pointer]:
+                  - /url: /home/workflows
+                  - generic [ref=e113]: Workflows
+                - link "Credentials" [ref=e115] [cursor=pointer]:
+                  - /url: /home/credentials
+                  - generic [ref=e116]: Credentials
+                - link "Executions" [ref=e118] [cursor=pointer]:
+                  - /url: /home/executions
+                  - generic [ref=e119]: Executions
+                - link "Variables" [ref=e121] [cursor=pointer]:
+                  - /url: /home/variables
+                  - generic [ref=e122]: Variables
+                - link "Data tables" [ref=e124] [cursor=pointer]:
+                  - /url: /home/datatables
+                  - generic [ref=e125]: Data tables
+            - main [ref=e126]:
+              - generic [ref=e128]:
+                - generic [ref=e131]:
+                  - generic [ref=e133]:
+                    - img [ref=e135]
+                    - textbox "Search credentials..." [ref=e139]
+                  - generic [ref=e145]:
+                    - combobox "Select" [ref=e146] [cursor=pointer]: Sort by last updated
+                    - img [ref=e149] [cursor=pointer]
+                  - button "Filters" [ref=e154] [cursor=pointer]:
+                    - img [ref=e156]
+                - generic [ref=e163]:
+                  - generic [ref=e165] [cursor=pointer]:
+                    - generic [ref=e169]:
+                      - img
+                    - generic [ref=e170]:
+                      - 'heading "WR: Google Sheets Account" [level=2] [ref=e172]'
+                      - generic [ref=e175]:
+                        - text: Google Sheets OAuth2 API |
+                        - generic [ref=e176]: Last updated just now |
+                        - text: Created 25 February
+                    - generic [ref=e178]:
+                      - generic [ref=e182]:
+                        - img [ref=e183]
+                        - text: "5"
+                      - generic [ref=e189]:
+                        - img [ref=e191]
+                        - generic [ref=e195]: Personal
+                      - button [ref=e198]:
+                        - img [ref=e199]
+                  - generic [ref=e205] [cursor=pointer]:
+                    - generic [ref=e209]:
+                      - img
+                    - generic [ref=e210]:
+                      - 'heading "DP: Google Drive Account" [level=2] [ref=e212]'
+                      - generic [ref=e215]:
+                        - text: Google Drive OAuth2 API |
+                        - generic [ref=e216]: Last updated 52 minutes ago |
+                        - text: Created 14 February
+                    - generic [ref=e218]:
+                      - generic [ref=e222]:
+                        - img [ref=e223]
+                        - text: "8"
+                      - generic [ref=e229]:
+                        - img [ref=e231]
+                        - generic [ref=e235]: Personal
+                      - button [ref=e238]:
+                        - img [ref=e239]
+                  - generic [ref=e245] [cursor=pointer]:
+                    - generic [ref=e249]:
+                      - img
+                    - generic [ref=e250]:
+                      - 'heading "DP: AssemblyAI account" [level=2] [ref=e252]'
+                      - generic [ref=e255]:
+                        - text: AssemblyAI API |
+                        - generic [ref=e256]: Last updated 1 day ago |
+                        - text: Created 26 April
+                    - generic [ref=e258]:
+                      - generic [ref=e261]:
+                        - img [ref=e263]
+                        - generic [ref=e267]: Personal
+                      - button [ref=e270]:
+                        - img [ref=e271]
+                  - generic [ref=e277] [cursor=pointer]:
+                    - generic [ref=e281]:
+                      - img
+                    - generic [ref=e282]:
+                      - 'heading "DP: AssemblyAI account" [level=2] [ref=e284]'
+                      - generic [ref=e287]:
+                        - text: AssemblyAI API |
+                        - generic [ref=e288]: Last updated 1 day ago |
+                        - text: Created 26 April
+                    - generic [ref=e290]:
+                      - generic [ref=e293]:
+                        - img [ref=e295]
+                        - generic [ref=e299]: Personal
+                      - button [ref=e302]:
+                        - img [ref=e303]
+                  - generic [ref=e309] [cursor=pointer]:
+                    - generic [ref=e313]:
+                      - img
+                    - generic [ref=e314]:
+                      - 'heading "DP: AssemblyAI account" [level=2] [ref=e316]'
+                      - generic [ref=e319]:
+                        - text: AssemblyAI API |
+                        - generic [ref=e320]: Last updated 1 day ago |
+                        - text: Created 26 April
+                    - generic [ref=e322]:
+                      - generic [ref=e325]:
+                        - img [ref=e327]
+                        - generic [ref=e331]: Personal
+                      - button [ref=e334]:
+                        - img [ref=e335]
+                  - generic [ref=e341] [cursor=pointer]:
+                    - generic [ref=e345]: "?"
+                    - generic [ref=e346]:
+                      - 'heading "DP: Supabase Service Key" [level=2] [ref=e348]'
+                      - generic [ref=e351]:
+                        - text: Header Auth |
+                        - generic [ref=e352]: Last updated 1 week ago |
+                        - text: Created 16 April
+                    - generic [ref=e354]:
+                      - generic [ref=e358]:
+                        - img [ref=e359]
+                        - text: "1"
+                      - generic [ref=e365]:
+                        - img [ref=e367]
+                        - generic [ref=e371]: Personal
+                      - button [ref=e374]:
+                        - img [ref=e375]
+                  - generic [ref=e381] [cursor=pointer]:
+                    - generic [ref=e385]:
+                      - img
+                    - generic [ref=e386]:
+                      - 'heading "DP: Anthropic API" [level=2] [ref=e388]'
+                      - generic [ref=e391]:
+                        - text: Anthropic |
+                        - generic [ref=e392]: Last updated 1 week ago |
+                        - text: Created 16 April
+                    - generic [ref=e394]:
+                      - generic [ref=e398]:
+                        - img [ref=e399]
+                        - text: "1"
+                      - generic [ref=e405]:
+                        - img [ref=e407]
+                        - generic [ref=e411]: Personal
+                      - button [ref=e414]:
+                        - img [ref=e415]
+                  - generic [ref=e421] [cursor=pointer]:
+                    - generic [ref=e425]:
+                      - img
+                    - generic [ref=e426]:
+                      - 'heading "DP: Google Sheets Account" [level=2] [ref=e428]'
+                      - generic [ref=e431]:
+                        - text: Google Sheets OAuth2 API |
+                        - generic [ref=e432]: Last updated 2 weeks ago |
+                        - text: Created 13 February
+                    - generic [ref=e434]:
+                      - generic [ref=e438]:
+                        - img [ref=e439]
+                        - text: "11"
+                      - generic [ref=e445]:
+                        - img [ref=e447]
+                        - generic [ref=e451]: Personal
+                      - button [ref=e454]:
+                        - img [ref=e455]
+                  - generic [ref=e461] [cursor=pointer]:
+                    - generic [ref=e465]:
+                      - img
+                    - generic [ref=e466]:
+                      - 'heading "DP: Gmail Account" [level=2] [ref=e468]'
+                      - generic [ref=e471]:
+                        - text: Gmail OAuth2 API |
+                        - generic [ref=e472]: Last updated 4 weeks ago |
+                        - text: Created 18 February
+                    - generic [ref=e474]:
+                      - generic [ref=e478]:
+                        - img [ref=e479]
+                        - text: "7"
+                      - generic [ref=e485]:
+                        - img [ref=e487]
+                        - generic [ref=e491]: Personal
+                      - button [ref=e494]:
+                        - img [ref=e495]
+                  - generic [ref=e501] [cursor=pointer]:
+                    - generic [ref=e505]: "?"
+                    - generic [ref=e506]:
+                      - 'heading "DP: Deepgram API Key" [level=2] [ref=e508]'
+                      - generic [ref=e511]:
+                        - text: Header Auth |
+                        - generic [ref=e512]: Last updated 4 weeks ago |
+                        - text: Created 29 March
+                    - generic [ref=e514]:
+                      - generic [ref=e518]:
+                        - img [ref=e519]
+                        - text: "2"
+                      - generic [ref=e525]:
+                        - img [ref=e527]
+                        - generic [ref=e531]: Personal
+                      - button [ref=e534]:
+                        - img [ref=e535]
+                  - generic [ref=e541] [cursor=pointer]:
+                    - generic [ref=e545]: "?"
+                    - generic [ref=e546]:
+                      - 'heading "DP: AssemblyAI API Key" [level=2] [ref=e548]'
+                      - generic [ref=e551]:
+                        - text: Header Auth |
+                        - generic [ref=e552]: Last updated 4 weeks ago |
+                        - text: Created 27 March
+                    - generic [ref=e554]:
+                      - generic [ref=e558]:
+                        - img [ref=e559]
+                        - text: "1"
+                      - generic [ref=e565]:
+                        - img [ref=e567]
+                        - generic [ref=e571]: Personal
+                      - button [ref=e574]:
+                        - img [ref=e575]
+                  - generic [ref=e581] [cursor=pointer]:
+                    - generic [ref=e585]: "?"
+                    - generic [ref=e586]:
+                      - heading "Video to Text API Key" [level=2] [ref=e588]
+                      - generic [ref=e591]:
+                        - text: Header Auth |
+                        - generic [ref=e592]: Last updated 1 month ago |
+                        - text: Created 27 March
+                    - generic [ref=e594]:
+                      - generic [ref=e598]:
+                        - img [ref=e599]
+                        - text: "2"
+                      - generic [ref=e605]:
+                        - img [ref=e607]
+                        - generic [ref=e611]: Personal
+                      - button [ref=e614]:
+                        - img [ref=e615]
+                  - generic [ref=e621] [cursor=pointer]:
+                    - generic [ref=e625]: "?"
+                    - generic [ref=e626]:
+                      - heading "FastSaverAPI Key" [level=2] [ref=e628]
+                      - generic [ref=e631]:
+                        - text: Header Auth |
+                        - generic [ref=e632]: Last updated 1 month ago |
+                        - text: Created 27 March
+                    - generic [ref=e634]:
+                      - generic [ref=e638]:
+                        - img [ref=e639]
+                        - text: "1"
+                      - generic [ref=e645]:
+                        - img [ref=e647]
+                        - generic [ref=e651]: Personal
+                      - button [ref=e654]:
+                        - img [ref=e655]
+                  - generic [ref=e661] [cursor=pointer]:
+                    - generic [ref=e665]: "?"
+                    - generic [ref=e666]:
+                      - 'heading "DP: Claude Header Auth" [level=2] [ref=e668]'
+                      - generic [ref=e671]:
+                        - text: Header Auth |
+                        - generic [ref=e672]: Last updated 1 month ago |
+                        - text: Created 23 March
+                    - generic [ref=e674]:
+                      - generic [ref=e678]:
+                        - img [ref=e679]
+                        - text: "1"
+                      - generic [ref=e685]:
+                        - img [ref=e687]
+                        - generic [ref=e691]: Personal
+                      - button [ref=e694]:
+                        - img [ref=e695]
+                  - generic [ref=e701] [cursor=pointer]:
+                    - generic [ref=e705]:
+                      - img
+                    - generic [ref=e706]:
+                      - 'heading "DP: Anthropic Account" [level=2] [ref=e708]'
+                      - generic [ref=e711]:
+                        - text: Anthropic |
+                        - generic [ref=e712]: Last updated 1 month ago |
+                        - text: Created 23 March
+                    - generic [ref=e714]:
+                      - generic [ref=e718]:
+                        - img [ref=e719]
+                        - text: "1"
+                      - generic [ref=e725]:
+                        - img [ref=e727]
+                        - generic [ref=e731]: Personal
+                      - button [ref=e734]:
+                        - img [ref=e735]
+                  - generic [ref=e741] [cursor=pointer]:
+                    - generic [ref=e745]:
+                      - img
+                    - generic [ref=e746]:
+                      - 'heading "DP: Google Calendar Account" [level=2] [ref=e748]'
+                      - generic [ref=e751]:
+                        - text: Google Calendar OAuth2 API |
+                        - generic [ref=e752]: Last updated 1 month ago |
+                        - text: Created 14 February
+                    - generic [ref=e754]:
+                      - generic [ref=e758]:
+                        - img [ref=e759]
+                        - text: "8"
+                      - generic [ref=e765]:
+                        - img [ref=e767]
+                        - generic [ref=e771]: Personal
+                      - button [ref=e774]:
+                        - img [ref=e775]
+      - dialog [ref=e789]:
+        - generic [active] [ref=e790]:
+          - generic [ref=e791]:
+            - generic [ref=e792]:
+              - generic [ref=e793]:
+                - generic [ref=e797]:
+                  - img
+                - generic [ref=e798]:
+                  - 'generic "DP: Anthropic API" [ref=e800]':
+                    - generic [ref=e802] [cursor=pointer]: "DP: Anthropic API"
+                  - paragraph [ref=e803]: Anthropic
+              - generic [ref=e804]:
+                - button "Save" [disabled] [ref=e806]:
+                  - generic [ref=e808]: Save
+                - button "Delete" [ref=e809] [cursor=pointer]:
+                  - img [ref=e811]
+            - button "Close this dialog" [ref=e813] [cursor=pointer]:
+              - img [ref=e815]
+          - generic [ref=e819]:
+            - generic [ref=e820]:
+              - menuitem "Connection" [ref=e822] [cursor=pointer]:
+                - generic [ref=e824]: Connection
+              - menuitem "Sharing" [ref=e826] [cursor=pointer]:
+                - generic [ref=e828]: Sharing
+              - menuitem "Details" [ref=e830] [cursor=pointer]:
+                - generic [ref=e832]: Details
+            - generic [ref=e835]:
+              - alert [ref=e836]:
+                - generic [ref=e837]:
+                  - generic [ref=e838]: Need help filling out these fields?
+                  - link "Read our docs" [ref=e839] [cursor=pointer]:
+                    - /url: https://docs.n8n.io/integrations/builtin/credentials/anthropic/?utm_source=n8n_app&utm_medium=credential_settings&utm_campaign=create_new_credentials_modal
+                    - generic [ref=e841]: Read our docs
+              - generic [ref=e843]:
+                - img [ref=e844]
+                - generic [ref=e848]:
+                  - generic [ref=e850]: Connection tested successfully
+                  - button "Retry" [ref=e851] [cursor=pointer]:
+                    - img [ref=e854]
+                    - generic:
+                      - generic: Retry
+              - generic [ref=e856]:
+                - generic [ref=e859]:
+                  - generic [ref=e861]:
+                    - generic [ref=e864]:
+                      - text: API Key
+                      - generic [ref=e865]: "*"
+                    - generic [ref=e869]:
+                      - button [ref=e873] [cursor=pointer]:
+                        - img [ref=e874]
+                      - radiogroup [ref=e879]:
+                        - radio "Fixed" [checked] [ref=e880]:
+                          - generic [ref=e881] [cursor=pointer]: Fixed
+                        - radio "Expression" [ref=e882]:
+                          - generic [ref=e883] [cursor=pointer]: Expression
+                  - 'textbox "Parameter: \"\"" [ref=e890]':
+                    - /placeholder: ""
+                    - text: __n8n_BLANK_VALUE_e5362baf-c777-4d57-a609-6eaf1f9e87f6
+                - generic [ref=e893]:
+                  - generic [ref=e895]:
+                    - generic [ref=e896]:
+                      - generic [ref=e898]: Base URL
+                      - img [ref=e901]
+                    - generic [ref=e908]:
+                      - button [ref=e912] [cursor=pointer]:
+                        - img [ref=e913]
+                      - radiogroup [ref=e918]:
+                        - radio "Fixed" [checked] [ref=e919]:
+                          - generic [ref=e920] [cursor=pointer]: Fixed
+                        - radio "Expression" [ref=e921]:
+                          - generic [ref=e922] [cursor=pointer]: Expression
+                  - 'textbox "Parameter: \"\"" [ref=e929]':
+                    - /placeholder: ""
+                    - text: https://api.anthropic.com
+                - generic [ref=e932]:
+                  - generic [ref=e934]:
+                    - generic [ref=e937]: Add Custom Header
+                    - generic [ref=e941]:
+                      - button [ref=e945] [cursor=pointer]:
+                        - img [ref=e946]
+                      - radiogroup [ref=e951]:
+                        - radio "Fixed" [checked] [ref=e952]:
+                          - generic [ref=e953] [cursor=pointer]: Fixed
+                        - radio "Expression" [ref=e954]:
+                          - generic [ref=e955] [cursor=pointer]: Expression
+                  - switch [ref=e960] [cursor=pointer]
+                - generic [ref=e964]:
+                  - generic [ref=e966]:
+                    - generic [ref=e967]:
+                      - generic [ref=e969]: Allowed HTTP Request Domains
+                      - img [ref=e972]
+                    - generic [ref=e979]:
+                      - button [ref=e983] [cursor=pointer]:
+                        - img [ref=e984]
+                      - radiogroup [ref=e989]:
+                        - radio "Fixed" [checked] [ref=e990]:
+                          - generic [ref=e991] [cursor=pointer]: Fixed
+                        - radio "Expression" [ref=e992]:
+                          - generic [ref=e993] [cursor=pointer]: Expression
+                  - 'generic "Parameter: \"\"" [ref=e997]':
+                    - generic [ref=e1001]:
+                      - combobox "Select" [ref=e1002] [cursor=pointer]: All
+                      - img [ref=e1005] [cursor=pointer]
+              - generic [ref=e1009]:
+                - img [ref=e1010]
+                - generic [ref=e1014]:
+                  - text: Enterprise plan users can pull in credentials from external vaults.
+                  - link "More info" [ref=e1015] [cursor=pointer]:
+                    - /url: https://docs.n8n.io/external-secrets/
+                    - generic [ref=e1017]: More info
+  - complementary
+  - alert [ref=e780] [cursor=pointer]:
+    - generic [ref=e781]:
+      - heading "One click credential setup" [level=2] [ref=e782]
+      - paragraph [ref=e784]: Setting up credentials on n8n Cloud is easier for supported services.
+      - img [ref=e786]
