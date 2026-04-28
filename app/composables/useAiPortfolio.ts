@@ -427,8 +427,13 @@ export const useAiPortfolio = () => {
     error.value = ''
 
     try {
+      const headers = isAuthenticated.value && supabase
+        ? await getAuthHeaders().catch(() => undefined)
+        : undefined
+
       const result = await $fetch<AssistantApiResult>('/api/portfolio-assistant/respond', {
         method: 'POST',
+        headers,
         body: payload,
       })
 

@@ -1,6 +1,7 @@
 import type { PortfolioAssistantResponse, PortfolioAssistantRequest } from '../../utils/portfolio-assistant/types'
 import { aboutKnowledge } from '@@/shared'
 import { getSupabaseAdmin } from '../../utils/supabase-admin'
+import { tryGetSupabaseUser } from '../../utils/knowledge-auth'
 import { buildPortfolioAssistantResponse } from '../../utils/portfolio-assistant/build-response'
 import { generatePortfolioAiResponse, hasConfiguredPortfolioAiProvider } from '../../utils/portfolio-assistant/generate-ai-response'
 import { normalizeAssistantResponse } from '../../utils/portfolio-assistant/response-format'
@@ -192,7 +193,10 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const knowledgeContext = await buildKnowledgeContext(event)
+  const [knowledgeContext, authUser] = await Promise.all([
+    buildKnowledgeContext(event),
+    tryGetSupabaseUser(event),
+  ])
 
   if (!config.n8nAskDonWebhookUrl) {
     const directResponse = await tryGenerateDirectAiResponse(config, body)
@@ -228,6 +232,8 @@ export default defineEventHandler(async (event) => {
         categoryId: body.categoryId ?? null,
         agentId: body.agentId ?? null,
         attachments: body.attachments ?? [],
+        isAuthenticated: Boolean(authUser),
+        userId: authUser?.id ?? null,
         portfolioContext: buildPortfolioContext(),
         knowledgeContext,
         systemPrompt: [
