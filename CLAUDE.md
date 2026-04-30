@@ -79,9 +79,11 @@ Any time a workflow is modified, do all three before closing:
 ## Cloudflare Deployment
 
 - Worker name: `nuxt-ai-automation-portfolio`
-- Deploy command: `npm run build && npx wrangler deploy`
+- **Deploy command: `npm run deploy`** (builds then deploys via wrangler in one step)
+- Raw command: `npm run build && npx wrangler --cwd .output deploy`
 - KV namespace: `VIDEO_TO_TEXT_JOBS` (binding: `dead8846188b4f6298aafbeeb8afeddd`)
 - Live URL: `https://nuxt-ai-automation-portfolio.don-puerto.workers.dev`
+- Note: GitHub Actions CI is set up (`.github/workflows/deploy.yml`) but requires GitHub billing to be active. Deploy manually with `npm run deploy` until then.
 
 ## Environment Files
 
