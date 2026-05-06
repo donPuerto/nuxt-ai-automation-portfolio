@@ -1,6 +1,21 @@
 {
   "inputs": [],
   "servers": {
+    "tailwindcss": {
+      "command": "npx",
+      "args": ["tailwindcss-mcp-server"]
+    },
+    "shadcn-vue": {
+      "command": "npx",
+      "args": ["shadcn-vue@latest", "mcp"]
+    },
+    "n8n-server": {
+      "type": "http",
+      "url": "https://n8n.srv1127913.hstgr.cloud/mcp-server/http",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlNDZkYzg3Zi0xMGJiLTQwMmUtOWE3My05ZmUzODgzOGY0NTEiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiMTQyODc0YjMtM2QxMy00YTIyLTg1NGItOTg4YTZlZWJhMTFkIiwiaWF0IjoxNzcxNjgzMDExfQ.EIHWHtiXBfBzdWhAlmG2XE1lYUGTSxRAEJBARf12qxg"
+      }
+    },
     "chrome-devtools": {
       "command": "npx",
       "args": [

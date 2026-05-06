@@ -1,2 +1,10 @@
 [mcp_servers.figma]
 url = "https://mcp.figma.com/mcp"
+
+[mcp_servers.tailwindcss]
+command = "npx"
+args = ["tailwindcss-mcp-server"]
+
+[mcp_servers.shadcn-vue]
+command = "npx"
+args = ["shadcn-vue@latest", "mcp"]

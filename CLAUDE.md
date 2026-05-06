@@ -18,6 +18,14 @@ Nuxt 4 AI automation portfolio deployed on Cloudflare Workers.
 | Writing Python in Code nodes | `n8n-code-python` |
 | n8n CLI usage | `n8n-cli` |
 
+### UI / Styling Skills
+| Task | Skill |
+|------|-------|
+| Tailwind CSS design system & utilities | `tailwind-design-system` |
+| shadcn component implementation | `shadcn` |
+| Figma to code | `figma:implement-design` |
+| Frontend UI design | `frontend-design` |
+
 ### Claude / Anthropic Skills
 | Task | Skill |
 |------|-------|

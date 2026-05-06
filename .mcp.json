@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "shadcnVue": {
+      "command": "npx",
+      "args": [
+        "shadcn-vue@latest",
+        "mcp"
+      ]
+    },
+    "tailwindcss": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "tailwindcss-mcp-server"
+      ],
+      "env": {}
+    }
+  }
+}
