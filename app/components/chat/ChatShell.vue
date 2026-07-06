@@ -45,6 +45,7 @@ const settings = supabaseConfigured ? useUserSettings() : null
 const supabase = supabaseConfigured ? useSupabaseClient() : null
 const sidebarExpanded = useState('ai-portfolio-sidebar-expanded', () => true)
 const welcomeClosing = ref(false)
+const welcomeDismissedForSession = useState<boolean>('ai-portfolio-welcome-dismissed', () => false)
 
 const displayName = computed(() => aiPortfolioContent.nameLine.replace(/^Hey,\s*I'm\s*/i, '').trim())
 const greetingPeriod = useState<'morning' | 'afternoon' | 'evening'>('ai-portfolio-greeting-period', () => {
@@ -151,6 +152,7 @@ const shouldShowWelcomeModal = computed(() =>
   isPromptMode.value
   && Boolean(settings?.initialized.value)
   && Boolean(settings?.isAuthenticated.value)
+  && !welcomeDismissedForSession.value
   && !Boolean(settings?.preferences.value.welcomeSeen),
 )
 
@@ -225,28 +227,26 @@ const handleWelcomeClose = async () => {
 
   welcomeClosing.value = true
   const shouldPersistWelcomeSeen = Boolean(settings && !settings.preferences.value.welcomeSeen)
+  welcomeDismissedForSession.value = true
 
   if (settings) {
     settings.preferences.value.welcomeSeen = true
   }
 
   try {
+    if (shouldPersistWelcomeSeen && settings) {
+      await settings.markWelcomeSeen().catch(() => false)
+    }
+
     await router.push({
       path: '/settings',
       query: {
         section: 'general',
       },
     })
-
-    if (shouldPersistWelcomeSeen && settings) {
-      await settings.markWelcomeSeen()
-    }
   }
   catch (error) {
     console.warn('failed to complete welcome onboarding', error)
-    if (settings) {
-      settings.preferences.value.welcomeSeen = false
-    }
   }
   finally {
     welcomeClosing.value = false
@@ -258,9 +258,11 @@ let newsFeedInterval: ReturnType<typeof setInterval> | null = null
 
 if (import.meta.client && settings && supabase) {
   onMounted(async () => {
-    const { data: authSubscription } = supabase.auth.onAuthStateChange((event) => {
+    const { data: authSubscription } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
-        void settings.loadSettings()
+        window.setTimeout(() => {
+          void settings.loadSettings(session)
+        }, 0)
       }
     })
 
@@ -505,4 +507,3 @@ if (import.meta.client) {
     </section>
   </SidebarProvider>
 </template>
-

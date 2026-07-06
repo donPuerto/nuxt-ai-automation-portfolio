@@ -13,6 +13,23 @@ import { buildWordBoostFromFileName } from '../../../../utils/video-to-text-word
 
 const MAX_UPLOAD_FILE_BYTES = 95 * 1024 * 1024
 
+const isMissingTranscriptionFilesTableError = (error: { code?: string, message?: string } | null | undefined) => {
+  if (!error) {
+    return false
+  }
+
+  if (error.code === 'PGRST205') {
+    return true
+  }
+
+  const message = error.message?.toLowerCase() ?? ''
+  return message.includes('could not find the table')
+    && message.includes('public.transcription_files')
+}
+
+const getMissingTranscriptionFilesTableMessage = () =>
+  'Video-to-text storage is not ready in this Supabase project yet. Apply the repo Supabase migrations to create public.transcription_files.'
+
 const readUploadBody = async (event: H3Event) => {
   const form = await readMultipartFormData(event)
   const fields = new Map<string, string>()
@@ -103,6 +120,13 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (createErrorResult || !createdFile) {
+    if (isMissingTranscriptionFilesTableError(createErrorResult)) {
+      throw createError({
+        statusCode: 503,
+        statusMessage: getMissingTranscriptionFilesTableMessage(),
+      })
+    }
+
     throw createError({
       statusCode: 500,
       statusMessage: createErrorResult?.message || 'Could not create transcription file record.',
@@ -141,6 +165,10 @@ export default defineEventHandler(async (event) => {
       .single()
 
     if (uploadedFileError || !uploadedFileRecord) {
+      if (isMissingTranscriptionFilesTableError(uploadedFileError)) {
+        throw new Error(getMissingTranscriptionFilesTableMessage())
+      }
+
       throw new Error(uploadedFileError?.message || 'Uploaded file record could not be updated.')
     }
 
@@ -209,6 +237,10 @@ export default defineEventHandler(async (event) => {
       .eq('user_id', user.id)
 
     if (trackError) {
+      if (isMissingTranscriptionFilesTableError(trackError)) {
+        throw new Error(getMissingTranscriptionFilesTableMessage())
+      }
+
       throw new Error(trackError.message)
     }
 

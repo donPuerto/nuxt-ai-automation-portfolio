@@ -92,7 +92,8 @@ const withSignedStorageUrl = async (
     }
   }
   catch (error) {
-    console.warn('transcription file signed url refresh skipped', error)
+    const message = error instanceof Error ? error.message : String(error)
+    console.warn(`transcription file signed url refresh skipped: ${message}`)
     return file
   }
 }

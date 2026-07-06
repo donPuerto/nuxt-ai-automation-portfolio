@@ -1,4 +1,4 @@
-import type { User } from '@supabase/supabase-js'
+import type { Session, User } from '@supabase/supabase-js'
 
 export type SettingsSectionId = 'general' | 'account' | 'knowledge-base'
 
@@ -46,6 +46,98 @@ const createDefaultPreferences = (): UserPreferencesForm => ({
   agentModel: 'openrouter-free',
 })
 
+const getCurrentSupabaseProjectRef = () => {
+  try {
+    const config = useRuntimeConfig()
+    const supabaseUrl = String(config.public.supabaseUrl ?? '').trim()
+
+    if (!supabaseUrl) {
+      return ''
+    }
+
+    return new URL(supabaseUrl).hostname.split('.')[0] ?? ''
+  }
+  catch {
+    return ''
+  }
+}
+
+const getWelcomeSeenStorageKey = (userId: string) => {
+  const projectRef = getCurrentSupabaseProjectRef()
+  return ['ai-portfolio', 'welcome-seen', projectRef || 'unknown', userId].join(':')
+}
+
+const readWelcomeSeenCache = (userId: string | null | undefined) => {
+  if (!import.meta.client || !userId) {
+    return false
+  }
+
+  return window.localStorage.getItem(getWelcomeSeenStorageKey(userId)) === 'true'
+}
+
+const writeWelcomeSeenCache = (userId: string | null | undefined, value: boolean) => {
+  if (!import.meta.client || !userId) {
+    return
+  }
+
+  const storageKey = getWelcomeSeenStorageKey(userId)
+  if (value) {
+    window.localStorage.setItem(storageKey, 'true')
+    return
+  }
+
+  window.localStorage.removeItem(storageKey)
+}
+
+const toTrimmedString = (value: unknown): string => {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+const deriveNamePartsFromFullName = (fullName: string) => {
+  const normalized = fullName.trim()
+  if (!normalized) {
+    return { firstName: '', lastName: '' }
+  }
+
+  const parts = normalized.split(/\s+/).filter(Boolean)
+  return {
+    firstName: parts[0] ?? '',
+    lastName: parts.length > 1 ? parts.slice(1).join(' ') : '',
+  }
+}
+
+const createProfileFromUser = (user: User | null): UserProfileForm => {
+  if (!user) {
+    return createDefaultProfile()
+  }
+
+  const metadata = user.user_metadata ?? {}
+  const fullName = toTrimmedString(
+    metadata.full_name
+    ?? metadata.name
+    ?? metadata.user_name
+    ?? metadata.preferred_username,
+  )
+  const nameParts = deriveNamePartsFromFullName(fullName)
+  const firstName = toTrimmedString(metadata.first_name ?? metadata.given_name) || nameParts.firstName
+  const lastName = toTrimmedString(metadata.last_name ?? metadata.family_name) || nameParts.lastName
+  const nickname = toTrimmedString(
+    metadata.nickname
+    ?? metadata.user_name
+    ?? metadata.preferred_username,
+  ) || fullName || toTrimmedString(user.email).split('@')[0] || ''
+
+  return {
+    firstName,
+    lastName,
+    nickname,
+    email: toTrimmedString(user.email ?? metadata.email),
+    mobileNumber: '',
+    phoneNumber: '',
+    workDescription: '',
+  }
+}
+
 const normalizeFontFamily = (value: unknown): string => {
   const normalized = String(value ?? '').trim()
   if (!normalized) {
@@ -74,20 +166,44 @@ const isValidEmail = (value: string): boolean => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
 }
 
+const isMissingTableError = (error: { code?: string, message?: string } | null | undefined, tableName: string) => {
+  if (!error) {
+    return false
+  }
+
+  if (error.code === 'PGRST205') {
+    return true
+  }
+
+  const message = error.message?.toLowerCase() ?? ''
+  return message.includes('could not find the table')
+    && message.includes(`public.${tableName}`.toLowerCase())
+}
+
+const toMissingTableMessage = (tableName: 'profiles' | 'user_settings') => {
+  if (tableName === 'profiles') {
+    return 'Profile settings storage is not ready in this Supabase project yet.'
+  }
+
+  return 'User settings storage is not ready in this Supabase project yet.'
+}
+
 const applyProfile = (
   profile: ReturnType<typeof useState<UserProfileForm>>,
   row: Record<string, unknown> | null,
+  fallbackUser: User | null = null,
 ) => {
   if (!row) {
-    profile.value = createDefaultProfile()
+    profile.value = createProfileFromUser(fallbackUser)
     return
   }
 
+  const fallbackProfile = createProfileFromUser(fallbackUser)
   profile.value = {
-    firstName: String(row.first_name ?? ''),
-    lastName: String(row.last_name ?? ''),
-    nickname: String(row.nickname ?? ''),
-    email: String(row.email ?? ''),
+    firstName: String(row.first_name ?? fallbackProfile.firstName),
+    lastName: String(row.last_name ?? fallbackProfile.lastName),
+    nickname: String(row.nickname ?? fallbackProfile.nickname),
+    email: String(row.email ?? fallbackProfile.email),
     mobileNumber: String(row.mobile_number ?? ''),
     phoneNumber: String(row.phone_number ?? ''),
     workDescription: String(row.work_description ?? ''),
@@ -97,9 +213,13 @@ const applyProfile = (
 const applyPreferences = (
   preferences: ReturnType<typeof useState<UserPreferencesForm>>,
   row: Record<string, unknown> | null,
+  fallbackUserId?: string | null,
 ) => {
   if (!row) {
     preferences.value = createDefaultPreferences()
+    if (readWelcomeSeenCache(fallbackUserId)) {
+      preferences.value.welcomeSeen = true
+    }
     return
   }
 
@@ -122,6 +242,10 @@ const applyPreferences = (
     agentProvider: normalizedAgentProvider,
     agentModel: String(row.agent_model ?? createDefaultPreferences().agentModel),
   }
+
+  if (readWelcomeSeenCache(fallbackUserId)) {
+    preferences.value.welcomeSeen = true
+  }
 }
 
 export const useUserSettings = () => {
@@ -142,7 +266,11 @@ export const useUserSettings = () => {
     return useSupabaseClient()
   }
 
-  const loadSettings = async () => {
+  const loadSettings = async (sessionOverride?: Session | null) => {
+    if (loading.value) {
+      return
+    }
+
     loading.value = true
 
     try {
@@ -155,7 +283,7 @@ export const useUserSettings = () => {
       }
 
       const supabase = getSupabase()
-      const { data: { session } } = await supabase.auth.getSession()
+      const session = sessionOverride ?? (await supabase.auth.getSession()).data.session
 
       if (!session) {
         user.value = null
@@ -171,17 +299,19 @@ export const useUserSettings = () => {
         headers: { Authorization: `Bearer ${session.access_token}` },
       })
 
-      applyProfile(profile, data.profile as Record<string, unknown> | null)
-      applyPreferences(preferences, data.preferences as Record<string, unknown> | null)
+      applyProfile(profile, data.profile as Record<string, unknown> | null, session.user)
+      applyPreferences(preferences, data.preferences as Record<string, unknown> | null, session.user.id)
       initialized.value = true
     }
     catch (error) {
       const err = error as { statusCode?: number }
       if (err?.statusCode === 401) {
-        await getSupabase().auth.signOut({ scope: 'local' }).catch(() => null)
-        user.value = null
-        profile.value = createDefaultProfile()
+        user.value = sessionOverride?.user ?? user.value
+        applyProfile(profile, null, user.value)
         preferences.value = createDefaultPreferences()
+        if (readWelcomeSeenCache(user.value?.id)) {
+          preferences.value.welcomeSeen = true
+        }
         initialized.value = true
         return
       }
@@ -220,6 +350,10 @@ export const useUserSettings = () => {
     const { error } = await supabase.from('profiles').upsert(payload)
 
     if (error) {
+      if (isMissingTableError(error, 'profiles')) {
+        throw new Error(toMissingTableMessage('profiles'))
+      }
+
       throw error
     }
   }
@@ -242,6 +376,10 @@ export const useUserSettings = () => {
     })
 
     if (error) {
+      if (isMissingTableError(error, 'user_settings')) {
+        throw new Error(toMissingTableMessage('user_settings'))
+      }
+
       throw error
     }
   }
@@ -265,6 +403,10 @@ export const useUserSettings = () => {
     })
 
     if (error) {
+      if (isMissingTableError(error, 'user_settings')) {
+        throw new Error(toMissingTableMessage('user_settings'))
+      }
+
       throw error
     }
   }
@@ -275,11 +417,12 @@ export const useUserSettings = () => {
     }
 
     if (!user.value) {
-      throw new Error('You must be signed in to update settings.')
+      return false
     }
 
     const supabase = getSupabase()
     preferences.value.welcomeSeen = true
+    writeWelcomeSeenCache(user.value.id, true)
 
     const { error } = await supabase.from('user_settings').upsert({
       user_id: user.value.id,
@@ -287,9 +430,16 @@ export const useUserSettings = () => {
     })
 
     if (error) {
+      if (isMissingTableError(error, 'user_settings')) {
+        return false
+      }
+
       preferences.value.welcomeSeen = false
+      writeWelcomeSeenCache(user.value.id, false)
       throw error
     }
+
+    return true
   }
 
   const signOut = async (scope: 'local' | 'others' | 'global' = 'local') => {

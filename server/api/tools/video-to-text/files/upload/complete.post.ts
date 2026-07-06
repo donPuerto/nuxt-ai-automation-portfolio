@@ -22,7 +22,24 @@ type CompleteUploadBody = {
   autoTranscribe?: boolean
 }
 
-const MAX_DIRECT_UPLOAD_FILE_BYTES = 512 * 1024 * 1024
+const MAX_DIRECT_UPLOAD_FILE_BYTES = 2 * 1024 * 1024 * 1024
+
+const isMissingTranscriptionFilesTableError = (error: { code?: string, message?: string } | null | undefined) => {
+  if (!error) {
+    return false
+  }
+
+  if (error.code === 'PGRST205') {
+    return true
+  }
+
+  const message = error.message?.toLowerCase() ?? ''
+  return message.includes('could not find the table')
+    && message.includes('public.transcription_files')
+}
+
+const getMissingTranscriptionFilesTableMessage = () =>
+  'Video-to-text storage is not ready in this Supabase project yet. Apply the repo Supabase migrations to create public.transcription_files.'
 
 const isPublicOrigin = (origin: string) => {
   try {
@@ -72,7 +89,7 @@ export default defineEventHandler(async (event) => {
   if (fileSizeBytes > MAX_DIRECT_UPLOAD_FILE_BYTES) {
     throw createError({
       statusCode: 413,
-      statusMessage: 'File is too large. Keep uploads under 512MB.',
+      statusMessage: 'File is too large. Keep uploads under 2GB.',
     })
   }
 
@@ -107,6 +124,13 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (createErrorResult || !createdFile) {
+    if (isMissingTranscriptionFilesTableError(createErrorResult)) {
+      throw createError({
+        statusCode: 503,
+        statusMessage: getMissingTranscriptionFilesTableMessage(),
+      })
+    }
+
     throw createError({
       statusCode: 500,
       statusMessage: createErrorResult?.message || 'Could not create transcription file record.',
@@ -134,6 +158,10 @@ export default defineEventHandler(async (event) => {
       .single()
 
     if (uploadedFileError || !uploadedFileRecord) {
+      if (isMissingTranscriptionFilesTableError(uploadedFileError)) {
+        throw new Error(getMissingTranscriptionFilesTableMessage())
+      }
+
       throw new Error(uploadedFileError?.message || 'Uploaded file record could not be updated.')
     }
 
@@ -148,7 +176,34 @@ export default defineEventHandler(async (event) => {
     }
 
     if (!config.videoToTextWebhookUrl || !config.videoToTextApiKey) {
-      throw new Error('Video to text webhook configuration is missing.')
+      const message = 'Video to text webhook configuration is missing.'
+
+      const { data: pendingFileRecord } = await supabase
+        .from('transcription_files')
+        .update({
+          status: 'uploaded',
+          error_message: message,
+        })
+        .eq('id', uploadedFileRecord.id)
+        .eq('user_id', user.id)
+        .select(transcriptionFileSelect)
+        .single()
+
+      return {
+        ok: false,
+        file: pendingFileRecord
+          ? {
+              ...pendingFileRecord,
+              highlights: mapHighlights(pendingFileRecord.highlights),
+            }
+          : {
+              ...uploadedFileRecord,
+              status: 'uploaded',
+              error_message: message,
+              highlights: mapHighlights(uploadedFileRecord.highlights),
+            },
+        message,
+      }
     }
 
     if (!sourceUrl) {
@@ -202,6 +257,10 @@ export default defineEventHandler(async (event) => {
       .eq('user_id', user.id)
 
     if (trackError) {
+      if (isMissingTranscriptionFilesTableError(trackError)) {
+        throw new Error(getMissingTranscriptionFilesTableMessage())
+      }
+
       throw new Error(trackError.message)
     }
 

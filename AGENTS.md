@@ -61,6 +61,29 @@ A skill is a set of local instructions stored in a `SKILL.md` file. Use the proj
 ## MCP
 This repo includes workspace MCP configuration for Figma at [mcp.json](/d:/Code/Nuxt/v4/nuxt-ai-automation-portfolio/mcp.json) and [.vscode/mcp.json](/d:/Code/Nuxt/v4/nuxt-ai-automation-portfolio/.vscode/mcp.json).
 
+The active workspace Supabase MCP target for this app is project ref `cidyudlrjfrjvwmytwhd`. Keep both [mcp.json](/d:/Code/Nuxt/v4/nuxt-ai-automation-portfolio/mcp.json) and [.vscode/mcp.json](/d:/Code/Nuxt/v4/nuxt-ai-automation-portfolio/.vscode/mcp.json) aligned to that ref unless the app is intentionally moved again.
+
+The workspace can hold multiple n8n MCP accounts at once. Preserve existing n8n entries and add new ones under distinct names instead of replacing prior profiles.
+
+The current local config includes two n8n MCP entries, `n8n-server` and `n8n-wr`. The `n8n-wr` profile is the WR-coded account and points at `https://n8n.srv1127913.hstgr.cloud/mcp-server/http` with its own Bearer token.
+
+Native n8n API access for WR direct workflow reads uses the same hosted instance at `https://n8n.srv1127913.hstgr.cloud/api/v1` with the `X-N8N-API-KEY` header.
+
+For the portfolio `Video to Text` app flow, the Nuxt server uses `NUXT_VIDEO_TO_TEXT_WEBHOOK_URL` and `NUXT_VIDEO_TO_TEXT_API_KEY` to call the n8n `Webhook: Video to Text API` node. The app sends the secret as `X-API-Key`, and that value must match the node's attached `Header Auth` credential. Reference: [docs/n8n/video-to-text-app-credentials.md](/d:/Code/Nuxt/v4/nuxt-ai-automation-portfolio/docs/n8n/video-to-text-app-credentials.md).
+
+Playwright browser-extension work in this repo should use the bundled Chromium flow, not the user's normal Chrome or Edge profile.
+
+Memory for Codex:
+- Global Playwright CLI is installed and callable as `playwright`
+- Global extension launcher is installed and callable as `pw-extension-launcher`
+- Repo launcher script is [scripts/launch-playwright-extension.mjs](/d:/Code/Nuxt/v4/nuxt-ai-automation-portfolio/scripts/launch-playwright-extension.mjs)
+- Windows global shim entry is provided by the repo `bin` mapping in [package.json](/d:/Code/Nuxt/v4/nuxt-ai-automation-portfolio/package.json:5)
+- Install the Playwright browser runtime with `npm run pw:install-chromium` or `playwright install chromium`
+- Launch an unpacked extension with `pw-extension-launcher --extension=PATH [--url=http://127.0.0.1:3000]`
+- Repo-local equivalent: `npm run pw:extension -- --extension=PATH [--url=http://127.0.0.1:3000]`
+- Use an unpacked extension folder containing `manifest.json`
+- Do not treat this as a Chrome Web Store install or a way to control the user's personal Chrome/Edge profile directly
+
 To finish authentication for Codex CLI, run:
 
 ```bash

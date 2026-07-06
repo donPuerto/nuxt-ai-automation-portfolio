@@ -11,7 +11,7 @@ type CreateUploadSignedUrlBody = {
   fileSizeBytes?: number
 }
 
-const MAX_DIRECT_UPLOAD_FILE_BYTES = 512 * 1024 * 1024
+const MAX_DIRECT_UPLOAD_FILE_BYTES = 2 * 1024 * 1024 * 1024
 
 export default defineEventHandler(async (event) => {
   await requireSupabaseUser(event)
@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
   if (fileSizeBytes > MAX_DIRECT_UPLOAD_FILE_BYTES) {
     throw createError({
       statusCode: 413,
-      statusMessage: 'File is too large. Keep uploads under 512MB.',
+      statusMessage: 'File is too large. Keep uploads under 2GB.',
     })
   }
 

@@ -2,6 +2,8 @@
 
 This document describes the live n8n workflow behind the portfolio's `Video to Text Transcriber` tool.
 
+For app-to-webhook credential wiring, see [video-to-text-app-credentials.md](./video-to-text-app-credentials.md).
+
 ## Workflow
 
 - Workflow name: `[Video to Text] - Multi-Source Transcription - v1`

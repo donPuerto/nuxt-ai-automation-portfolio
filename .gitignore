@@ -21,6 +21,10 @@ logs
 .agents/skills/supabase
 .agents/skills/supabase-postgres-best-practices
 
+# Dev/tooling temp artifacts
+.tmp-nuxt-dev.err
+.playwright-mcp/
+
 # Local env files
 .env
 .env.*

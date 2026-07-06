@@ -60,6 +60,7 @@ type UploadedTranscriptionFile = {
 }
 
 type UploadFileResult = {
+  ok?: boolean
   file: UploadedTranscriptionFile | null
   jobId?: string
   message?: string
@@ -78,8 +79,9 @@ type UploadedFilesResult = {
 }
 
 type UploadedFilesSortOption = 'newest' | 'oldest'
+type UploadedFilesStatusFilter = UploadedTranscriptionFile['status'] | 'all'
 
-const MAX_UPLOAD_FILE_BYTES = 512 * 1024 * 1024
+const MAX_UPLOAD_FILE_BYTES = 2 * 1024 * 1024 * 1024
 
 const props = defineProps<{
   project: PortfolioKnowledgeProject
@@ -108,16 +110,23 @@ const callbackPending = ref(false)
 const statusSourceTab = ref<VideoToTextSourceTab | null>(null)
 const activeJobSourceTab = ref<VideoToTextSourceTab | null>(null)
 const lastCompletedSourceTab = ref<VideoToTextSourceTab | null>(null)
-const selectedUploadFile = ref<File | null>(null)
+const selectedUploadFiles = ref<File[]>([])
 const uploadingFile = ref(false)
 const filesLoading = ref(false)
 const transcriptionFiles = ref<UploadedTranscriptionFile[]>([])
 const deletingFileId = ref('')
+const bulkDeleting = ref(false)
 const uploadedFilesSearch = ref('')
 const uploadedFilesSort = ref<UploadedFilesSortOption>('newest')
+const uploadedFilesStatusFilter = ref<UploadedFilesStatusFilter>('all')
 const filesDialogOpen = ref(false)
 const expandedFileId = ref('')
+const selectedUploadedFileIds = ref<string[]>([])
+const activeCombinedFileIds = ref<string[]>([])
+const activeCombinedFileNames = ref<string[]>([])
+const combinedCompletedCount = ref(0)
 let pollTimer: ReturnType<typeof setTimeout> | null = null
+let scheduledPollAction: null | (() => Promise<void>) = null
 
 const transcriberOptions = [
   {
@@ -142,13 +151,23 @@ const uploadedFilesSortOptions = [
   { value: 'oldest', label: 'Oldest first' },
 ] as const
 
+const uploadedFilesStatusOptions = [
+  { value: 'all', label: 'All statuses' },
+  { value: 'failed', label: 'Failed' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'processing', label: 'Processing' },
+  { value: 'queued', label: 'Queued' },
+  { value: 'uploaded', label: 'Uploaded' },
+  { value: 'cancelled', label: 'Cancelled' },
+] as const
+
 const canTranscribe = computed(() => {
   if (loading.value) {
     return false
   }
 
   if (sourceTab.value === 'file') {
-    return !!selectedUploadFile.value && !uploadingFile.value
+    return selectedUploadFiles.value.length > 0 && !uploadingFile.value
   }
 
   return sourceUrl.value.trim().length > 0
@@ -168,8 +187,13 @@ const shouldShowTranscriptCard = computed(() => {
 })
 const filteredTranscriptionFiles = computed(() => {
   const query = uploadedFilesSearch.value.trim().toLowerCase()
+  const statusFilter = uploadedFilesStatusFilter.value
+  const filteredByStatus = statusFilter === 'all'
+    ? [...transcriptionFiles.value]
+    : transcriptionFiles.value.filter(file => file.status === statusFilter)
+
   const files = query
-    ? transcriptionFiles.value.filter((file) => {
+    ? filteredByStatus.filter((file) => {
         const haystack = [
           file.file_name,
           file.status,
@@ -182,7 +206,7 @@ const filteredTranscriptionFiles = computed(() => {
 
         return haystack.includes(query)
       })
-    : [...transcriptionFiles.value]
+    : filteredByStatus
 
   files.sort((left, right) => {
     const leftTime = left.created_at ? new Date(left.created_at).getTime() : 0
@@ -198,6 +222,33 @@ const filteredTranscriptionFiles = computed(() => {
 const uploadedFilesSortLabel = computed(() => {
   return uploadedFilesSort.value === 'oldest' ? 'Oldest first' : 'Newest first'
 })
+const selectedUploadedFilesCount = computed(() => selectedUploadedFileIds.value.length)
+const allFilteredFilesSelected = computed(() => {
+  if (!filteredTranscriptionFiles.value.length) {
+    return false
+  }
+
+  return filteredTranscriptionFiles.value.every(file => selectedUploadedFileIds.value.includes(file.id))
+})
+const someFilteredFilesSelected = computed(() => {
+  if (!filteredTranscriptionFiles.value.length) {
+    return false
+  }
+
+  return filteredTranscriptionFiles.value.some(file => selectedUploadedFileIds.value.includes(file.id))
+})
+const selectedUploadFileCount = computed(() => selectedUploadFiles.value.length)
+const selectedUploadTotalBytes = computed(() => {
+  return selectedUploadFiles.value.reduce((total, file) => total + file.size, 0)
+})
+const selectedUploadFileSummaries = computed(() => {
+  return selectedUploadFiles.value.map((file, index) => ({
+    id: `${file.name}-${file.size}-${index}`,
+    name: file.name,
+    size: file.size,
+  }))
+})
+const isCombinedFileRun = computed(() => activeCombinedFileIds.value.length > 1)
 const statusBadgeClass = computed(() => {
   if (displayStatus.value === 'completed') {
     return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200'
@@ -290,6 +341,15 @@ const clearPolling = () => {
     clearTimeout(pollTimer)
     pollTimer = null
   }
+  scheduledPollAction = null
+}
+
+const scheduleNextPoll = (action: () => Promise<void>, delay = 3000) => {
+  clearPolling()
+  scheduledPollAction = action
+  pollTimer = setTimeout(() => {
+    void action()
+  }, delay)
 }
 
 const getApiErrorMessage = (error: unknown) => {
@@ -306,6 +366,11 @@ const getApiErrorMessage = (error: unknown) => {
   }
 
   return message || 'We could not start the transcription workflow right now.'
+}
+
+const isEmptyTranscriptFailure = (file: UploadedTranscriptionFile) => {
+  const message = file.error_message?.toLowerCase() ?? ''
+  return message.includes('no transcript text was detected')
 }
 
 const getAuthHeaders = async () => {
@@ -342,7 +407,92 @@ const formatUploadedFileSize = (bytes: number | null) => {
 }
 
 const formatUploadLimit = (bytes: number) => {
+  if (bytes >= 1024 * 1024 * 1024) {
+    const gigabytes = bytes / (1024 * 1024 * 1024)
+    return `${Number.isInteger(gigabytes) ? gigabytes : gigabytes.toFixed(1)}GB`
+  }
+
   return `${Math.round(bytes / (1024 * 1024))}MB`
+}
+
+const escapeRegExp = (value: string) => {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+const buildFileNameSortKey = (fileName: string) => {
+  const normalized = fileName.trim().toLowerCase()
+  const extensionMatch = normalized.match(/^(.*?)(\.[a-z0-9]+)?$/i)
+  const baseName = extensionMatch?.[1] ?? normalized
+  const extension = extensionMatch?.[2] ?? ''
+  const partMatch = baseName.match(/(?:^|[\s._-])(part|pt|chunk|clip|segment)[\s._-]*(\d+)(?:$|[\s._-])/i)
+
+  if (partMatch?.[2]) {
+    const numericValue = Number.parseInt(partMatch[2], 10)
+    const marker = partMatch[1] ?? ''
+    const prefix = baseName.replace(new RegExp(`${escapeRegExp(partMatch[0])}$`, 'i'), '').trim()
+
+    return {
+      priority: 0,
+      prefix,
+      numericValue,
+      marker,
+      extension,
+      fallback: normalized,
+    }
+  }
+
+  const trailingNumberMatch = baseName.match(/^(.*?)(\d+)(?:$|[\s._-])/)
+  if (trailingNumberMatch?.[2]) {
+    return {
+      priority: 1,
+      prefix: trailingNumberMatch[1].trim(),
+      numericValue: Number.parseInt(trailingNumberMatch[2], 10),
+      marker: '',
+      extension,
+      fallback: normalized,
+    }
+  }
+
+  return {
+    priority: 2,
+    prefix: baseName,
+    numericValue: Number.POSITIVE_INFINITY,
+    marker: '',
+    extension,
+    fallback: normalized,
+  }
+}
+
+const sortFilesForTranscriptOrder = (files: File[]) => {
+  return [...files].sort((left, right) => {
+    const leftKey = buildFileNameSortKey(left.name)
+    const rightKey = buildFileNameSortKey(right.name)
+
+    if (leftKey.priority !== rightKey.priority) {
+      return leftKey.priority - rightKey.priority
+    }
+
+    const prefixCompare = leftKey.prefix.localeCompare(rightKey.prefix, undefined, { numeric: true, sensitivity: 'base' })
+    if (prefixCompare !== 0) {
+      return prefixCompare
+    }
+
+    if (leftKey.numericValue !== rightKey.numericValue) {
+      return leftKey.numericValue - rightKey.numericValue
+    }
+
+    const markerCompare = leftKey.marker.localeCompare(rightKey.marker, undefined, { sensitivity: 'base' })
+    if (markerCompare !== 0) {
+      return markerCompare
+    }
+
+    const extensionCompare = leftKey.extension.localeCompare(rightKey.extension, undefined, { sensitivity: 'base' })
+    if (extensionCompare !== 0) {
+      return extensionCompare
+    }
+
+    return leftKey.fallback.localeCompare(rightKey.fallback, undefined, { numeric: true, sensitivity: 'base' })
+  })
 }
 
 const formatUploadedFileTimestamp = (value: string | null) => {
@@ -426,6 +576,41 @@ const openUploadedFileDetails = (file: UploadedTranscriptionFile) => {
   openFilesDialog(file.id)
 }
 
+const isUploadedFileSelected = (fileId: string) => selectedUploadedFileIds.value.includes(fileId)
+
+const toggleUploadedFileSelection = (fileId: string, checked: boolean | 'indeterminate') => {
+  if (checked === 'indeterminate') {
+    return
+  }
+
+  if (checked) {
+    if (!selectedUploadedFileIds.value.includes(fileId)) {
+      selectedUploadedFileIds.value = [...selectedUploadedFileIds.value, fileId]
+    }
+    return
+  }
+
+  selectedUploadedFileIds.value = selectedUploadedFileIds.value.filter(id => id !== fileId)
+}
+
+const toggleAllFilteredUploadedFiles = (checked: boolean | 'indeterminate') => {
+  if (checked === 'indeterminate') {
+    return
+  }
+
+  if (!checked) {
+    const filteredIds = new Set(filteredTranscriptionFiles.value.map(file => file.id))
+    selectedUploadedFileIds.value = selectedUploadedFileIds.value.filter(id => !filteredIds.has(id))
+    return
+  }
+
+  const nextIds = new Set(selectedUploadedFileIds.value)
+  for (const file of filteredTranscriptionFiles.value) {
+    nextIds.add(file.id)
+  }
+  selectedUploadedFileIds.value = [...nextIds]
+}
+
 const normalizeUploadedFile = (file: UploadedTranscriptionFile) => ({
   ...file,
   highlights: Array.isArray(file.highlights)
@@ -435,17 +620,24 @@ const normalizeUploadedFile = (file: UploadedTranscriptionFile) => ({
     : [],
 })
 
+const fetchUploadedFiles = async () => {
+  const headers = await getAuthHeaders()
+  const result = await $fetch<UploadedFilesResult>('/api/tools/video-to-text/files', {
+    headers,
+    query: {
+      t: Date.now(),
+    },
+  })
+
+  return (result.files ?? []).map(normalizeUploadedFile)
+}
+
 const loadUploadedFiles = async () => {
   filesLoading.value = true
   try {
-    const headers = await getAuthHeaders()
-    const result = await $fetch<UploadedFilesResult>('/api/tools/video-to-text/files', {
-      headers,
-      query: {
-        t: Date.now(),
-      },
-    })
-    transcriptionFiles.value = (result.files ?? []).map(normalizeUploadedFile)
+    transcriptionFiles.value = await fetchUploadedFiles()
+    const availableIds = new Set(transcriptionFiles.value.map(file => file.id))
+    selectedUploadedFileIds.value = selectedUploadedFileIds.value.filter(id => availableIds.has(id))
   }
   catch (error) {
     console.warn('video-to-text files load skipped', error)
@@ -460,9 +652,26 @@ const toggleUploadedFilesSort = () => {
   uploadedFilesSort.value = uploadedFilesSort.value === 'newest' ? 'oldest' : 'newest'
 }
 
-const scheduleNextPoll = (delay = 3000) => {
-  clearPolling()
-  pollTimer = setTimeout(pollStatus, delay)
+const buildCombinedTranscript = (files: UploadedTranscriptionFile[]) => {
+  const transcriptSections = files
+    .map((file, index) => {
+      const text = (file.transcription ?? '').trim()
+      if (!text) {
+        return ''
+      }
+
+      if (files.length === 1) {
+        return text
+      }
+
+      return [
+        `Part ${index + 1}: ${file.file_name}`,
+        text,
+      ].join('\n')
+    })
+    .filter(Boolean)
+
+  return transcriptSections.join('\n\n')
 }
 
 const stopWaitingForCallback = () => {
@@ -493,7 +702,7 @@ const pollStatus = async () => {
         return
       }
 
-      scheduleNextPoll()
+      scheduleNextPoll(pollStatus)
       return
     }
 
@@ -547,7 +756,7 @@ const pollStatus = async () => {
       return
     }
 
-    scheduleNextPoll()
+    scheduleNextPoll(pollStatus)
   }
   catch (error) {
     console.error('video-to-text status poll failed', error)
@@ -557,7 +766,100 @@ const pollStatus = async () => {
       return
     }
 
-    scheduleNextPoll(4000)
+    scheduleNextPoll(pollStatus, 4000)
+  }
+}
+
+const pollCombinedFiles = async () => {
+  if (!activeCombinedFileIds.value.length) {
+    return
+  }
+
+  pollAttempts.value += 1
+
+  try {
+    const files = await fetchUploadedFiles()
+    transcriptionFiles.value = files
+
+    const orderedFiles = activeCombinedFileIds.value
+      .map(fileId => files.find(file => file.id === fileId) ?? null)
+      .filter((file): file is UploadedTranscriptionFile => Boolean(file))
+
+    const completedFiles = orderedFiles.filter(file => file.status === 'completed')
+    const failedFiles = orderedFiles.filter(file => file.status === 'failed')
+    const processingFiles = orderedFiles.filter(file => ['queued', 'processing'].includes(file.status))
+    const recoverableFailedFiles = failedFiles.filter(isEmptyTranscriptFailure)
+    const blockingFailedFiles = failedFiles.filter(file => !isEmptyTranscriptFailure(file))
+
+    combinedCompletedCount.value = completedFiles.length
+
+    if (blockingFailedFiles.length) {
+      clearPolling()
+      loading.value = false
+      status.value = 'failed'
+      callbackPending.value = false
+      const failedFile = blockingFailedFiles[0]
+      errorMessage.value = failedFile.error_message || `Transcription failed for ${failedFile.file_name}.`
+      statusMessage.value = 'Combined transcription failed.'
+      toast.error(errorMessage.value)
+      return
+    }
+
+    const resolvedFileCount = completedFiles.length + recoverableFailedFiles.length
+    const allFilesResolved = orderedFiles.length === activeCombinedFileIds.value.length
+      && resolvedFileCount === activeCombinedFileIds.value.length
+
+    if (allFilesResolved && completedFiles.length > 0) {
+      clearPolling()
+      loading.value = false
+      status.value = 'completed'
+      callbackPending.value = false
+      activeCombinedFileNames.value = completedFiles.map(file => file.file_name)
+      transcript.value = buildCombinedTranscript(completedFiles)
+      transcriptSummary.value = ''
+      summaryHighlights.value = []
+      lastCompletedSourceTab.value = 'file'
+      errorMessage.value = ''
+      const skippedCount = recoverableFailedFiles.length
+      statusMessage.value = skippedCount > 0
+        ? `Combined transcript ready from ${completedFiles.length} parts via ${transcriber.value}. Skipped ${skippedCount} part${skippedCount === 1 ? '' : 's'} with no detected speech.`
+        : activeCombinedFileIds.value.length > 1
+          ? `Combined transcript ready from ${activeCombinedFileIds.value.length} parts via ${transcriber.value}.`
+          : `Transcript ready via ${transcriber.value}.`
+      toast.success(
+        skippedCount > 0
+          ? `Transcript ready. Skipped ${skippedCount} part${skippedCount === 1 ? '' : 's'} with no detected speech.`
+          : activeCombinedFileIds.value.length > 1
+            ? 'Combined transcript is ready.'
+            : 'Transcript is ready.',
+      )
+      return
+    }
+
+    status.value = 'processing'
+    statusSourceTab.value = 'file'
+    activeJobSourceTab.value = 'file'
+    callbackPending.value = false
+    statusMessage.value = activeCombinedFileIds.value.length > 1
+      ? `Processing ${completedFiles.length} of ${activeCombinedFileIds.value.length} uploaded parts...`
+      : 'Processing uploaded file...'
+
+    if (!processingFiles.length && pollAttempts.value >= getMaxPollAttempts(transcriber.value)) {
+      stopWaitingForCallback()
+      return
+    }
+
+    scheduleNextPoll(pollCombinedFiles)
+  }
+  catch (error) {
+    console.error('video-to-text combined files poll failed', error)
+
+    if (pollAttempts.value >= getMaxPollAttempts(transcriber.value)) {
+      stopWaitingForCallback()
+      return
+    }
+
+    scheduleNextPoll(pollCombinedFiles, 4000)
   }
 }
 
@@ -575,6 +877,9 @@ const submitForTranscription = async () => {
   transcriptSummary.value = ''
   summaryHighlights.value = []
   summaryDialogOpen.value = false
+  activeCombinedFileIds.value = []
+  activeCombinedFileNames.value = []
+  combinedCompletedCount.value = 0
   status.value = 'processing'
   statusSourceTab.value = 'url'
   activeJobSourceTab.value = 'url'
@@ -607,7 +912,7 @@ const submitForTranscription = async () => {
     statusMessage.value = result.message
 
     if (callbackReachable.value) {
-      scheduleNextPoll(2500)
+      scheduleNextPoll(pollStatus, 2500)
     }
     else {
       loading.value = false
@@ -634,7 +939,7 @@ const runTranscription = async () => {
 }
 
 const refreshStatus = async () => {
-  if (!jobId.value) {
+  if (!jobId.value && !activeCombinedFileIds.value.length) {
     return
   }
 
@@ -642,27 +947,41 @@ const refreshStatus = async () => {
   callbackPending.value = false
   pollAttempts.value = 0
   statusMessage.value = 'Checking for the latest transcript status...'
+  if (activeCombinedFileIds.value.length) {
+    await pollCombinedFiles()
+    return
+  }
+
   await pollStatus()
 }
 
 const handleFileSelection = (event: Event) => {
   const input = event.target as HTMLInputElement | null
-  selectedUploadFile.value = input?.files?.[0] ?? null
+  selectedUploadFiles.value = input?.files ? sortFilesForTranscriptOrder(Array.from(input.files)) : []
 }
 
 const uploadAndTranscribeFile = async () => {
-  if (!selectedUploadFile.value) {
-    toast.error('Choose a file before uploading.')
+  if (!selectedUploadFiles.value.length) {
+    toast.error('Choose one or more files before uploading.')
     return
   }
 
-  if (selectedUploadFile.value.size > MAX_UPLOAD_FILE_BYTES) {
-    toast.error(`File is too large. Keep uploads under ${formatUploadLimit(MAX_UPLOAD_FILE_BYTES)}.`)
+  const oversizedFile = selectedUploadFiles.value.find(file => file.size > MAX_UPLOAD_FILE_BYTES)
+  if (oversizedFile) {
+    toast.error(`${oversizedFile.name} is too large. Keep uploads under ${formatUploadLimit(MAX_UPLOAD_FILE_BYTES)} per file.`)
     return
   }
 
   uploadingFile.value = true
   errorMessage.value = ''
+  transcript.value = ''
+  transcriptSummary.value = ''
+  summaryHighlights.value = []
+  summaryDialogOpen.value = false
+  activeCombinedFileIds.value = []
+  activeCombinedFileNames.value = []
+  combinedCompletedCount.value = 0
+  clearPolling()
 
   try {
     const headers = await getAuthHeaders()
@@ -670,57 +989,83 @@ const uploadAndTranscribeFile = async () => {
       throw new Error('Please sign in to manage uploaded files.')
     }
 
-    const selectedFile = selectedUploadFile.value
-    const uploadInit = await $fetch<SignedUploadInitResult>('/api/tools/video-to-text/files/upload/signed-url', {
-      method: 'POST',
-      headers,
-      body: {
-        fileName: selectedFile.name,
-        fileSizeBytes: selectedFile.size,
-      },
-    })
+    const filesToUpload = [...selectedUploadFiles.value]
+    const uploadedFileIds: string[] = []
+    const uploadedFileNames: string[] = []
+    let latestResultMessage = ''
 
-    const { error: uploadError } = await supabase.storage
-      .from(uploadInit.bucket)
-      .uploadToSignedUrl(uploadInit.path, uploadInit.token, selectedFile, {
-        contentType: selectedFile.type || 'application/octet-stream',
-        upsert: true,
+    for (const [index, selectedFile] of filesToUpload.entries()) {
+      statusMessage.value = filesToUpload.length > 1
+        ? `Uploading part ${index + 1} of ${filesToUpload.length}: ${selectedFile.name}`
+        : `Uploading ${selectedFile.name}...`
+
+      const uploadInit = await $fetch<SignedUploadInitResult>('/api/tools/video-to-text/files/upload/signed-url', {
+        method: 'POST',
+        headers,
+        body: {
+          fileName: selectedFile.name,
+          fileSizeBytes: selectedFile.size,
+        },
       })
 
-    if (uploadError) {
-      throw new Error(uploadError.message || 'Could not upload file to Supabase Storage.')
+      const { error: uploadError } = await supabase.storage
+        .from(uploadInit.bucket)
+        .uploadToSignedUrl(uploadInit.path, uploadInit.token, selectedFile, {
+          contentType: selectedFile.type || 'application/octet-stream',
+          upsert: true,
+        })
+
+      if (uploadError) {
+        throw new Error(uploadError.message || 'Could not upload file to Supabase Storage.')
+      }
+
+      const result = await $fetch<UploadFileResult>('/api/tools/video-to-text/files/upload/complete', {
+        method: 'POST',
+        headers,
+        body: {
+          fileId: uploadInit.fileId,
+          fileName: selectedFile.name,
+          mimeType: selectedFile.type || 'application/octet-stream',
+          fileSizeBytes: selectedFile.size,
+          bucket: uploadInit.bucket,
+          path: uploadInit.path,
+          transcriber: transcriber.value,
+          autoTranscribe: true,
+        },
+      })
+
+      if (result.file?.id) {
+        uploadedFileIds.push(result.file.id)
+        uploadedFileNames.push(result.file.file_name)
+      }
+
+      latestResultMessage = result.message || latestResultMessage
+
+      if (result.ok === false) {
+        throw new Error(result.message || 'File uploaded, but transcription could not be started.')
+      }
     }
 
-    const result = await $fetch<UploadFileResult>('/api/tools/video-to-text/files/upload/complete', {
-      method: 'POST',
-      headers,
-      body: {
-        fileId: uploadInit.fileId,
-        fileName: selectedFile.name,
-        mimeType: selectedFile.type || 'application/octet-stream',
-        fileSizeBytes: selectedFile.size,
-        bucket: uploadInit.bucket,
-        path: uploadInit.path,
-        transcriber: transcriber.value,
-        autoTranscribe: true,
-      },
-    })
+    activeCombinedFileIds.value = uploadedFileIds
+    activeCombinedFileNames.value = uploadedFileNames
+    combinedCompletedCount.value = 0
+    jobId.value = ''
+    status.value = 'processing'
+    statusSourceTab.value = 'file'
+    activeJobSourceTab.value = 'file'
+    loading.value = true
+    pollAttempts.value = 0
+    callbackPending.value = false
+    statusMessage.value = filesToUpload.length > 1
+      ? `Uploaded ${filesToUpload.length} parts. Waiting for combined transcription...`
+      : (latestResultMessage || 'File uploaded and transcription started.')
 
-    if (result.jobId) {
-      jobId.value = result.jobId
-      status.value = 'processing'
-      statusSourceTab.value = 'file'
-      activeJobSourceTab.value = 'file'
-      loading.value = true
-      pollAttempts.value = 0
-      callbackPending.value = false
-      statusMessage.value = result.message || 'File uploaded and transcription started.'
-      scheduleNextPoll(2500)
-    }
-
-    selectedUploadFile.value = null
+    selectedUploadFiles.value = []
     await loadUploadedFiles()
-    toast.success(result.message || 'File uploaded to Supabase Storage.')
+    scheduleNextPoll(pollCombinedFiles, 2500)
+    toast.success(filesToUpload.length > 1
+      ? `Uploaded ${filesToUpload.length} parts. Combining transcript when all parts finish.`
+      : (latestResultMessage || 'File uploaded to Supabase Storage.'))
   }
   catch (error) {
     const message = getApiErrorMessage(error)
@@ -732,12 +1077,15 @@ const uploadAndTranscribeFile = async () => {
   }
 }
 
-const transcribeUploadedFile = async (fileId: string) => {
+const transcribeUploadedFile = async (file: UploadedTranscriptionFile) => {
   loading.value = true
   errorMessage.value = ''
   transcript.value = ''
   transcriptSummary.value = ''
   summaryHighlights.value = []
+  activeCombinedFileIds.value = [file.id]
+  activeCombinedFileNames.value = [file.file_name]
+  combinedCompletedCount.value = 0
   status.value = 'processing'
   statusSourceTab.value = 'file'
   activeJobSourceTab.value = 'file'
@@ -746,7 +1094,7 @@ const transcribeUploadedFile = async (fileId: string) => {
 
   try {
     const headers = await getAuthHeaders()
-    const result = await $fetch<StartTranscriptionResult>('/api/tools/video-to-text/files/' + fileId + '/transcribe', {
+    const result = await $fetch<StartTranscriptionResult>('/api/tools/video-to-text/files/' + file.id + '/transcribe', {
       method: 'POST',
       headers,
       body: {
@@ -762,7 +1110,7 @@ const transcribeUploadedFile = async (fileId: string) => {
     callbackReachable.value = result.callbackReachable ?? true
     callbackUrl.value = result.callbackUrl ?? ''
     statusMessage.value = result.message
-    scheduleNextPoll(2500)
+    scheduleNextPoll(pollStatus, 2500)
     await loadUploadedFiles()
   }
   catch (error) {
@@ -808,10 +1156,74 @@ const deleteUploadedFile = async (file: UploadedTranscriptionFile) => {
   }
 }
 
+const deleteUploadedFilesBatch = async (files: UploadedTranscriptionFile[]) => {
+  if (!files.length || bulkDeleting.value || deletingFileId.value) {
+    return
+  }
+
+  if (!import.meta.client) {
+    return
+  }
+
+  const isDeleteAll = files.length === transcriptionFiles.value.length && transcriptionFiles.value.length > 0
+  const confirmed = window.confirm(
+    isDeleteAll
+      ? `Delete all ${files.length} uploaded files from Supabase Storage and the app records?`
+      : `Delete ${files.length} selected uploaded file${files.length === 1 ? '' : 's'} from Supabase Storage and the app records?`,
+  )
+
+  if (!confirmed) {
+    return
+  }
+
+  bulkDeleting.value = true
+
+  try {
+    const headers = await getAuthHeaders()
+
+    for (const file of files) {
+      await $fetch<{ success: boolean, driveDeleteError?: string | null }>('/api/tools/video-to-text/files/' + file.id, {
+        method: 'DELETE',
+        headers,
+      })
+    }
+
+    if (expandedFileId.value && files.some(file => file.id === expandedFileId.value)) {
+      expandedFileId.value = ''
+    }
+
+    selectedUploadedFileIds.value = selectedUploadedFileIds.value.filter(id => !files.some(file => file.id === id))
+    await loadUploadedFiles()
+    toast.success(
+      isDeleteAll
+        ? 'All uploaded files deleted.'
+        : `${files.length} uploaded file${files.length === 1 ? '' : 's'} deleted.`,
+    )
+  }
+  catch (error) {
+    toast.error(getApiErrorMessage(error))
+  }
+  finally {
+    bulkDeleting.value = false
+  }
+}
+
+const deleteSelectedUploadedFiles = async () => {
+  const files = transcriptionFiles.value.filter(file => selectedUploadedFileIds.value.includes(file.id))
+  await deleteUploadedFilesBatch(files)
+}
+
+const deleteAllUploadedFiles = async () => {
+  await deleteUploadedFilesBatch(transcriptionFiles.value)
+}
+
 const stopTranscription = () => {
   clearPolling()
   loading.value = false
   callbackPending.value = false
+  activeCombinedFileIds.value = []
+  activeCombinedFileNames.value = []
+  combinedCompletedCount.value = 0
   status.value = 'cancelled'
   statusMessage.value = 'Transcription stopped.'
   errorMessage.value = 'You stopped this transcription run.'
@@ -858,7 +1270,10 @@ const openSummary = async () => {
       method: 'POST',
       body: {
         transcript: transcript.value,
-        sourceUrl: sourceUrl.value.trim(),
+        sourceUrl: sourceTab.value === 'file'
+          ? activeCombinedFileNames.value.join(', ')
+          : sourceUrl.value.trim(),
+        transcriber: transcriber.value,
       },
     })
 
@@ -939,6 +1354,7 @@ watch(transcriber, (value) => {
 watch(filesDialogOpen, (open) => {
   if (!open) {
     expandedFileId.value = ''
+    selectedUploadedFileIds.value = []
   }
 })
 </script>
@@ -983,12 +1399,38 @@ watch(filesDialogOpen, (open) => {
             <Input
               type="file"
               accept="audio/*,video/*,.mp3,.mp4,.wav,.m4a,.mov,.webm"
+              multiple
               class="h-11 border-border/70 bg-background/90 file:mr-3 file:rounded-md file:border-0 file:bg-primary/20 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-foreground hover:file:bg-primary/30"
               @change="handleFileSelection"
             />
             <p class="mt-2 text-xs text-muted-foreground">
-              Supported formats: `.mp3`, `.wav`, `.m4a`, `.mp4`, `.mov`, `.webm` (plus most `audio/*` and `video/*` files). Max upload size: `512MB`.
+              Supported formats: `.mp3`, `.wav`, `.m4a`, `.mp4`, `.mov`, `.webm` (plus most `audio/*` and `video/*` files). Max upload size: `{{ formatUploadLimit(MAX_UPLOAD_FILE_BYTES) }}` per file.
             </p>
+            <p class="mt-1 text-xs text-muted-foreground">
+              Select one file or multiple split parts. File uploads are transcribed in order and combined into one transcript with one Fathom-style summary.
+            </p>
+
+            <div v-if="selectedUploadFileCount" class="mt-3 space-y-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="inline-flex rounded-full border border-border/70 bg-background/70 px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  {{ selectedUploadFileCount }} {{ selectedUploadFileCount === 1 ? 'file' : 'files' }} selected
+                </span>
+                <span class="text-xs text-muted-foreground">
+                  Total selected size: {{ formatUploadedFileSize(selectedUploadTotalBytes) }}
+                </span>
+              </div>
+
+              <ul class="space-y-1 text-xs text-muted-foreground">
+                <li
+                  v-for="file in selectedUploadFileSummaries"
+                  :key="file.id"
+                  class="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-background/60 px-3 py-2"
+                >
+                  <span class="truncate">{{ file.name }}</span>
+                  <span class="shrink-0">{{ formatUploadedFileSize(file.size) }}</span>
+                </li>
+              </ul>
+            </div>
           </TabsContent>
         </Tabs>
 
@@ -1020,7 +1462,7 @@ watch(filesDialogOpen, (open) => {
               name="lucide:loader-circle"
               class="mr-2 size-4 animate-spin"
             />
-            <span>{{ loading || uploadingFile ? 'Transcribing...' : 'Transcribe' }}</span>
+            <span>{{ loading || uploadingFile ? 'Transcribing...' : (sourceTab === 'file' && selectedUploadFileCount > 1 ? 'Combine & Transcribe' : 'Transcribe') }}</span>
           </Button>
 
           <Button
@@ -1204,7 +1646,7 @@ watch(filesDialogOpen, (open) => {
                   size="sm"
                   class="rounded-full"
                   :disabled="loading || ['processing', 'queued'].includes(file.status)"
-                  @click="transcribeUploadedFile(file.id)"
+                  @click="transcribeUploadedFile(file)"
                 >
                   Transcribe
                 </Button>
@@ -1355,7 +1797,7 @@ watch(filesDialogOpen, (open) => {
             </Button>
           </div>
           <DialogDescription class="text-[#ab9986]">
-            Quick overview and key highlights generated from the completed transcript.
+            Structured Fathom-style summary and key highlights generated from the completed transcript.
           </DialogDescription>
         </DialogHeader>
 
@@ -1393,30 +1835,45 @@ watch(filesDialogOpen, (open) => {
     </Dialog>
 
     <Dialog v-model:open="filesDialogOpen">
-      <DialogContent class="overflow-hidden rounded-[1.75rem] border-border/70 bg-background/95 p-0 text-foreground shadow-[0_30px_80px_-42px_rgba(0,0,0,0.7)] sm:max-w-5xl">
-        <DialogHeader class="border-b border-border/60 px-5 py-4 md:px-6">
+      <DialogScrollContent class="max-h-[min(88vh,960px)] rounded-[1.75rem] border-border bg-[#1d1a18] p-0 text-[#f4ede3] shadow-[0_38px_110px_-50px_rgba(0,0,0,0.88)] backdrop-blur-none sm:max-w-5xl">
+        <DialogHeader class="border-b border-[#3b342f] bg-[#221e1b] px-5 py-4 md:px-6">
           <div class="pr-8">
-            <DialogTitle class="text-base font-semibold text-foreground">
+            <DialogTitle class="text-base font-semibold text-[#fff4e6]">
               Uploaded files
             </DialogTitle>
-            <DialogDescription class="mt-1 text-sm text-muted-foreground">
+            <DialogDescription class="mt-1 text-sm text-[#b8aa99]">
               Browse, search, sort, preview, and manage your uploaded media files in one canvas modal.
             </DialogDescription>
           </div>
           <div class="mt-4 space-y-3">
-            <div class="flex w-full items-center gap-2">
+            <div class="flex w-full flex-wrap items-center gap-2">
               <div class="relative min-w-0 flex-1">
                 <Icon
                   name="lucide:search"
-                  class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                  class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#8f857a]"
                 />
                 <Input
                   v-model="uploadedFilesSearch"
                   type="search"
                   placeholder="Search uploaded files..."
-                  class="h-10 rounded-lg pl-9"
+                  class="h-10 rounded-lg border-[#4a433d] bg-[#181513] pl-9 text-[#fff4e6] placeholder:text-[#8f857a]"
                 />
               </div>
+
+              <Select v-model="uploadedFilesStatusFilter">
+                <SelectTrigger class="h-10 min-w-[10.5rem] rounded-lg border-[#4a433d] bg-[#181513] px-3 text-[#f0deca]">
+                  <SelectValue placeholder="Filter status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem
+                    v-for="option in uploadedFilesStatusOptions"
+                    :key="option.value"
+                    :value="option.value"
+                  >
+                    {{ option.label }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
 
               <Tooltip>
                 <TooltipTrigger as-child>
@@ -1424,7 +1881,7 @@ watch(filesDialogOpen, (open) => {
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    class="size-10 rounded-md"
+                    class="size-10 rounded-md text-[#d7c7b4] hover:bg-[#2b2521] hover:text-[#fff4e6]"
                     @click="toggleUploadedFilesSort"
                   >
                     <Icon name="lucide:arrow-up-down" class="size-4" />
@@ -1442,7 +1899,7 @@ watch(filesDialogOpen, (open) => {
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    class="size-10 rounded-md"
+                    class="size-10 rounded-md text-[#d7c7b4] hover:bg-[#2b2521] hover:text-[#fff4e6]"
                     :disabled="filesLoading"
                     @click="loadUploadedFiles"
                   >
@@ -1460,17 +1917,59 @@ watch(filesDialogOpen, (open) => {
               </Tooltip>
             </div>
 
-            <p class="text-xs text-muted-foreground">
+            <div
+              v-if="transcriptionFiles.length"
+              class="flex flex-col gap-3 rounded-2xl border border-[#3b342f] bg-[#181513] px-3 py-3 md:flex-row md:items-center md:justify-between"
+            >
+              <div class="flex items-center gap-3">
+                <Checkbox
+                  :checked="allFilteredFilesSelected ? true : (someFilteredFilesSelected ? 'indeterminate' : false)"
+                  aria-label="Select all visible uploaded files"
+                  @update:checked="toggleAllFilteredUploadedFiles"
+                />
+                <p class="text-sm text-[#f0deca]">
+                  <span class="font-medium">{{ selectedUploadedFilesCount }}</span>
+                  selected
+                </p>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  class="rounded-full"
+                  :disabled="selectedUploadedFilesCount === 0 || bulkDeleting || Boolean(deletingFileId)"
+                  @click="deleteSelectedUploadedFiles"
+                >
+                  <Icon name="lucide:trash-2" class="mr-2 size-4" />
+                  {{ bulkDeleting ? 'Deleting...' : `Delete selected (${selectedUploadedFilesCount})` }}
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  class="rounded-full"
+                  :disabled="transcriptionFiles.length === 0 || bulkDeleting || Boolean(deletingFileId)"
+                  @click="deleteAllUploadedFiles"
+                >
+                  <Icon name="lucide:trash" class="mr-2 size-4" />
+                  Delete all
+                </Button>
+              </div>
+            </div>
+
+            <p class="text-xs text-[#9b8f82]">
               New uploads are stored in private Supabase Storage and opened with refreshed signed links.
             </p>
           </div>
         </DialogHeader>
 
-        <div class="px-5 py-4 md:px-6 md:py-5">
-          <div v-if="filesLoading" class="text-sm text-muted-foreground">
+        <div class="max-h-[calc(min(88vh,960px)-13.5rem)] overflow-y-auto bg-[#1d1a18] px-5 py-4 md:px-6 md:py-5">
+          <div v-if="filesLoading" class="text-sm text-[#b8aa99]">
             Loading files...
           </div>
-          <div v-else-if="filteredTranscriptionFiles.length === 0" class="text-sm text-muted-foreground">
+          <div v-else-if="filteredTranscriptionFiles.length === 0" class="text-sm text-[#b8aa99]">
             {{ transcriptionFiles.length ? 'No uploaded files match your search.' : 'No uploaded files yet.' }}
           </div>
           <Accordion
@@ -1484,20 +1983,28 @@ watch(filesDialogOpen, (open) => {
               v-for="file in filteredTranscriptionFiles"
               :key="file.id"
               :value="file.id"
-              class="rounded-2xl border border-border/70 bg-card/70 px-4"
+              class="rounded-2xl border border-[#3b342f] bg-[#24201d] px-4 shadow-[inset_0_1px_0_rgba(255,244,230,0.02)]"
             >
               <div class="flex items-start gap-3">
+                <div class="pt-4">
+                  <Checkbox
+                    :checked="isUploadedFileSelected(file.id)"
+                    :aria-label="`Select ${file.file_name}`"
+                    @update:checked="(checked) => toggleUploadedFileSelection(file.id, checked)"
+                  />
+                </div>
+
                 <AccordionTrigger class="flex-1 py-4 hover:no-underline">
                   <div class="min-w-0 space-y-1 text-left">
                     <div class="flex flex-wrap items-center gap-2">
-                      <p class="truncate text-sm font-medium text-foreground">
+                      <p class="truncate text-sm font-medium text-[#fff4e6]">
                         {{ file.file_name }}
                       </p>
-                      <span class="inline-flex rounded-full border border-border/70 bg-background/70 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      <span class="inline-flex rounded-full border border-[#4a433d] bg-[#181513] px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[#c3b5a5]">
                         {{ file.status }}
                       </span>
                     </div>
-                    <p class="text-xs text-muted-foreground">
+                    <p class="text-xs text-[#b8aa99]">
                       {{ formatUploadedFileSize(file.file_size_bytes) }} / {{ file.transcriber }} / {{ formatUploadedFileTimestamp(file.created_at) }}
                     </p>
                   </div>
@@ -1535,7 +2042,7 @@ watch(filesDialogOpen, (open) => {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       variant="destructive"
-                      :disabled="deletingFileId === file.id"
+                      :disabled="deletingFileId === file.id || bulkDeleting"
                       @select="deleteUploadedFile(file)"
                     >
                       <Icon name="lucide:trash-2" class="size-4" />
@@ -1573,7 +2080,7 @@ watch(filesDialogOpen, (open) => {
                       size="sm"
                       class="rounded-full"
                       :disabled="loading || ['processing', 'queued'].includes(file.status)"
-                      @click="transcribeUploadedFile(file.id)"
+                      @click="transcribeUploadedFile(file)"
                     >
                       Transcribe
                     </Button>
@@ -1619,7 +2126,7 @@ watch(filesDialogOpen, (open) => {
             </AccordionItem>
           </Accordion>
         </div>
-      </DialogContent>
+      </DialogScrollContent>
     </Dialog>
 
           <!-- legacy preview modal block removed
