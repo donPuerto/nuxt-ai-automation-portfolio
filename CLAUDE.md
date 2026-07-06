@@ -4,7 +4,7 @@
 
 Nuxt 4 AI automation portfolio deployed on Cloudflare Workers.
 
-## Skills — Always Use When Available
+## Skills - Always Use When Available
 
 ### n8n Skills
 | Task | Skill |
@@ -63,25 +63,31 @@ Nuxt 4 AI automation portfolio deployed on Cloudflare Workers.
 
 ## n8n Workflow Standards
 
-### Native AI Nodes — Always Required
+### Native AI Nodes - Always Required
 When any workflow in this project calls an LLM, always use the **native n8n AI node**. Never use raw HTTP Request nodes for AI APIs.
 
 | Wrong | Right |
 |-------|-------|
-| `HTTP Request → api.anthropic.com/v1/messages` | `@n8n/n8n-nodes-langchain.lmChatAnthropic` |
-| `HTTP Request → api.openai.com/v1/chat/completions` | `@n8n/n8n-nodes-langchain.lmChatOpenAi` |
+| `HTTP Request -> api.anthropic.com/v1/messages` | `@n8n/n8n-nodes-langchain.lmChatAnthropic` |
+| `HTTP Request -> api.openai.com/v1/chat/completions` | `@n8n/n8n-nodes-langchain.lmChatOpenAi` |
 
 ### Use n8n Templates as Reference
 Before building any workflow, always search [https://n8n.io/workflows/](https://n8n.io/workflows/) for a relevant template to use as a reference. Use `mcp__n8n-mcp__search_templates` to find them.
 
-### Workflow Update Triad — Non-negotiable
+### Workflow Update Triad - Non-negotiable
 Any time a workflow is modified, do all three before closing:
-1. **Update Postman** — reflect changed endpoints, headers, or body schema
-2. **Update n8n Sticky Notes** — keep Blue/Yellow/Orange notes in sync
-3. **End-to-end test node by node** — verify each node output in n8n execution log
+1. **Update Postman** - reflect changed endpoints, headers, or body schema
+2. **Update n8n Sticky Notes** - keep Blue/Yellow/Orange notes in sync
+3. **End-to-end test node by node** - verify each node output in n8n execution log
 
 ### n8n Instance
 - URL: `https://n8n.srv1127913.hstgr.cloud`
+- MCP endpoint: `https://n8n.srv1127913.hstgr.cloud/mcp-server/http`
+- MCP server names in local config: `n8n-server`, `n8n-wr`
+- WR MCP profile name: `n8n-wr`
+- WR native API base: `https://n8n.srv1127913.hstgr.cloud/api/v1`
+- WR native API auth header: `X-N8N-API-KEY`
+- Preserve multiple n8n MCP profiles side by side; do not replace an existing profile when adding another account.
 - Workflows related to this project use webhooks mapped in `.env`
 
 ## Cloudflare Deployment
@@ -95,8 +101,41 @@ Any time a workflow is modified, do all three before closing:
 
 ## Environment Files
 
-- `.env` — public config (URLs, public keys) — can be committed
-- `.env.local` — secrets (API keys, tokens) — never commit
-- `.env.example` — template with placeholder values
+- `.env` - public config (URLs, public keys) - can be committed
+- `.env.local` - secrets (API keys, tokens) - never commit
+- `.env.example` - template with placeholder values
 
-Never edit `.env` files with tools — edit manually only (hook enforced).
+## Supabase MCP Memory
+
+- The current app-facing Supabase MCP project ref is `cidyudlrjfrjvwmytwhd` (matches `NUXT_SUPABASE_URL` in `.env`; this is the "Ai Automation" project with the real app schema)
+- Keep `.mcp.json` and `.vscode/mcp.json` aligned to that ref unless the app is intentionally moved
+- Changing only MCP does not repoint the running app; the app still reads its Supabase URL and keys from env
+
+Never edit `.env` files with tools - edit manually only (hook enforced).
+
+### Supabase env var naming convention (follow exactly)
+Use Supabase's own key names with the `NUXT_` prefix. The code in `nuxt.config.ts` reads these exact names and maps them into runtime config:
+
+| Env var | Runtime config key | Notes |
+|---------|--------------------|-------|
+| `NUXT_SUPABASE_URL` | `public.supabaseUrl` | exposed to client (inlined at build) |
+| `NUXT_SUPABASE_PUBLISHABLE_KEY` | `public.supabaseKey` | `sb_publishable_...`, exposed to client |
+| `NUXT_SUPABASE_SECRET_KEY` | `supabaseSecretKey` | `sb_secret_...`, preferred server admin credential |
+| `NUXT_SUPABASE_SERVICE_ROLE_KEY` | `supabaseServiceRoleKey` | legacy service_role JWT, admin fallback |
+| `NUXT_SUPABASE_JWKS_URL` | `supabaseJwksUrl` | for verifying Supabase-issued JWTs |
+
+Do NOT rename these to `NUXT_PUBLIC_SUPABASE_*` — the URL/publishable key reach the client via explicit `runtimeConfig.public` assignment, not the `NUXT_PUBLIC_` auto-prefix. The admin client (`server/utils/supabase-admin.ts`) prefers `supabaseSecretKey`, then `supabaseServiceRoleKey`.
+
+## Playwright Extension Memory
+
+- Global Playwright CLI is installed and callable as `playwright`
+- Global extension launcher is installed and callable as `pw-extension-launcher`
+- Repo-local launcher script is `scripts/launch-playwright-extension.mjs`
+- Repo-local npm scripts:
+  - `npm run pw:install-chromium`
+  - `npm run pw:extension -- --extension=PATH [--url=http://127.0.0.1:3000]`
+- Preferred global launch command:
+  - `pw-extension-launcher --extension=PATH [--url=http://127.0.0.1:3000]`
+- Browser-extension automation must use Playwright's bundled `chromium` persistent-context flow
+- Do not assume this installs into or controls the user's normal Chrome or Edge profile
+- The target must be an unpacked extension folder that contains `manifest.json`

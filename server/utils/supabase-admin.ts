@@ -5,13 +5,17 @@ const resolveSupabaseAdminConfig = (event: H3Event) => {
   const config = useRuntimeConfig(event)
   const supabaseUrl
     = config.public.supabaseUrl
+      || process.env.NUXT_SUPABASE_URL
       || process.env.NUXT_PUBLIC_SUPABASE_URL
       || process.env.SUPABASE_URL
       || ''
+  // Prefer the new-format secret key (sb_secret_...); fall back to the legacy service_role JWT.
   const serviceRoleKey
-    = config.supabaseServiceRoleKey
-      || process.env.SUPABASE_SERVICE_ROLE_KEY
+    = config.supabaseSecretKey
+      || config.supabaseServiceRoleKey
+      || process.env.NUXT_SUPABASE_SECRET_KEY
       || process.env.NUXT_SUPABASE_SERVICE_ROLE_KEY
+      || process.env.SUPABASE_SERVICE_ROLE_KEY
       || ''
 
   return {

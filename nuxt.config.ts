@@ -34,6 +34,23 @@ const loadLocalEnvFile = (fileName: string, override = false) => {
 loadLocalEnvFile('.env')
 loadLocalEnvFile('.env.local', true)
 
+const publicSupabaseUrl = process.env.NUXT_SUPABASE_URL ?? process.env.NUXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL ?? ''
+const supabaseHttpOrigin = (() => {
+  if (!publicSupabaseUrl) {
+    return ''
+  }
+
+  try {
+    return new URL(publicSupabaseUrl).origin
+  }
+  catch {
+    return ''
+  }
+})()
+const supabaseWsOrigin = supabaseHttpOrigin
+  ? supabaseHttpOrigin.replace(/^https:/, 'wss:')
+  : ''
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -68,6 +85,23 @@ export default defineNuxtConfig({
     },
     externals: {
       inline: ['@nuxt/nitro-server']
+    },
+    // Nitro's storage virtual module imports the payload cache-driver.js by an
+    // absolute file:// path. In dev the server bundler can't resolve that URL
+    // (the file is loaded from disk at runtime, so it's harmless) and emits an
+    // UNRESOLVED_IMPORT warning. The production Cloudflare build is unaffected.
+    // Silence only this one known-benign warning; pass everything else through.
+    rollupConfig: {
+      onwarn(warning, defaultHandler) {
+        if (
+          warning.code === 'UNRESOLVED_IMPORT'
+          && typeof warning.message === 'string'
+          && warning.message.includes('cache-driver')
+        ) {
+          return
+        }
+        defaultHandler(warning)
+      }
     }
   },
   css: ['~/assets/css/tailwind.css'],
@@ -238,14 +272,19 @@ export default defineNuxtConfig({
     openrouterApiKey: process.env.OPENROUTER_API_KEY ?? process.env.NUXT_OPENROUTER_API_KEY ?? '',
     anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? process.env.NUXT_ANTHROPIC_API_KEY ?? '',
     openaiApiKey: process.env.OPENAI_API_KEY ?? process.env.NUXT_OPENAI_API_KEY ?? '',
-    supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NUXT_SUPABASE_SERVICE_ROLE_KEY ?? '',
+    // New-format Supabase secret key (sb_secret_...) — preferred service credential.
+    supabaseSecretKey: process.env.NUXT_SUPABASE_SECRET_KEY ?? '',
+    // Legacy service_role JWT — kept as a fallback for the admin client.
+    supabaseServiceRoleKey: process.env.NUXT_SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
+    // JWKS endpoint for verifying Supabase-issued JWTs (asymmetric keys).
+    supabaseJwksUrl: process.env.NUXT_SUPABASE_JWKS_URL ?? '',
     videoToTextWebhookUrl: process.env.VIDEO_TO_TEXT_WEBHOOK_URL ?? process.env.NUXT_VIDEO_TO_TEXT_WEBHOOK_URL ?? '',
     videoToTextApiKey: process.env.VIDEO_TO_TEXT_API_KEY ?? process.env.NUXT_VIDEO_TO_TEXT_API_KEY ?? '',
     videoToTextCallbackUrl: process.env.VIDEO_TO_TEXT_CALLBACK_URL ?? process.env.NUXT_VIDEO_TO_TEXT_CALLBACK_URL ?? '',
     selfLearnEnabled: (process.env.SELF_LEARN_ENABLED ?? process.env.NUXT_SELF_LEARN_ENABLED ?? '') === 'true',
     public: {
-      supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL ?? '',
-      supabaseKey: process.env.NUXT_PUBLIC_SUPABASE_KEY ?? process.env.SUPABASE_KEY ?? '',
+      supabaseUrl: publicSupabaseUrl,
+      supabaseKey: process.env.NUXT_SUPABASE_PUBLISHABLE_KEY ?? process.env.NUXT_PUBLIC_SUPABASE_KEY ?? '',
       stripePublishableKey: '',
       siteUrl: '',
     },
@@ -255,7 +294,13 @@ export default defineNuxtConfig({
       contentSecurityPolicy: {
         'img-src': ["'self'", 'data:', 'blob:', 'https://cdn.simpleicons.org', 'https://*.stripe.com'],
         'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://js.stripe.com'],
-        'media-src': ["'self'", 'blob:', 'https://drive.google.com', 'https://drive.usercontent.google.com', 'https://cidyudlrjfrjvwmytwhd.supabase.co'],
+        'media-src': [
+          "'self'",
+          'blob:',
+          'https://drive.google.com',
+          'https://drive.usercontent.google.com',
+          ...(supabaseHttpOrigin ? [supabaseHttpOrigin] : []),
+        ],
         'worker-src': ["'self'", 'blob:'],
         'style-src': ["'self'", "'unsafe-inline'"],
         'frame-src': [
@@ -274,8 +319,8 @@ export default defineNuxtConfig({
           'https://m.stripe.network',
           'https://drive.google.com',
           'https://drive.usercontent.google.com',
-          'https://cidyudlrjfrjvwmytwhd.supabase.co',
-          'wss://cidyudlrjfrjvwmytwhd.supabase.co',
+          ...(supabaseHttpOrigin ? [supabaseHttpOrigin] : []),
+          ...(supabaseWsOrigin ? [supabaseWsOrigin] : []),
           'https://*.livekit.cloud',
           'wss://*.livekit.cloud',
         ],

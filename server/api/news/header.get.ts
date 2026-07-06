@@ -1,4 +1,4 @@
-import { getSupabaseAdmin } from '../../utils/supabase-admin'
+import { getSupabaseAdmin, hasSupabaseAdminConfig } from '../../utils/supabase-admin'
 import { getLatestClaudeNewsItems, getSeedNewsItems } from '../../utils/news-feed'
 
 type NewsRow = {
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
     }))
   }
 
-  if (!config.public.supabaseUrl || !config.supabaseServiceRoleKey) {
+  if (!hasSupabaseAdminConfig(event)) {
     return {
       ok: true,
       items: await buildFallbackItems(),

@@ -16,6 +16,13 @@
         "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlNDZkYzg3Zi0xMGJiLTQwMmUtOWE3My05ZmUzODgzOGY0NTEiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiMTQyODc0YjMtM2QxMy00YTIyLTg1NGItOTg4YTZlZWJhMTFkIiwiaWF0IjoxNzcxNjgzMDExfQ.EIHWHtiXBfBzdWhAlmG2XE1lYUGTSxRAEJBARf12qxg"
       }
     },
+    "n8n-wr": {
+      "type": "http",
+      "url": "https://n8n.srv1127913.hstgr.cloud/mcp-server/http",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlNDZkYzg3Zi0xMGJiLTQwMmUtOWE3My05ZmUzODgzOGY0NTEiLCJpc3MiOiJuOG4iLCJhdWQiOiJtY3Atc2VydmVyLWFwaSIsImp0aSI6IjU1Njg2Yzg0LTg5M2MtNGU3Mi05MGE0LWUyMDJhZTg2OTc1NiIsImlhdCI6MTc3OTk0ODc2MX0.c4BoJ7bI1fBySJvfCEnyzUXhDttHRvLg6LGvhAttZI0"
+      }
+    },
     "chrome-devtools": {
       "command": "npx",
       "args": [
