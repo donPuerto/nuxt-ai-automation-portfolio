@@ -99,6 +99,29 @@ Any time a workflow is modified, do all three before closing:
 - Live URL: `https://nuxt-ai-automation-portfolio.don-puerto.workers.dev`
 - Note: GitHub Actions CI is set up (`.github/workflows/deploy.yml`) but requires GitHub billing to be active. Deploy manually with `npm run deploy` until then.
 
+## Auto Commit, Push & Deploy (REQUIRED after completing work)
+
+When a change is **complete and verified**, do all three, in order, without waiting to be asked:
+
+1. **Commit** — stage only the files for this change and commit with a conventional message
+   (`feat:`, `fix:`, `chore:`, `docs:`, `ui:`, `refactor:`, `perf:`). End the message with the
+   `Co-Authored-By` trailer. Do not sweep in unrelated pre-existing working-tree changes.
+2. **Push** — `git push` to `origin` (set upstream on first push of a branch:
+   `git push -u origin <branch>`). Remote is `github.com/donPuerto/nuxt-ai-automation-portfolio`,
+   auth via the `gh` CLI (`donPuerto`).
+3. **Deploy** — run `npm run deploy` (build + `wrangler` deploy to the `nuxt-ai-automation-portfolio` Worker).
+   Report the live URL after it succeeds.
+
+**Guardrails — skip the sequence and stop if any apply:**
+- The build/typecheck fails, or the change is mid-task / not yet verified → do NOT commit or deploy.
+- Work is exploratory, or the user is still iterating → wait until they confirm it's done.
+- Never commit `.env` or any file containing secrets. `.mcp.json` / `.vscode/mcp.json` carry inline
+  tokens — do not re-commit token changes; prefer `git update-index --skip-worktree` for them.
+- If on the default branch (`main`), confirm with the user before pushing/deploying, since a push to
+  `main` may trigger CI and a deploy ships the live site.
+
+This is the standard "finish a task" flow for this repo: **verify → commit → push → `npm run deploy`.**
+
 ## Environment Files
 
 - `.env` - public config (URLs, public keys) - can be committed
