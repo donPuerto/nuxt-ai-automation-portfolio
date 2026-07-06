@@ -18,8 +18,7 @@
   "compilerOptions": {
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,   
-    "baseUrl": ".",
+    "skipLibCheck": true,
      "types": [
       "@nuxt/image", 
       "@types/node"
