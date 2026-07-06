@@ -49,6 +49,7 @@
     "@iconify-json/simple-icons": "^1.2.89",
     "@tailwindcss/postcss": "^4.3.2",
     "@tailwindcss/vite": "^4.3.2",
+    "@types/node": "^26.1.0",
     "@types/three": "^0.185.0",
     "@vue/language-core": "^3.3.6",
     "class-variance-authority": "^0.7.1",

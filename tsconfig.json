@@ -20,8 +20,8 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
      "types": [
-      "@nuxt/image", 
-      "@types/node"
+      "@nuxt/image",
+      "node"
     ],
      "paths": {
       "~/*": ["./app/*"],
