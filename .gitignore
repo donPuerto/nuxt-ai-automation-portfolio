@@ -17,6 +17,10 @@ logs
 # Misc
 .DS_Store
 
+# Vendored agent skills (installed via `npx skills add`, not source)
+.agents/skills/supabase
+.agents/skills/supabase-postgres-best-practices
+
 # Local env files
 .env
 .env.*
